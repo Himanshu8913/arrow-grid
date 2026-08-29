@@ -1,5 +1,6 @@
 import { type ComponentProps } from "react";
 
+import { playSfx } from "@/audio";
 import { cn } from "@/utils/cn";
 
 const variantStyles = {
@@ -45,6 +46,16 @@ export function Button({
       type={type}
       disabled={isDisabled}
       aria-busy={isLoading}
+      onMouseEnter={() => {
+        if (!isDisabled) {
+          playSfx("hover");
+        }
+      }}
+      onMouseDown={() => {
+        if (!isDisabled) {
+          playSfx("click");
+        }
+      }}
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-[14px] font-semibold",
         "transition-all duration-200 ease-out",

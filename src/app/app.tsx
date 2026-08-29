@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 
 import { PlayPanel, type PlayPanelHandle } from "@/components/game";
-import { StatisticsPanel } from "@/components/profile";
+import { AchievementsPanel, StatisticsPanel } from "@/components/profile";
+import { SettingsDialog } from "@/components/settings";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/hooks/use-theme";
 import { Avatar } from "@/ui/avatar";
@@ -22,6 +23,7 @@ import { Tooltip } from "@/ui/tooltip";
 export function App() {
   const [activeTab, setActiveTab] = useState("play");
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [playerName, setPlayerName] = useState("Guest Player");
   const [isStartingGame, setIsStartingGame] = useState(false);
   const playPanelRef = useRef<PlayPanelHandle>(null);
@@ -110,6 +112,7 @@ export function App() {
                         </Button>
                       </div>
                       <StatisticsPanel />
+                      <AchievementsPanel />
                     </div>
                   ),
                 },
@@ -137,14 +140,7 @@ export function App() {
             <Tooltip content="Game preferences">
               <Button
                 variant="ghost"
-                onClick={() =>
-                  toast({
-                    title: "Settings",
-                    description:
-                      "Settings will be available in a future update.",
-                    variant: "default",
-                  })
-                }
+                onClick={() => setIsSettingsOpen(true)}
               >
                 Settings
               </Button>
@@ -157,6 +153,11 @@ export function App() {
           </CardFooter>
         </Card>
       </div>
+
+      <SettingsDialog
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
 
       <Dialog
         open={isHowToPlayOpen}

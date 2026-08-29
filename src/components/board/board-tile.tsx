@@ -1,4 +1,5 @@
 import { ArrowGlyph } from "@/components/board/arrow-glyph";
+import { playSfx } from "@/audio";
 import type { PlayerId, Position, Tile } from "@/types/game";
 import { cn } from "@/utils/cn";
 
@@ -48,7 +49,17 @@ export function BoardTile({
       type="button"
       aria-label={`Tile row ${position.row + 1}, column ${position.col + 1}`}
       disabled={!isInteractive}
-      onClick={() => onClick?.(position)}
+      onMouseEnter={() => {
+        if (isInteractive) {
+          playSfx("hover");
+        }
+      }}
+      onClick={() => {
+        if (isInteractive) {
+          playSfx("click");
+        }
+        onClick?.(position);
+      }}
       className={cn(
         "relative flex aspect-square items-center justify-center rounded-tile",
         "border border-bg-card/80 bg-bg-card shadow-[var(--shadow-soft)]",

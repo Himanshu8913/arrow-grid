@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { GoalCelebrationState } from "@/components/board";
+import { playSfx } from "@/audio";
 import { getPuzzleById } from "@/data/puzzles";
 import {
   chooseAiMove,
@@ -25,9 +26,11 @@ import { useLoopAnimation } from "@/hooks/use-loop-animation";
 import { useOrbAnimation } from "@/hooks/use-orb-animation";
 import { useToast } from "@/hooks/use-toast";
 import { useGameStore } from "@/state/game-store";
+import { useAchievementStore } from "@/state/achievement-store";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import { useStatisticsStore } from "@/state/statistics-store";
 import type { Board, Position } from "@/types/game";
+import type { PuzzleStarRating } from "@/types/puzzle";
 import {
   getMoveErrorMessage,
   getPlayerLabel,
@@ -36,6 +39,7 @@ import {
   isPuzzleMode,
 } from "@/utils/game-messages";
 import { getMatchStatisticsInput } from "@/utils/match-statistics";
+import { ACHIEVEMENTS } from "@/data/achievements";
 
 function showTurnToasts(
   game: GameState,
@@ -138,6 +142,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     (snapshot: GameState, turnResult: ExecuteTurnResult) => void
   >(() => undefined);
   const recordedMatchKeyRef = useRef<string | null>(null);
+  const matchSessionRef = useRef({ loops: 0 });
 
   const recordMatchStatistics = useCallback(
     (nextGame: GameState) => {
@@ -173,6 +178,46 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     [gameMode],
   );
 
+  const checkAchievements = useCallback(
+    (nextGame: GameState, stars: PuzzleStarRating | null) => {
+      const stats = useStatisticsStore.getState().stats;
+      const matchInput = getMatchStatisticsInput({ game: nextGame, gameMode });
+
+      const matchContext =
+        matchInput && !("kind" in matchInput)
+          ? {
+              outcome: matchInput.outcome,
+              gameMode,
+              loopsInMatch: matchSessionRef.current.loops,
+              hintsUsed: usePuzzleSessionStore.getState().hintsUsed,
+              stars,
+            }
+          : undefined;
+
+      const newlyUnlocked = useAchievementStore
+        .getState()
+        .checkAndUnlock({
+          stats,
+          match: matchContext,
+        });
+
+      newlyUnlocked.forEach((achievementId) => {
+        const achievement = ACHIEVEMENTS.find(
+          (entry) => entry.id === achievementId,
+        );
+
+        toast({
+          title: "Achievement unlocked",
+          description: achievement
+            ? `${achievement.icon} ${achievement.title}`
+            : achievementId,
+          variant: "success",
+        });
+      });
+    },
+    [gameMode, toast],
+  );
+
   const handleOrbAnimationComplete = useCallback(
     (snapshot: GameState, turnResult: ExecuteTurnResult) => {
       const outcome = evaluateTurnOutcome(
@@ -196,6 +241,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
           score: scoreBreakdown?.total ?? 0,
           owner: turnResult.movement.goalOwner ?? snapshot.currentPlayer,
         });
+        playSfx("goal");
 
         celebrationTimerRef.current = window.setTimeout(() => {
           finishTurnRef.current(snapshot, turnResult);
@@ -204,6 +250,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       }
 
       if (turnResult.movement.stoppedReason === "loop") {
+        matchSessionRef.current.loops += 1;
         setFrozenOrbPosition(turnResult.orbPosition);
         startLoopAnimation(turnResult.movement.loopSegment ?? [], () => {
           finishTurnRef.current(snapshot, turnResult);
@@ -241,6 +288,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       setHintPosition(null);
       setSelectedPosition(position);
       setRotatingPosition(position);
+      playSfx("rotate");
 
       rotationTimerRef.current = window.setTimeout(() => {
         setRotatingPosition(null);
@@ -274,6 +322,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       );
       let nextGame = resolvePlayerTurn(snapshot, turnResult);
 
+      let starsForAchievements: PuzzleStarRating | null = earnedStars;
+
       if (isPuzzleMode(gameMode)) {
         nextGame = applyPuzzleMoveLimit(nextGame);
 
@@ -281,13 +331,12 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
           const puzzle = getPuzzleById(nextGame.puzzleId);
           const hintsUsedAtFinish =
             usePuzzleSessionStore.getState().hintsUsed;
-          setEarnedStars(
-            calculatePuzzleStars(
-              nextGame.movesPlayed,
-              puzzle.targetMoves,
-              hintsUsedAtFinish,
-            ),
+          starsForAchievements = calculatePuzzleStars(
+            nextGame.movesPlayed,
+            puzzle.targetMoves,
+            hintsUsedAtFinish,
           );
+          setEarnedStars(starsForAchievements);
         }
       }
 
@@ -298,6 +347,14 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       setSelectedPosition(null);
       showTurnToasts(nextGame, gameMode, toast);
       recordMatchStatistics(nextGame);
+
+      if (nextGame.status === "won") {
+        playSfx("victory");
+      } else if (nextGame.status === "lost") {
+        playSfx("defeat");
+      }
+
+      checkAchievements(nextGame, starsForAchievements);
 
       if (
         !isPuzzleMode(gameMode) &&
@@ -313,6 +370,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       }
     },
     [
+      checkAchievements,
+      earnedStars,
       gameMode,
       queueAiTurnIfNeeded,
       recordMatchStatistics,
@@ -354,6 +413,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   const startGame = useCallback(() => {
     clearTransientState();
     recordedMatchKeyRef.current = null;
+    matchSessionRef.current = { loops: 0 };
     setIsStartingGame(true);
     setUndoStack([]);
     resetPuzzleSession();
@@ -399,6 +459,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
 
     clearTransientState();
     recordedMatchKeyRef.current = null;
+    matchSessionRef.current = { loops: 0 };
     setUndoStack([]);
     resetPuzzleSession();
     setGame(createGameFromPuzzle(getPuzzleById(game.puzzleId)));
