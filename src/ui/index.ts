@@ -24,4 +24,10 @@ export {
 } from "./card";
 export { Dialog, type DialogProps } from "./dialog";
 export { Modal, type ModalProps } from "./modal";
+export {
+  ProgressBar,
+  type ProgressBarProps,
+  type ProgressBarSize,
+  type ProgressBarVariant,
+} from "./progress-bar";
 export { Toast, type ToastProps } from "./toast";

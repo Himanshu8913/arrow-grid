@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/ui/card";
 import { Dialog } from "@/ui/dialog";
+import { ProgressBar } from "@/ui/progress-bar";
 
 export function App() {
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
@@ -28,9 +29,17 @@ export function App() {
           <CardHeader>
             <div className="mb-4 flex items-center justify-center gap-3">
               <Avatar alt="Guest Player" name="Guest Player" size="lg" />
-              <div className="text-left">
+              <div className="min-w-0 flex-1 text-left">
                 <p className="font-semibold text-text-primary">Guest Player</p>
                 <p className="text-sm text-text-muted">Level 1</p>
+                <ProgressBar
+                  className="mt-2 max-w-[12rem]"
+                  value={35}
+                  max={100}
+                  label="XP to Level 2"
+                  showValue
+                  size="sm"
+                />
               </div>
             </div>
             <CardTitle>
