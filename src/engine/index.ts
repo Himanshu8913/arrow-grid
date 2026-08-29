@@ -8,6 +8,13 @@ export {
 } from "@/engine/board";
 export { rotateDirectionClockwise, getDirectionDelta } from "@/engine/direction";
 export {
+  getLegalRotatePositions,
+  rotateArrowAt,
+  tryRotateArrow,
+  validateRotateMove,
+} from "@/engine/rotation";
+export { executePlayerTurn, type ExecuteTurnResult } from "@/engine/turn";
+export {
   isInstantWinBoard,
   simulateOrbMovement,
   type MovementStopReason,

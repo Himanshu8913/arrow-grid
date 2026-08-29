@@ -68,3 +68,21 @@ export interface GenerateBoardOptions {
   emptyTilesEnabled?: boolean;
   maxAttempts?: number;
 }
+
+/** A player action that rotates one arrow clockwise. */
+export interface RotateMove {
+  type: "rotate";
+  position: Position;
+}
+
+export type InvalidMoveReason =
+  | "out-of-bounds"
+  | "not-arrow"
+  | "wall"
+  | "goal"
+  | "spawn"
+  | "empty";
+
+export type MoveValidationResult =
+  | { valid: true }
+  | { valid: false; reason: InvalidMoveReason };
