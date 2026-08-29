@@ -13,6 +13,7 @@ import {
 } from "@/ui/card";
 import { Dialog } from "@/ui/dialog";
 import { ProgressBar } from "@/ui/progress-bar";
+import { Tooltip } from "@/ui/tooltip";
 
 export function App() {
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
@@ -56,28 +57,37 @@ export function App() {
           </CardHeader>
 
           <CardFooter>
-            <Button>Play</Button>
-            <Button
-              variant="secondary"
-              onClick={() => setIsHowToPlayOpen(true)}
-            >
-              How to Play
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() =>
-                toast({
-                  title: "Settings",
-                  description: "Settings will be available in a future update.",
-                  variant: "default",
-                })
-              }
-            >
-              Settings
-            </Button>
-            <Button variant="danger" size="sm">
-              Quit
-            </Button>
+            <Tooltip content="Start a new game">
+              <Button>Play</Button>
+            </Tooltip>
+            <Tooltip content="Learn the basics" side="bottom">
+              <Button
+                variant="secondary"
+                onClick={() => setIsHowToPlayOpen(true)}
+              >
+                How to Play
+              </Button>
+            </Tooltip>
+            <Tooltip content="Game preferences">
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  toast({
+                    title: "Settings",
+                    description:
+                      "Settings will be available in a future update.",
+                    variant: "default",
+                  })
+                }
+              >
+                Settings
+              </Button>
+            </Tooltip>
+            <Tooltip content="Exit to main menu" side="bottom">
+              <Button variant="danger" size="sm">
+                Quit
+              </Button>
+            </Tooltip>
           </CardFooter>
         </Card>
       </div>

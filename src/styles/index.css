@@ -84,4 +84,8 @@
   .toast-enter {
     animation: toast-slide-in 200ms ease-out;
   }
+
+  .tooltip-enter {
+    animation: modal-fade-in 150ms ease-out;
+  }
 }
