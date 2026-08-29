@@ -9,6 +9,8 @@ export interface Settings {
   sfxVolume: number;
   animationsEnabled: boolean;
   reducedMotion: boolean;
+  colorblindMode: boolean;
+  highContrast: boolean;
   language: AppLanguage;
 }
 
@@ -21,6 +23,8 @@ export function createDefaultSettings(): Settings {
     sfxVolume: 0.7,
     animationsEnabled: true,
     reducedMotion: false,
+    colorblindMode: false,
+    highContrast: false,
     language: "en",
   };
 }

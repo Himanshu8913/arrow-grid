@@ -9,7 +9,9 @@ import {
   getBoardTileRenderState,
   useBoardOverlayMaps,
 } from "@/hooks/use-board-overlay-maps";
+import { useBoardKeyboard } from "@/hooks/use-board-keyboard";
 import type { Board, PlayerId, Position } from "@/types/game";
+import { getTileAriaLabel } from "@/utils/board-a11y";
 import { cn } from "@/utils/cn";
 
 export interface GoalCelebrationState {
@@ -80,14 +82,33 @@ export const BoardGrid = memo(function BoardGrid({
     },
     [onTileClick],
   );
+  const {
+    registerTileRef,
+    handleTileFocus,
+    handleGridKeyDown,
+    handleGridFocus,
+    getTileTabIndex,
+  } = useBoardKeyboard({
+    size,
+    disabled: disabled || !onTileClick,
+    onTileActivate: handleTileClick,
+  });
 
   return (
     <div className={cn("relative mx-auto w-full max-w-md", className)}>
       <div
+        role="grid"
+        aria-label="Game board"
+        aria-rowcount={size}
+        aria-colcount={size}
+        tabIndex={disabled || !onTileClick ? -1 : 0}
+        onKeyDown={handleGridKeyDown}
+        onFocus={handleGridFocus}
         className={cn(
           "board-grid-contain",
           isBoardCelebrating && "board-celebrate",
           isBoardVibrating && "board-soft-vibrate",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
         )}
         style={{
           display: "grid",
@@ -110,12 +131,24 @@ export const BoardGrid = memo(function BoardGrid({
               hintPosition,
               selectedPosition,
             });
+            const ariaLabel = getTileAriaLabel(tile, position, {
+              isSpawn: renderState.isSpawn,
+              isSelected: renderState.isSelected,
+              isHinted: renderState.isHinted,
+              isOnPath: renderState.isOnPath,
+              isLoopTile: renderState.isLoopTile,
+            });
 
             return (
               <BoardTile
                 key={`${rowIndex}-${colIndex}`}
                 tile={tile}
                 position={position}
+                ariaLabel={ariaLabel}
+                tabIndex={
+                  onTileClick ? getTileTabIndex(position) : undefined
+                }
+                tileRef={(element) => registerTileRef(position, element)}
                 boardSize={size}
                 isSpawn={renderState.isSpawn}
                 isOnPath={renderState.isOnPath}
@@ -128,6 +161,7 @@ export const BoardGrid = memo(function BoardGrid({
                 isSelected={renderState.isSelected}
                 disabled={disabled}
                 onClick={onTileClick ? handleTileClick : undefined}
+                onFocus={handleTileFocus}
               />
             );
           }),

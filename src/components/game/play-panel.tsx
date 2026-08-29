@@ -1,7 +1,8 @@
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useEffect, useImperativeHandle } from "react";
 
 import { BoardGrid } from "@/components/board";
 import { PUZZLE_CATALOG } from "@/data/puzzles";
+import { GameStatusAnnouncer } from "@/components/game/game-status-announcer";
 import { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
 import { DailyChallengeHud } from "@/components/game/daily-challenge-hud";
 import { ResultScreen } from "@/components/game/result-screen";
@@ -78,6 +79,59 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
 
     useImperativeHandle(ref, () => ({ startGame }), [startGame]);
 
+    useEffect(() => {
+      if (!isPuzzle || isDaily) {
+        return;
+      }
+
+      const handleShortcut = (event: KeyboardEvent) => {
+        const target = event.target;
+        if (
+          target instanceof HTMLElement &&
+          (target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            target.isContentEditable)
+        ) {
+          return;
+        }
+
+        if (event.key === "r" || event.key === "R") {
+          event.preventDefault();
+          restartPuzzle();
+          return;
+        }
+
+        if (event.key === "u" || event.key === "U") {
+          if (!canUndoPuzzle) {
+            return;
+          }
+          event.preventDefault();
+          undoPuzzle();
+          return;
+        }
+
+        if (event.key === "h" || event.key === "H") {
+          if (game.status !== "in-progress" || isInputLocked) {
+            return;
+          }
+          event.preventDefault();
+          requestHint();
+        }
+      };
+
+      window.addEventListener("keydown", handleShortcut);
+      return () => window.removeEventListener("keydown", handleShortcut);
+    }, [
+      canUndoPuzzle,
+      game.status,
+      isDaily,
+      isInputLocked,
+      isPuzzle,
+      requestHint,
+      restartPuzzle,
+      undoPuzzle,
+    ]);
+
     return (
       <div className="relative space-y-4 text-center">
         {isStartingGame ? <LoaderOverlay label="Starting game..." /> : null}
@@ -97,6 +151,13 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             isAiThinking={isAiThinking}
           />
         ) : null}
+
+        <GameStatusAnnouncer
+          game={game}
+          gameMode={gameMode}
+          isAiThinking={isAiThinking}
+          isInputLocked={isInputLocked}
+        />
 
         <AiThinkingIndicator visible={isAiThinking} />
 
@@ -150,6 +211,18 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             onHint={requestHint}
           />
         ) : null}
+
+        {isPuzzle && !isDaily ? (
+          <p className="text-xs text-text-muted">
+            Keyboard: R restart, U undo, H hint. Board: arrow keys to move, Enter
+            to rotate.
+          </p>
+        ) : (
+          <p className="text-xs text-text-muted">
+            Keyboard: Tab to the board, arrow keys to move, Enter or Space to
+            rotate.
+          </p>
+        )}
 
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Badge variant="primary">Strategy</Badge>

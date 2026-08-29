@@ -35,6 +35,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const sfxVolume = useSettingsStore((state) => state.sfxVolume);
   const animationsEnabled = useSettingsStore((state) => state.animationsEnabled);
   const reducedMotion = useSettingsStore((state) => state.reducedMotion);
+  const colorblindMode = useSettingsStore((state) => state.colorblindMode);
+  const highContrast = useSettingsStore((state) => state.highContrast);
   const language = useSettingsStore((state) => state.language);
   const setMusicEnabled = useSettingsStore((state) => state.setMusicEnabled);
   const setSfxEnabled = useSettingsStore((state) => state.setSfxEnabled);
@@ -45,6 +47,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     (state) => state.setAnimationsEnabled,
   );
   const setReducedMotion = useSettingsStore((state) => state.setReducedMotion);
+  const setColorblindMode = useSettingsStore((state) => state.setColorblindMode);
+  const setHighContrast = useSettingsStore((state) => state.setHighContrast);
   const setLanguage = useSettingsStore((state) => state.setLanguage);
 
   const handleResetProgress = () => {
@@ -121,6 +125,18 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             description="Minimize all motion for accessibility."
             checked={reducedMotion}
             onChange={setReducedMotion}
+          />
+          <ToggleRow
+            label="Colorblind mode"
+            description="Use distinct patterns and direction markers instead of color alone."
+            checked={colorblindMode}
+            onChange={setColorblindMode}
+          />
+          <ToggleRow
+            label="High contrast"
+            description="Increase contrast for text, borders, and UI elements."
+            checked={highContrast}
+            onChange={setHighContrast}
           />
         </SettingsSection>
 
@@ -200,8 +216,13 @@ function ToggleRow({
   disabled?: boolean;
   onChange: (checked: boolean) => void;
 }) {
+  const inputId = `settings-${label.toLowerCase().replace(/\s+/g, "-")}`;
+
   return (
-    <label className="flex items-start justify-between gap-4 rounded-2xl bg-bg-card p-3">
+    <label
+      htmlFor={inputId}
+      className="flex items-start justify-between gap-4 rounded-2xl bg-bg-card p-3"
+    >
       <span>
         <span className="block text-sm font-semibold text-text-primary">
           {label}
@@ -209,6 +230,7 @@ function ToggleRow({
         <span className="mt-1 block text-xs text-text-muted">{description}</span>
       </span>
       <input
+        id={inputId}
         type="checkbox"
         checked={checked}
         disabled={disabled}

@@ -40,7 +40,12 @@ export function ResultScreen({
         : "—";
 
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-bg-primary/85 p-4 backdrop-blur-sm">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="result-screen-title"
+      className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-bg-primary/85 p-4 backdrop-blur-sm"
+    >
       <div
         className={cn(
           "w-full max-w-md rounded-3xl border p-5 text-left shadow-[var(--shadow-strong)] sm:p-6",
@@ -50,6 +55,7 @@ export function ResultScreen({
         )}
       >
         <p
+          id="result-screen-title"
           className={cn(
             "text-center text-2xl font-bold",
             isWin ? "text-success" : "text-danger",

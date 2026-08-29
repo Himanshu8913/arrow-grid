@@ -169,7 +169,8 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
         }
       >
         <ol className="list-decimal space-y-2 pl-5 text-text-muted">
-          <li>Click an arrow to rotate it one step clockwise.</li>
+          <li>Click or focus a tile and press Enter to rotate it clockwise.</li>
+          <li>Use arrow keys on the board to move between tiles.</li>
           <li>After your move, the orb follows the arrows automatically.</li>
           <li>Plan ahead — every rotation changes the orb&apos;s path.</li>
         </ol>

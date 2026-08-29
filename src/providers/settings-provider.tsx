@@ -9,6 +9,8 @@ import { useSettingsStore } from "@/state/settings-store";
  */
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const reducedMotion = useSettingsStore((state) => state.reducedMotion);
+  const colorblindMode = useSettingsStore((state) => state.colorblindMode);
+  const highContrast = useSettingsStore((state) => state.highContrast);
   const animationsEnabled = useSettingsStore((state) => state.animationsEnabled);
   const language = useSettingsStore((state) => state.language);
   const musicEnabled = useSettingsStore((state) => state.musicEnabled);
@@ -26,6 +28,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       !animationsEnabled,
     );
   }, [animationsEnabled]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("colorblind-mode", colorblindMode);
+  }, [colorblindMode]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("high-contrast", highContrast);
+  }, [highContrast]);
 
   useEffect(() => {
     document.documentElement.lang = language;

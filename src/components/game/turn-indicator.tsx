@@ -26,7 +26,11 @@ export function TurnIndicator({
     }
 
     return (
-      <div className="flex items-center justify-center gap-2">
+      <div
+        className="flex items-center justify-center gap-2"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <Badge variant={game.currentPlayer === "player1" ? "primary" : "secondary"}>
           {game.currentPlayer === "player1" ? "Your turn" : `${getPlayerLabel("player2")}'s turn`}
         </Badge>
@@ -40,7 +44,11 @@ export function TurnIndicator({
   }
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div
+      className="flex items-center justify-center gap-2"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       <Badge
         variant={game.currentPlayer === "player1" ? "primary" : "secondary"}
       >

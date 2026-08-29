@@ -13,6 +13,8 @@ interface SettingsStore extends Settings {
   setSfxVolume: (volume: number) => void;
   setAnimationsEnabled: (enabled: boolean) => void;
   setReducedMotion: (enabled: boolean) => void;
+  setColorblindMode: (enabled: boolean) => void;
+  setHighContrast: (enabled: boolean) => void;
   setLanguage: (language: AppLanguage) => void;
   resetSettings: () => void;
 }
@@ -32,6 +34,8 @@ export const useSettingsStore = create<SettingsStore>()(
       setSfxVolume: (sfxVolume) => set({ sfxVolume: clampVolume(sfxVolume) }),
       setAnimationsEnabled: (animationsEnabled) => set({ animationsEnabled }),
       setReducedMotion: (reducedMotion) => set({ reducedMotion }),
+      setColorblindMode: (colorblindMode) => set({ colorblindMode }),
+      setHighContrast: (highContrast) => set({ highContrast }),
       setLanguage: (language) => set({ language }),
       resetSettings: () => set(createDefaultSettings()),
     }),
