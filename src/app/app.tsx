@@ -1,16 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-import { BoardGrid } from "@/components/board";
-import { createNewGame, playTurn } from "@/engine";
+import { PlayPanel, type PlayPanelHandle } from "@/components/game";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/hooks/use-theme";
-import type { Position } from "@/types/game";
-import {
-  getMoveErrorMessage,
-  getPlayerCountForMode,
-} from "@/utils/game-messages";
 import { Avatar } from "@/ui/avatar";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import {
   Card,
@@ -20,10 +13,8 @@ import {
   CardTitle,
 } from "@/ui/card";
 import { Dialog } from "@/ui/dialog";
-import { Dropdown } from "@/ui/dropdown";
 import { Input } from "@/ui/input";
 import { ProgressBar } from "@/ui/progress-bar";
-import { LoaderOverlay } from "@/ui/loader";
 import { Tabs } from "@/ui/tabs";
 import { Tooltip } from "@/ui/tooltip";
 
@@ -33,12 +24,7 @@ export function App() {
   const [gameMode, setGameMode] = useState("pvp");
   const [playerName, setPlayerName] = useState("Guest Player");
   const [isStartingGame, setIsStartingGame] = useState(false);
-  const [game, setGame] = useState(() =>
-    createNewGame({ seed: 42, playerCount: 2 }),
-  );
-  const [selectedPosition, setSelectedPosition] = useState<Position | null>(
-    null,
-  );
+  const playPanelRef = useRef<PlayPanelHandle>(null);
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
 
@@ -49,72 +35,6 @@ export function App() {
       ? "Name must be at least 2 characters"
       : undefined;
 
-  const handlePlay = () => {
-    setIsStartingGame(true);
-    window.setTimeout(() => {
-      setGame(
-        createNewGame({
-          seed: Date.now(),
-          playerCount: getPlayerCountForMode(gameMode),
-        }),
-      );
-      setSelectedPosition(null);
-      setIsStartingGame(false);
-      toast({
-        title: "Game ready",
-        description: `${gameMode.toUpperCase()} mode board generated.`,
-        variant: "success",
-      });
-    }, 1500);
-  };
-
-  const handleTileClick = (position: Position) => {
-    if (isStartingGame || game.status === "won") {
-      return;
-    }
-
-    const result = playTurn(game, { type: "rotate", position });
-
-    if ("error" in result) {
-      toast({
-        title: "Invalid move",
-        description: getMoveErrorMessage(result.error),
-        variant: "danger",
-      });
-      return;
-    }
-
-    setGame(result);
-    setSelectedPosition(position);
-
-    if (result.lastOutcome?.isLoop) {
-      toast({
-        title: "Loop detected",
-        description: "The orb cycled without reaching a goal. No points awarded.",
-        variant: "warning",
-      });
-      return;
-    }
-
-    if (result.lastOutcome?.scored && result.lastScore) {
-      toast({
-        title: "Goal scored!",
-        description: `+${result.lastScore.total} points`,
-        variant: "success",
-      });
-    }
-
-    if (result.status === "won") {
-      toast({
-        title: "Match won!",
-        description: `Player 1 finished with ${result.players.player1.matchPoints} match points.`,
-        variant: "success",
-      });
-    }
-  };
-
-  const isBoardDisabled = isStartingGame || game.status === "won";
-
   return (
     <>
       <div className="flex min-h-dvh items-center justify-center p-6">
@@ -123,9 +43,6 @@ export function App() {
           padding="lg"
           variant="surface"
         >
-          {isStartingGame ? (
-            <LoaderOverlay label="Starting game..." />
-          ) : null}
           <CardHeader>
             <CardTitle>
               {import.meta.env.VITE_APP_NAME ?? "Arrow Grid"}
@@ -143,47 +60,12 @@ export function App() {
                   value: "play",
                   label: "Play",
                   content: (
-                    <div className="space-y-4 text-center">
-                      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-bg-card px-4 py-2 text-sm">
-                        <span className="text-text-muted">
-                          Turn {game.turnNumber}
-                        </span>
-                        <span className="font-semibold text-text-primary">
-                          Score {game.players.player1.totalScore}
-                        </span>
-                        <span className="text-text-muted">
-                          Points {game.players.player1.matchPoints}
-                          {game.playerCount === 2
-                            ? ` · P2 ${game.players.player2.matchPoints}`
-                            : ""}
-                        </span>
-                      </div>
-                      <BoardGrid
-                        board={game.board}
-                        spawn={game.spawn}
-                        orbPosition={game.orbPosition}
-                        pathPositions={game.lastOrbPath}
-                        selectedPosition={selectedPosition}
-                        disabled={isBoardDisabled}
-                        onTileClick={handleTileClick}
-                      />
-                      <div className="flex flex-wrap items-center justify-center gap-2">
-                        <Badge variant="primary">Strategy</Badge>
-                        <Badge variant="secondary">PvP</Badge>
-                        <Badge variant="success">Alpha</Badge>
-                      </div>
-                      <Dropdown
-                        className="mx-auto max-w-xs"
-                        label="Game Mode"
-                        value={gameMode}
-                        onValueChange={setGameMode}
-                        options={[
-                          { value: "pvp", label: "Player vs Player" },
-                          { value: "puzzle", label: "Puzzle Mode" },
-                          { value: "practice", label: "Practice" },
-                        ]}
-                      />
-                    </div>
+                    <PlayPanel
+                      ref={playPanelRef}
+                      gameMode={gameMode}
+                      onGameModeChange={setGameMode}
+                      onStartingChange={setIsStartingGame}
+                    />
                   ),
                 },
                 {
@@ -238,7 +120,10 @@ export function App() {
 
           <CardFooter>
             <Tooltip content="Start a new game">
-              <Button disabled={isStartingGame} onClick={handlePlay}>
+              <Button
+                disabled={isStartingGame}
+                onClick={() => playPanelRef.current?.startGame()}
+              >
                 Play
               </Button>
             </Tooltip>

@@ -7,8 +7,8 @@ export interface BoardTileProps {
   position: Position;
   isSpawn?: boolean;
   isSelected?: boolean;
-  isOrb?: boolean;
   isOnPath?: boolean;
+  trailOpacity?: number;
   disabled?: boolean;
   onClick?: (position: Position) => void;
 }
@@ -26,8 +26,8 @@ export function BoardTile({
   position,
   isSpawn = false,
   isSelected = false,
-  isOrb = false,
   isOnPath = false,
+  trailOpacity,
   disabled = false,
   onClick,
 }: BoardTileProps) {
@@ -47,12 +47,19 @@ export function BoardTile({
           "cursor-pointer hover:-translate-y-0.5 hover:border-accent-primary/40 hover:shadow-[var(--shadow-medium)]",
         isSelected &&
           "ring-2 ring-accent-primary ring-offset-2 ring-offset-bg-surface",
-        isOnPath && "bg-accent-primary/10",
+        isOnPath && !trailOpacity && "bg-accent-primary/10",
+        trailOpacity !== undefined &&
+          "bg-accent-primary/30 transition-opacity duration-500 ease-out",
         disabled && "cursor-not-allowed opacity-70",
         tile.kind === "wall" && "bg-bg-primary text-text-muted",
         tile.kind === "empty" && "bg-bg-surface/60",
         tile.kind === "goal" && goalStyles[tile.owner],
       )}
+      style={
+        trailOpacity !== undefined
+          ? { opacity: 0.35 + trailOpacity * 0.45 }
+          : undefined
+      }
     >
       {tile.kind === "arrow" ? <ArrowGlyph direction={tile.direction} /> : null}
       {tile.kind === "wall" ? (
@@ -69,13 +76,6 @@ export function BoardTile({
         <span
           aria-label="Spawn point"
           className="absolute right-1 top-1 size-2 rounded-full bg-warning shadow-[0_0_8px_rgba(245,158,11,0.8)]"
-        />
-      ) : null}
-
-      {isOrb ? (
-        <span
-          aria-label="Energy orb"
-          className="absolute inset-[28%] rounded-full bg-accent-primary shadow-[0_0_16px_rgba(59,130,246,0.9)] ring-2 ring-white/40"
         />
       ) : null}
     </button>
