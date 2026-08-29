@@ -21,7 +21,6 @@ import { Tooltip } from "@/ui/tooltip";
 export function App() {
   const [activeTab, setActiveTab] = useState("play");
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
-  const [gameMode, setGameMode] = useState("pvp");
   const [playerName, setPlayerName] = useState("Guest Player");
   const [isStartingGame, setIsStartingGame] = useState(false);
   const playPanelRef = useRef<PlayPanelHandle>(null);
@@ -62,8 +61,6 @@ export function App() {
                   content: (
                     <PlayPanel
                       ref={playPanelRef}
-                      gameMode={gameMode}
-                      onGameModeChange={setGameMode}
                       onStartingChange={setIsStartingGame}
                     />
                   ),
