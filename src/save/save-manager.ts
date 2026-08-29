@@ -71,6 +71,27 @@ function createLobbyGame(
   });
 }
 
+function resolvePlayLobbyMode(gameMode: string): string {
+  if (isDailyChallengeMode(gameMode)) {
+    return createInitialGameProgress().gameMode;
+  }
+
+  return gameMode;
+}
+
+export function refreshLobbyPreview(): void {
+  const gameStore = useGameStore.getState();
+
+  if (gameStore.matchSessionActive) {
+    return;
+  }
+
+  const selectedPuzzleId =
+    usePuzzleSessionStore.getState().selectedPuzzleId || DEFAULT_PUZZLE_ID;
+  const lobbyGame = createLobbyGame(gameStore.gameMode, selectedPuzzleId);
+  gameStore.setGame(lobbyGame, { persist: false });
+}
+
 /**
  * Opens the play screen with a fresh lobby preview without overwriting a saved match.
  */
@@ -78,14 +99,14 @@ export function preparePlayLobby(): void {
   const progress = useProgressStore.getState();
   const gameStore = useGameStore.getState();
   const selectedPuzzleId = progress.selectedPuzzleId || DEFAULT_PUZZLE_ID;
+  const lobbyMode = resolvePlayLobbyMode(progress.gameMode);
 
-  gameStore.setGameMode(progress.gameMode);
+  gameStore.setGameMode(lobbyMode);
   gameStore.setAiDifficulty(progress.aiDifficulty);
   usePuzzleSessionStore.getState().setSelectedPuzzleId(selectedPuzzleId);
   usePuzzleSessionStore.getState().resetPuzzleSession();
 
-  const lobbyGame = createLobbyGame(progress.gameMode, selectedPuzzleId);
-  gameStore.setGame(lobbyGame, { persist: false });
+  refreshLobbyPreview();
   gameStore.setMatchSessionActive(false);
 }
 

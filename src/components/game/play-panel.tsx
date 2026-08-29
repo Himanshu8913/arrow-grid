@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle } from "react";
 
 import { BoardGrid } from "@/components/board";
+import { refreshLobbyPreview } from "@/save";
 import { PUZZLE_CATALOG } from "@/data/puzzles";
 import { GameStatusAnnouncer } from "@/components/game/game-status-announcer";
 import { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
@@ -80,7 +81,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
 
     useImperativeHandle(ref, () => ({ startGame }), [startGame]);
 
-    const isMatchActive = game.status === "in-progress";
+    const isModeLocked = matchSessionActive || isStartingGame;
 
     useEffect(() => {
       if (!isPuzzle || isDaily || matchResultSummary) {
@@ -259,8 +260,13 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             className="mx-auto max-w-xs"
             label="Game Mode"
             value={gameMode}
-            disabled={isMatchActive}
-            onValueChange={setGameMode}
+            disabled={isModeLocked}
+            onValueChange={(value) => {
+              setGameMode(value);
+              if (!matchSessionActive) {
+                refreshLobbyPreview();
+              }
+            }}
             options={[
               { value: "pvp", label: "Player vs Player" },
               { value: "practice", label: "Practice vs AI" },
@@ -274,8 +280,13 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             className="mx-auto max-w-xs"
             label="Puzzle"
             value={selectedPuzzleId}
-            disabled={isMatchActive}
-            onValueChange={setSelectedPuzzleId}
+            disabled={isModeLocked}
+            onValueChange={(value) => {
+              setSelectedPuzzleId(value);
+              if (!matchSessionActive) {
+                refreshLobbyPreview();
+              }
+            }}
             options={PUZZLE_CATALOG.map((puzzle) => ({
               value: puzzle.id,
               label: puzzle.title,
@@ -288,7 +299,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             className="mx-auto max-w-xs"
             label="AI Difficulty"
             value={aiDifficulty}
-            disabled={isMatchActive}
+            disabled={isModeLocked}
             onValueChange={(value) => setAiDifficulty(value as typeof aiDifficulty)}
             options={AI_DIFFICULTY_OPTIONS}
           />

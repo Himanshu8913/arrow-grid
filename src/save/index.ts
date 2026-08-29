@@ -5,6 +5,7 @@ export {
   hasSavedMatch,
   preparePlayLobby,
   recordPuzzleCompletion,
+  refreshLobbyPreview,
   resumeSavedMatch,
   syncActiveMatch,
 } from "@/save/save-manager";

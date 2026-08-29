@@ -57,6 +57,15 @@ describe("save manager integration", () => {
     expect(useProgressStore.getState().activeMatch?.game.movesPlayed).toBe(3);
   });
 
+  it("uses a standard mode for Play after a daily challenge session", () => {
+    useProgressStore.getState().setGameMode("daily");
+
+    preparePlayLobby();
+
+    expect(useGameStore.getState().gameMode).toBe("pvp");
+    expect(useGameStore.getState().matchSessionActive).toBe(false);
+  });
+
   it("resumes a saved match for Continue", () => {
     const saved = createNewGame({ seed: 55, playerCount: 2, size: 5 });
     saved.movesPlayed = 4;
