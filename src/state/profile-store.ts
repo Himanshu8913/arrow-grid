@@ -6,6 +6,7 @@ import { createDefaultProfile, type PlayerProfile } from "@/types/profile";
 
 interface ProfileStore extends PlayerProfile {
   setDisplayName: (displayName: string) => void;
+  addRewards: (xp: number, coins: number) => void;
   resetProfile: () => void;
 }
 
@@ -17,6 +18,11 @@ export const useProfileStore = create<ProfileStore>()(
     (set) => ({
       ...createDefaultProfile(),
       setDisplayName: (displayName) => set({ displayName }),
+      addRewards: (xp, coins) =>
+        set((state) => ({
+          totalXp: state.totalXp + xp,
+          totalCoins: state.totalCoins + coins,
+        })),
       resetProfile: () => set(createDefaultProfile()),
     }),
     {

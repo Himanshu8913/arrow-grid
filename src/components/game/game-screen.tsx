@@ -34,6 +34,7 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
   const { toast } = useToast();
   const playerName = useProfileStore((state) => state.displayName);
   const setPlayerName = useProfileStore((state) => state.setDisplayName);
+  const totalXp = useProfileStore((state) => state.totalXp);
 
   const trimmedPlayerName = playerName.trim();
   const displayName = trimmedPlayerName || "Guest Player";
@@ -73,6 +74,7 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
                     <PlayPanel
                       ref={playPanelRef}
                       onStartingChange={setIsStartingGame}
+                      onReturnToMenu={onBackToMenu}
                     />
                   ),
                 },
@@ -100,9 +102,9 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
                         maxLength={24}
                       />
                       <ProgressBar
-                        value={35}
+                        value={totalXp % 100}
                         max={100}
-                        label="XP to Level 2"
+                        label="XP to next level"
                         showValue
                         size="sm"
                       />

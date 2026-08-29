@@ -31,16 +31,18 @@ import { useAchievementStore } from "@/state/achievement-store";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import { useStatisticsStore } from "@/state/statistics-store";
 import type { Board, Position } from "@/types/game";
-import type { PuzzleStarRating } from "@/types/puzzle";
+import type { MatchResultSummary } from "@/types/match-result";
+import type { AchievementId } from "@/types/achievement";
 import {
   getMoveErrorMessage,
-  getPlayerLabel,
   isHumanPlayerTurn,
   isPracticeMode,
   isPuzzleMode,
 } from "@/utils/game-messages";
+import type { PuzzleStarRating } from "@/types/puzzle";
+import { useProfileStore } from "@/state/profile-store";
 import { getMatchStatisticsInput } from "@/utils/match-statistics";
-import { ACHIEVEMENTS } from "@/data/achievements";
+import { calculateMatchRewards } from "@/utils/match-rewards";
 
 function showTurnToasts(
   game: GameState,
@@ -64,14 +66,6 @@ function showTurnToasts(
     toast({
       title: "Goal scored!",
       description: `+${game.lastScore.total} points`,
-      variant: "success",
-    });
-  }
-
-  if (game.status === "won" && game.winner) {
-    toast({
-      title: "Match won!",
-      description: `${getPlayerLabel(game.winner)} reached ${game.players[game.winner].matchPoints} match points.`,
       variant: "success",
     });
   }
@@ -117,9 +111,16 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     null,
   );
   const [undoStack, setUndoStack] = useState<GameState[]>([]);
+  const [matchResultSummary, setMatchResultSummary] =
+    useState<MatchResultSummary | null>(null);
 
   const celebrationTimerRef = useRef<number | undefined>(undefined);
   const rotationTimerRef = useRef<number | undefined>(undefined);
+  const matchStartTimeRef = useRef(0);
+
+  useEffect(() => {
+    matchStartTimeRef.current = Date.now();
+  }, []);
   const { toast } = useToast();
 
   const {
@@ -180,7 +181,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   );
 
   const checkAchievements = useCallback(
-    (nextGame: GameState, stars: PuzzleStarRating | null) => {
+    (nextGame: GameState, stars: PuzzleStarRating | null): AchievementId[] => {
       const stats = useStatisticsStore.getState().stats;
       const matchInput = getMatchStatisticsInput({ game: nextGame, gameMode });
 
@@ -195,28 +196,12 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
             }
           : undefined;
 
-      const newlyUnlocked = useAchievementStore
-        .getState()
-        .checkAndUnlock({
-          stats,
-          match: matchContext,
-        });
-
-      newlyUnlocked.forEach((achievementId) => {
-        const achievement = ACHIEVEMENTS.find(
-          (entry) => entry.id === achievementId,
-        );
-
-        toast({
-          title: "Achievement unlocked",
-          description: achievement
-            ? `${achievement.icon} ${achievement.title}`
-            : achievementId,
-          variant: "success",
-        });
+      return useAchievementStore.getState().checkAndUnlock({
+        stats,
+        match: matchContext,
       });
     },
-    [gameMode, toast],
+    [gameMode],
   );
 
   const handleOrbAnimationComplete = useCallback(
@@ -363,7 +348,24 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         playSfx("defeat");
       }
 
-      checkAchievements(nextGame, starsForAchievements);
+      if (nextGame.status === "won" || nextGame.status === "lost") {
+        const unlockedAchievements = checkAchievements(
+          nextGame,
+          starsForAchievements,
+        );
+        const rewards = calculateMatchRewards(nextGame, gameMode);
+        useProfileStore.getState().addRewards(rewards.xp, rewards.coins);
+        setMatchResultSummary({
+          game: nextGame,
+          elapsedSeconds: Math.max(
+            1,
+            Math.floor((Date.now() - matchStartTimeRef.current) / 1000),
+          ),
+          stars: starsForAchievements,
+          rewards,
+          unlockedAchievements,
+        });
+      }
 
       if (
         !isPuzzleMode(gameMode) &&
@@ -423,6 +425,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     clearTransientState();
     recordedMatchKeyRef.current = null;
     matchSessionRef.current = { loops: 0 };
+    matchStartTimeRef.current = Date.now();
+    setMatchResultSummary(null);
     setIsStartingGame(true);
     setUndoStack([]);
     resetPuzzleSession();
@@ -469,6 +473,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     clearTransientState();
     recordedMatchKeyRef.current = null;
     matchSessionRef.current = { loops: 0 };
+    matchStartTimeRef.current = Date.now();
+    setMatchResultSummary(null);
     setUndoStack([]);
     resetPuzzleSession();
     setGame(createGameFromPuzzle(getPuzzleById(game.puzzleId)));
@@ -563,6 +569,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     trailPositions,
     isAnimating,
     canUndoPuzzle: undoStack.length > 0 && !isInputLocked,
+    matchResultSummary,
+    clearMatchResult: () => setMatchResultSummary(null),
     startGame,
     handleTileClick,
     restartPuzzle,

@@ -3,10 +3,9 @@ import { forwardRef, useImperativeHandle } from "react";
 import { BoardGrid } from "@/components/board";
 import { PUZZLE_CATALOG } from "@/data/puzzles";
 import { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
-import { MatchResultBanner } from "@/components/game/match-result-banner";
+import { ResultScreen } from "@/components/game/result-screen";
 import { PuzzleControls } from "@/components/game/puzzle-controls";
 import { PuzzleHud } from "@/components/game/puzzle-hud";
-import { PuzzleResultBanner } from "@/components/game/puzzle-result-banner";
 import { ScoreHud } from "@/components/game/score-hud";
 import { TurnIndicator } from "@/components/game/turn-indicator";
 import { AI_DIFFICULTY_OPTIONS } from "@/constants/ai";
@@ -20,6 +19,7 @@ import { LoaderOverlay } from "@/ui/loader";
 
 export interface PlayPanelProps {
   onStartingChange?: (isStarting: boolean) => void;
+  onReturnToMenu?: () => void;
 }
 
 export interface PlayPanelHandle {
@@ -30,7 +30,7 @@ export interface PlayPanelHandle {
  * Interactive play surface with board rendering and turn loop.
  */
 export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
-  function PlayPanel({ onStartingChange }, ref) {
+  function PlayPanel({ onStartingChange, onReturnToMenu }, ref) {
     const gameMode = useGameStore((state) => state.gameMode);
     const aiDifficulty = useGameStore((state) => state.aiDifficulty);
     const setGameMode = useGameStore((state) => state.setGameMode);
@@ -65,6 +65,8 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       trailPositions,
       isAnimating,
       canUndoPuzzle,
+      matchResultSummary,
+      clearMatchResult,
       startGame,
       handleTileClick,
       restartPuzzle,
@@ -94,14 +96,6 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
 
         <AiThinkingIndicator visible={isAiThinking} />
 
-        {isPuzzle && game.status === "won" ? (
-          <PuzzleResultBanner status="won" stars={earnedStars} />
-        ) : null}
-        {isPuzzle && game.status === "lost" ? (
-          <PuzzleResultBanner status="lost" stars={null} />
-        ) : null}
-        {!isPuzzle ? <MatchResultBanner game={game} /> : null}
-
         <BoardGrid
           board={displayBoard}
           spawn={game.spawn}
@@ -123,6 +117,25 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           disabled={isInputLocked}
           onTileClick={handleTileClick}
         />
+
+        {matchResultSummary ? (
+          <ResultScreen
+            gameMode={gameMode}
+            summary={matchResultSummary}
+            onPlayAgain={() => {
+              clearMatchResult();
+              if (isPuzzle) {
+                restartPuzzle();
+                return;
+              }
+              startGame();
+            }}
+            onMainMenu={() => {
+              clearMatchResult();
+              onReturnToMenu?.();
+            }}
+          />
+        ) : null}
 
         {isPuzzle ? (
           <PuzzleControls
