@@ -1,5 +1,6 @@
 import { BoardTile } from "@/components/board/board-tile";
 import { GoalCelebration } from "@/components/board/goal-celebration";
+import { LoopDetectionOverlay } from "@/components/board/loop-detection-overlay";
 import { OrbLayer } from "@/components/board/orb-layer";
 import { BOARD_TILE_GAP_PX } from "@/constants/animation";
 import type { Board, PlayerId, Position } from "@/types/game";
@@ -20,8 +21,12 @@ export interface BoardGridProps {
   trailPositions?: Position[];
   selectedPosition?: Position | null;
   goalCelebration?: GoalCelebrationState | null;
+  loopTiles?: Position[];
+  activeLoopPulsePosition?: Position;
+  isLoopDetectionActive?: boolean;
   isBoardCelebrating?: boolean;
   isOrbSpawning?: boolean;
+  isOrbFading?: boolean;
   orbSpawnKey?: number;
   disabled?: boolean;
   onTileClick?: (position: Position) => void;
@@ -39,8 +44,12 @@ export function BoardGrid({
   trailPositions = [],
   selectedPosition = null,
   goalCelebration = null,
+  loopTiles = [],
+  activeLoopPulsePosition,
+  isLoopDetectionActive = false,
   isBoardCelebrating = false,
   isOrbSpawning = false,
+  isOrbFading = false,
   orbSpawnKey = 0,
   disabled = false,
   onTileClick,
@@ -51,6 +60,9 @@ export function BoardGrid({
     pathPositions.map((position) => `${position.row},${position.col}`),
   );
   const trailOpacityByKey = new Map<string, number>();
+  const loopKeys = new Set(
+    loopTiles.map((position) => `${position.row},${position.col}`),
+  );
 
   trailPositions.forEach((position, index) => {
     const intensity =
@@ -79,6 +91,10 @@ export function BoardGrid({
             const isGoalCelebrating =
               goalCelebration !== null &&
               positionsEqual(position, goalCelebration.position);
+            const isLoopTile = loopKeys.has(trailKey);
+            const isLoopPulsing =
+              activeLoopPulsePosition !== undefined &&
+              positionsEqual(position, activeLoopPulsePosition);
 
             return (
               <BoardTile
@@ -89,6 +105,8 @@ export function BoardGrid({
                 isOnPath={pathKeys.has(trailKey)}
                 trailOpacity={trailOpacity}
                 isGoalCelebrating={isGoalCelebrating}
+                isLoopTile={isLoopTile}
+                isLoopPulsing={isLoopPulsing}
                 isSelected={
                   selectedPosition
                     ? positionsEqual(position, selectedPosition)
@@ -101,6 +119,8 @@ export function BoardGrid({
           }),
         )}
       </div>
+
+      {isLoopDetectionActive ? <LoopDetectionOverlay /> : null}
 
       {goalCelebration ? (
         <GoalCelebration
@@ -117,6 +137,7 @@ export function BoardGrid({
           position={orbPosition}
           gridSize={size}
           isSpawning={isOrbSpawning}
+          isFading={isOrbFading}
         />
       ) : null}
     </div>

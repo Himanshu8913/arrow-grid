@@ -14,6 +14,7 @@ export interface OrbLayerProps {
   gridSize: number;
   gap?: number;
   isSpawning?: boolean;
+  isFading?: boolean;
   className?: string;
 }
 
@@ -43,6 +44,7 @@ export function OrbLayer({
   gridSize,
   gap = BOARD_TILE_GAP_PX,
   isSpawning = false,
+  isFading = false,
   className,
 }: OrbLayerProps) {
   const style = useMemo(
@@ -63,6 +65,7 @@ export function OrbLayer({
         "pointer-events-none absolute z-10 rounded-full bg-accent-primary",
         "shadow-[0_0_16px_rgba(59,130,246,0.9)] ring-2 ring-white/40",
         isSpawning && "orb-spawn-enter",
+        isFading && "orb-fade-out",
         className,
       )}
       style={style}

@@ -18,3 +18,9 @@ export const GOAL_CELEBRATION_MS = 700;
 
 /** Number of particles in a goal celebration burst. */
 export const GOAL_PARTICLE_COUNT = 8;
+
+/** Loop detection animation duration. */
+export const LOOP_DETECTION_MS = 600;
+
+/** Score counter tween duration. */
+export const SCORE_COUNT_MS = 500;

@@ -21,6 +21,8 @@ export interface OrbSimulationResult {
   path: Position[];
   stoppedReason: MovementStopReason;
   goalOwner?: PlayerId;
+  /** Tiles that form the detected loop cycle, when `stoppedReason` is `loop`. */
+  loopSegment?: Position[];
 }
 
 /**
@@ -104,7 +106,15 @@ export function simulateOrbMovement(
     const nextKey = positionKey(nextPosition);
 
     if (visited.has(nextKey)) {
-      return { path, stoppedReason: "loop" };
+      const loopStartIndex = path.findIndex(
+        (visitedPosition) => positionKey(visitedPosition) === nextKey,
+      );
+      const loopSegment =
+        loopStartIndex >= 0
+          ? [...path.slice(loopStartIndex), nextPosition]
+          : path;
+
+      return { path, stoppedReason: "loop", loopSegment };
     }
 
     path.push(nextPosition);

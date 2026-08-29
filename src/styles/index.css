@@ -149,6 +149,22 @@
   .goal-glow-pulse {
     animation: goal-glow-pulse 700ms var(--ease-standard);
   }
+
+  .loop-tile-highlight {
+    @apply bg-warning/15 ring-1 ring-warning/40;
+  }
+
+  .loop-tile-pulse {
+    animation: loop-tile-pulse 120ms var(--ease-standard);
+  }
+
+  .loop-detected-label {
+    animation: loop-detected-pop 600ms var(--ease-standard);
+  }
+
+  .orb-fade-out {
+    animation: orb-fade-out 600ms var(--ease-standard) forwards;
+  }
 }
 
 @keyframes loader-orb-pulse {
@@ -261,5 +277,48 @@
   50% {
     opacity: 0.9;
     transform: translate(-50%, -50%) scale(1.35);
+  }
+}
+
+@keyframes loop-tile-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+  }
+
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.55);
+  }
+}
+
+@keyframes loop-detected-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  20%,
+  80% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+}
+
+@keyframes orb-fade-out {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.75);
   }
 }

@@ -21,6 +21,8 @@ import {
   GOAL_CELEBRATION_MS,
   ORB_SPAWN_MS,
 } from "@/constants/animation";
+import { useAnimatedNumber } from "@/hooks/use-animated-number";
+import { useLoopAnimation } from "@/hooks/use-loop-animation";
 import { useOrbAnimation } from "@/hooks/use-orb-animation";
 import { useToast } from "@/hooks/use-toast";
 import type { Board, Position } from "@/types/game";
@@ -72,6 +74,25 @@ function showTurnToasts(
   }
 }
 
+function ScoreHud({ game }: { game: GameState }) {
+  const playerOneScore = useAnimatedNumber(game.players.player1.totalScore);
+  const playerOnePoints = useAnimatedNumber(game.players.player1.matchPoints);
+  const playerTwoPoints = useAnimatedNumber(game.players.player2.matchPoints);
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-bg-card px-4 py-2 text-sm">
+      <span className="text-text-muted">Turn {game.turnNumber}</span>
+      <span className="font-semibold text-text-primary tabular-nums">
+        Score {playerOneScore}
+      </span>
+      <span className="text-text-muted tabular-nums">
+        Points {playerOnePoints}
+        {game.playerCount === 2 ? ` · P2 ${playerTwoPoints}` : ""}
+      </span>
+    </div>
+  );
+}
+
 /**
  * Interactive play surface with board rendering and orb animation.
  */
@@ -105,6 +126,15 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       isAnimating,
     } = useOrbAnimation();
 
+    const {
+      start: startLoopAnimation,
+      reset: resetLoopAnimation,
+      loopTiles,
+      activePulsePosition,
+      isAnimating: isLoopAnimating,
+      isOrbFading,
+    } = useLoopAnimation();
+
     useEffect(() => {
       onStartingChange?.(isStartingGame);
     }, [isStartingGame, onStartingChange]);
@@ -123,6 +153,10 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
 
     const finishTurn = useCallback(
       (snapshot: GameState, turnResult: ExecuteTurnResult) => {
+        const outcome = evaluateTurnOutcome(
+          turnResult.movement,
+          snapshot.currentPlayer,
+        );
         const nextGame = resolvePlayerTurn(snapshot, turnResult);
         setGame(nextGame);
         setPendingBoard(null);
@@ -130,7 +164,11 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
         setGoalCelebration(null);
         showTurnToasts(nextGame, toast);
 
-        if (nextGame.status === "in-progress") {
+        if (
+          nextGame.status === "in-progress" &&
+          outcome.scored &&
+          turnResult.movement.stoppedReason === "goal"
+        ) {
           triggerOrbSpawn();
         }
       },
@@ -168,13 +206,24 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           return;
         }
 
+        if (turnResult.movement.stoppedReason === "loop") {
+          const loopSegment = turnResult.movement.loopSegment ?? [];
+
+          setFrozenOrbPosition(turnResult.orbPosition);
+          startLoopAnimation(loopSegment, () => {
+            finishTurn(snapshot, turnResult);
+          });
+          return;
+        }
+
         finishTurn(snapshot, turnResult);
       },
-      [finishTurn],
+      [finishTurn, startLoopAnimation],
     );
 
     const startGame = useCallback(() => {
       window.clearTimeout(celebrationTimerRef.current);
+      resetLoopAnimation();
       setIsStartingGame(true);
       resetOrbAnimation();
       setPendingBoard(null);
@@ -197,7 +246,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           variant: "success",
         });
       }, 1500);
-    }, [gameMode, resetOrbAnimation, toast, triggerOrbSpawn]);
+    }, [gameMode, resetLoopAnimation, resetOrbAnimation, toast, triggerOrbSpawn]);
 
     useImperativeHandle(ref, () => ({ startGame }), [startGame]);
 
@@ -205,6 +254,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       if (
         isStartingGame ||
         isAnimating ||
+        isLoopAnimating ||
         goalCelebration !== null ||
         game.status === "won"
       ) {
@@ -243,6 +293,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
     const isBoardDisabled =
       isStartingGame ||
       isAnimating ||
+      isLoopAnimating ||
       goalCelebration !== null ||
       game.status === "won";
 
@@ -250,29 +301,22 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       <div className="relative space-y-4 text-center">
         {isStartingGame ? <LoaderOverlay label="Starting game..." /> : null}
 
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-bg-card px-4 py-2 text-sm">
-          <span className="text-text-muted">Turn {game.turnNumber}</span>
-          <span className="font-semibold text-text-primary">
-            Score {game.players.player1.totalScore}
-          </span>
-          <span className="text-text-muted">
-            Points {game.players.player1.matchPoints}
-            {game.playerCount === 2
-              ? ` · P2 ${game.players.player2.matchPoints}`
-              : ""}
-          </span>
-        </div>
+        <ScoreHud game={game} />
 
         <BoardGrid
           board={displayBoard}
           spawn={game.spawn}
           orbPosition={displayOrbPosition}
-          pathPositions={isAnimating ? [] : game.lastOrbPath}
+          pathPositions={isAnimating || isLoopAnimating ? [] : game.lastOrbPath}
           trailPositions={trailPositions}
           selectedPosition={selectedPosition}
           goalCelebration={goalCelebration}
+          loopTiles={loopTiles}
+          activeLoopPulsePosition={activePulsePosition}
+          isLoopDetectionActive={isLoopAnimating}
           isBoardCelebrating={goalCelebration !== null}
           isOrbSpawning={isOrbSpawning}
+          isOrbFading={isOrbFading}
           orbSpawnKey={orbSpawnKey}
           disabled={isBoardDisabled}
           onTileClick={handleTileClick}

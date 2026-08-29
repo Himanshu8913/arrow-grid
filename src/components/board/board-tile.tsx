@@ -10,6 +10,8 @@ export interface BoardTileProps {
   isOnPath?: boolean;
   trailOpacity?: number;
   isGoalCelebrating?: boolean;
+  isLoopTile?: boolean;
+  isLoopPulsing?: boolean;
   disabled?: boolean;
   onClick?: (position: Position) => void;
 }
@@ -30,6 +32,8 @@ export function BoardTile({
   isOnPath = false,
   trailOpacity,
   isGoalCelebrating = false,
+  isLoopTile = false,
+  isLoopPulsing = false,
   disabled = false,
   onClick,
 }: BoardTileProps) {
@@ -56,7 +60,9 @@ export function BoardTile({
         tile.kind === "wall" && "bg-bg-primary text-text-muted",
         tile.kind === "empty" && "bg-bg-surface/60",
         tile.kind === "goal" && goalStyles[tile.owner],
-        isGoalCelebrating && "goal-tile-cebrate z-10",
+        isGoalCelebrating && "goal-tile-celebrate z-10",
+        isLoopTile && "loop-tile-highlight",
+        isLoopPulsing && "loop-tile-pulse z-10",
       )}
       style={
         trailOpacity !== undefined
