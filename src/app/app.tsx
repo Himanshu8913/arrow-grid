@@ -12,11 +12,13 @@ import {
   CardTitle,
 } from "@/ui/card";
 import { Dialog } from "@/ui/dialog";
+import { Dropdown } from "@/ui/dropdown";
 import { ProgressBar } from "@/ui/progress-bar";
 import { Tooltip } from "@/ui/tooltip";
 
 export function App() {
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
+  const [gameMode, setGameMode] = useState("pvp");
   const { toast } = useToast();
 
   return (
@@ -54,6 +56,17 @@ export function App() {
               <Badge variant="secondary">PvP</Badge>
               <Badge variant="success">Alpha</Badge>
             </div>
+            <Dropdown
+              className="mx-auto mt-4 max-w-xs"
+              label="Game Mode"
+              value={gameMode}
+              onValueChange={setGameMode}
+              options={[
+                { value: "pvp", label: "Player vs Player" },
+                { value: "puzzle", label: "Puzzle Mode" },
+                { value: "practice", label: "Practice" },
+              ]}
+            />
           </CardHeader>
 
           <CardFooter>

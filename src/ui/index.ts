@@ -31,4 +31,9 @@ export {
   type ProgressBarVariant,
 } from "./progress-bar";
 export { Toast, type ToastProps } from "./toast";
+export {
+  Dropdown,
+  type DropdownOption,
+  type DropdownProps,
+} from "./dropdown";
 export { Tooltip, type TooltipProps, type TooltipSide } from "./tooltip";
