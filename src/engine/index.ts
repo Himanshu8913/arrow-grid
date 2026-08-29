@@ -60,3 +60,15 @@ export {
 export { createDailyChallengeGame, getDailyDateKey, getDailySeed, DAILY_TARGET_MOVES } from "@/engine/daily-challenge";
 export { chooseAiMove, type ChooseAiMoveOptions } from "@/engine/ai";
 export { createRandomSeed, SeededRandom } from "@/engine/random";
+export {
+  decodeMoves,
+  deserializeBoard,
+  deserializeGameState,
+  deserializePosition,
+  deserializeRotateMove,
+  encodeMoves,
+  serializeBoard,
+  serializeGameState,
+  serializePosition,
+  serializeRotateMove,
+} from "@/engine/serialization";
