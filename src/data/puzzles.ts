@@ -13,7 +13,7 @@ const firstSteps: PuzzleDefinition = {
   placements: [
     { row: 0, col: 2, tile: { kind: "arrow", direction: "down" } },
     { row: 1, col: 2, tile: { kind: "arrow", direction: "down" } },
-    { row: 2, col: 2, tile: { kind: "arrow", direction: "left" } },
+    { row: 2, col: 2, tile: { kind: "arrow", direction: "right" } },
     { row: 3, col: 2, tile: { kind: "arrow", direction: "down" } },
     { row: 4, col: 2, tile: { kind: "goal", owner: "player1" } },
   ],

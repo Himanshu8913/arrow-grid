@@ -28,5 +28,13 @@ npm-debug.log*
 # TypeScript
 *.tsbuildinfo
 
+# Test artifacts
+coverage
+playwright-report
+test-results
+
 # Markdown
 *.md
+
+# Test
+coverage

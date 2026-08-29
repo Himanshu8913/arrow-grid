@@ -36,6 +36,17 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "src/**/*.integration.test.ts"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: [
+        "src/engine/**/*.ts",
+        "src/utils/**/*.ts",
+        "src/save/**/*.ts",
+        "src/hooks/**/*.ts",
+      ],
+      exclude: ["**/*.test.ts", "**/*.integration.test.ts", "src/engine/index.ts"],
+    },
   },
 });
