@@ -433,3 +433,18 @@ html.reduce-motion *::after {
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+html.animations-disabled .orb-spawn-enter,
+html.animations-disabled .goal-tile-celebrate,
+html.animations-disabled .goal-particle,
+html.animations-disabled .score-popup-rise,
+html.animations-disabled .board-celebrate,
+html.animations-disabled .goal-glow-pulse,
+html.animations-disabled .loop-tile-pulse,
+html.animations-disabled .loop-detected-label,
+html.animations-disabled .orb-fade-out,
+html.animations-disabled .arrow-rotate-click,
+html.animations-disabled .tile-selection-breathe,
+html.animations-disabled .board-soft-vibrate {
+  animation: none !important;
+}

@@ -1,10 +1,15 @@
+/** Supported UI languages. */
+export type AppLanguage = "en";
+
 export interface Settings {
   musicEnabled: boolean;
   sfxEnabled: boolean;
   muted: boolean;
   musicVolume: number;
   sfxVolume: number;
+  animationsEnabled: boolean;
   reducedMotion: boolean;
+  language: AppLanguage;
 }
 
 export function createDefaultSettings(): Settings {
@@ -14,6 +19,8 @@ export function createDefaultSettings(): Settings {
     muted: false,
     musicVolume: 0.35,
     sfxVolume: 0.7,
+    animationsEnabled: true,
     reducedMotion: false,
+    language: "en",
   };
 }

@@ -9,6 +9,8 @@ import { useSettingsStore } from "@/state/settings-store";
  */
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const reducedMotion = useSettingsStore((state) => state.reducedMotion);
+  const animationsEnabled = useSettingsStore((state) => state.animationsEnabled);
+  const language = useSettingsStore((state) => state.language);
   const musicEnabled = useSettingsStore((state) => state.musicEnabled);
   const muted = useSettingsStore((state) => state.muted);
   const musicVolume = useSettingsStore((state) => state.musicVolume);
@@ -17,6 +19,17 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.classList.toggle("reduce-motion", reducedMotion);
   }, [reducedMotion]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle(
+      "animations-disabled",
+      !animationsEnabled,
+    );
+  }, [animationsEnabled]);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   useEffect(() => {
     const syncAudio = () => {

@@ -4,7 +4,6 @@ import { PlayPanel, type PlayPanelHandle } from "@/components/game";
 import { AchievementsPanel, StatisticsPanel } from "@/components/profile";
 import { SettingsDialog } from "@/components/settings";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "@/hooks/use-theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import {
@@ -28,7 +27,6 @@ export function App() {
   const [isStartingGame, setIsStartingGame] = useState(false);
   const playPanelRef = useRef<PlayPanelHandle>(null);
   const { toast } = useToast();
-  const { theme, toggleTheme } = useTheme();
 
   const trimmedPlayerName = playerName.trim();
   const displayName = trimmedPlayerName || "Guest Player";
@@ -98,19 +96,6 @@ export function App() {
                         showValue
                         size="sm"
                       />
-                      <div className="flex items-center justify-between gap-3 rounded-2xl bg-bg-card p-3">
-                        <div className="text-left">
-                          <p className="text-sm font-semibold text-text-primary">
-                            Appearance
-                          </p>
-                          <p className="text-xs text-text-muted">
-                            Current theme: {theme}
-                          </p>
-                        </div>
-                        <Button type="button" variant="secondary" onClick={toggleTheme}>
-                          {theme === "dark" ? "Light mode" : "Dark mode"}
-                        </Button>
-                      </div>
                       <StatisticsPanel />
                       <AchievementsPanel />
                     </div>

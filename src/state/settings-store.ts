@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { createDefaultSettings, type Settings } from "@/types/settings";
+import { createDefaultSettings, type AppLanguage, type Settings } from "@/types/settings";
 
 interface SettingsStore extends Settings {
   setMusicEnabled: (enabled: boolean) => void;
@@ -9,7 +9,9 @@ interface SettingsStore extends Settings {
   setMuted: (muted: boolean) => void;
   setMusicVolume: (volume: number) => void;
   setSfxVolume: (volume: number) => void;
+  setAnimationsEnabled: (enabled: boolean) => void;
   setReducedMotion: (enabled: boolean) => void;
+  setLanguage: (language: AppLanguage) => void;
   resetSettings: () => void;
 }
 
@@ -26,11 +28,17 @@ export const useSettingsStore = create<SettingsStore>()(
       setMusicVolume: (musicVolume) =>
         set({ musicVolume: clampVolume(musicVolume) }),
       setSfxVolume: (sfxVolume) => set({ sfxVolume: clampVolume(sfxVolume) }),
+      setAnimationsEnabled: (animationsEnabled) => set({ animationsEnabled }),
       setReducedMotion: (reducedMotion) => set({ reducedMotion }),
+      setLanguage: (language) => set({ language }),
       resetSettings: () => set(createDefaultSettings()),
     }),
     {
       name: "arrow-grid-settings",
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...(persistedState as Partial<Settings>),
+      }),
     },
   ),
 );
