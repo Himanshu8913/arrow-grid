@@ -37,4 +37,5 @@ export {
   type DropdownOption,
   type DropdownProps,
 } from "./dropdown";
+export { Tabs, type TabItem, type TabsProps } from "./tabs";
 export { Tooltip, type TooltipProps, type TooltipSide } from "./tooltip";

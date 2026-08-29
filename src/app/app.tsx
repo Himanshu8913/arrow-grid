@@ -15,9 +15,11 @@ import { Dialog } from "@/ui/dialog";
 import { Dropdown } from "@/ui/dropdown";
 import { Input } from "@/ui/input";
 import { ProgressBar } from "@/ui/progress-bar";
+import { Tabs } from "@/ui/tabs";
 import { Tooltip } from "@/ui/tooltip";
 
 export function App() {
+  const [activeTab, setActiveTab] = useState("play");
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [gameMode, setGameMode] = useState("pvp");
   const [playerName, setPlayerName] = useState("Guest Player");
@@ -39,51 +41,75 @@ export function App() {
           variant="surface"
         >
           <CardHeader>
-            <div className="mb-4 flex items-center justify-center gap-3">
-              <Avatar alt={displayName} name={displayName} size="lg" />
-              <div className="min-w-0 flex-1 text-left">
-                <p className="font-semibold text-text-primary">{displayName}</p>
-                <p className="text-sm text-text-muted">Level 1</p>
-                <ProgressBar
-                  className="mt-2 max-w-[12rem]"
-                  value={35}
-                  max={100}
-                  label="XP to Level 2"
-                  showValue
-                  size="sm"
-                />
-              </div>
-            </div>
             <CardTitle>
               {import.meta.env.VITE_APP_NAME ?? "Arrow Grid"}
             </CardTitle>
             <CardDescription>
               Strategy puzzle game — coming soon
             </CardDescription>
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-              <Badge variant="primary">Strategy</Badge>
-              <Badge variant="secondary">PvP</Badge>
-              <Badge variant="success">Alpha</Badge>
-            </div>
-            <Input
-              wrapperClassName="mx-auto mt-4 max-w-xs"
-              label="Display Name"
-              value={playerName}
-              onChange={(event) => setPlayerName(event.target.value)}
-              placeholder="Enter your name"
-              hint="Shown on leaderboards and match results."
-              error={nameError}
-              maxLength={24}
-            />
-            <Dropdown
-              className="mx-auto mt-4 max-w-xs"
-              label="Game Mode"
-              value={gameMode}
-              onValueChange={setGameMode}
-              options={[
-                { value: "pvp", label: "Player vs Player" },
-                { value: "puzzle", label: "Puzzle Mode" },
-                { value: "practice", label: "Practice" },
+
+            <Tabs
+              className="mt-6"
+              value={activeTab}
+              onValueChange={setActiveTab}
+              items={[
+                {
+                  value: "play",
+                  label: "Play",
+                  content: (
+                    <div className="space-y-4 text-center">
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        <Badge variant="primary">Strategy</Badge>
+                        <Badge variant="secondary">PvP</Badge>
+                        <Badge variant="success">Alpha</Badge>
+                      </div>
+                      <Dropdown
+                        className="mx-auto max-w-xs"
+                        label="Game Mode"
+                        value={gameMode}
+                        onValueChange={setGameMode}
+                        options={[
+                          { value: "pvp", label: "Player vs Player" },
+                          { value: "puzzle", label: "Puzzle Mode" },
+                          { value: "practice", label: "Practice" },
+                        ]}
+                      />
+                    </div>
+                  ),
+                },
+                {
+                  value: "profile",
+                  label: "Profile",
+                  content: (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar alt={displayName} name={displayName} size="lg" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-text-primary">
+                            {displayName}
+                          </p>
+                          <p className="text-sm text-text-muted">Level 1</p>
+                        </div>
+                      </div>
+                      <Input
+                        label="Display Name"
+                        value={playerName}
+                        onChange={(event) => setPlayerName(event.target.value)}
+                        placeholder="Enter your name"
+                        hint="Shown on leaderboards and match results."
+                        error={nameError}
+                        maxLength={24}
+                      />
+                      <ProgressBar
+                        value={35}
+                        max={100}
+                        label="XP to Level 2"
+                        showValue
+                        size="sm"
+                      />
+                    </div>
+                  ),
+                },
               ]}
             />
           </CardHeader>
