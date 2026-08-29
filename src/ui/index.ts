@@ -5,6 +5,12 @@ export {
   type ButtonVariant,
 } from "./button";
 export {
+  Badge,
+  type BadgeProps,
+  type BadgeSize,
+  type BadgeVariant,
+} from "./badge";
+export {
   Card,
   CardContent,
   CardDescription,

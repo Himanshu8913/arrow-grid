@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import {
   Card,
@@ -30,6 +31,11 @@ export function App() {
             <CardDescription>
               Strategy puzzle game — coming soon
             </CardDescription>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <Badge variant="primary">Strategy</Badge>
+              <Badge variant="secondary">PvP</Badge>
+              <Badge variant="success">Alpha</Badge>
+            </div>
           </CardHeader>
 
           <CardFooter>
