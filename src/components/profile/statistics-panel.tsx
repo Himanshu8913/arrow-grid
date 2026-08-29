@@ -5,22 +5,30 @@ import { Button } from "@/ui/button";
 /**
  * Displays persisted player statistics on the profile tab.
  */
-export function StatisticsPanel() {
+export function StatisticsPanel({ embedded = false }: { embedded?: boolean }) {
   const stats = useStatisticsStore((state) => state.stats);
   const resetStatistics = useStatisticsStore((state) => state.resetStatistics);
   const averageMoves = getAverageMoves(stats);
 
   return (
     <div className="space-y-3 rounded-2xl border border-bg-card bg-bg-card p-4 text-left">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-text-primary">Statistics</p>
-          <p className="text-xs text-text-muted">Saved on this device</p>
+      {!embedded ? (
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-text-primary">Statistics</p>
+            <p className="text-xs text-text-muted">Saved on this device</p>
+          </div>
+          <Button type="button" variant="ghost" size="sm" onClick={resetStatistics}>
+            Reset
+          </Button>
         </div>
-        <Button type="button" variant="ghost" size="sm" onClick={resetStatistics}>
-          Reset
-        </Button>
-      </div>
+      ) : (
+        <div className="flex justify-end">
+          <Button type="button" variant="ghost" size="sm" onClick={resetStatistics}>
+            Reset
+          </Button>
+        </div>
+      )}
 
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <StatItem label="Games" value={stats.gamesPlayed} />

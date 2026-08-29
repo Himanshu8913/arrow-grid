@@ -1,3 +1,4 @@
+export { GameScreen } from "@/components/game/game-screen";
 export { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
 export { PuzzleControls } from "@/components/game/puzzle-controls";
 export { PuzzleHud } from "@/components/game/puzzle-hud";

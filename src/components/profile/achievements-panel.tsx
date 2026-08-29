@@ -9,18 +9,20 @@ import { cn } from "@/utils/cn";
 /**
  * Displays unlocked and locked achievements on the profile tab.
  */
-export function AchievementsPanel() {
+export function AchievementsPanel({ embedded = false }: { embedded?: boolean }) {
   const unlockedIds = useAchievementStore((state) => state.unlockedIds);
   const completionPercent = getAchievementCompletionPercent(unlockedIds);
 
   return (
     <div className="space-y-3 rounded-2xl border border-bg-card bg-bg-card p-4 text-left">
-      <div>
-        <p className="text-sm font-semibold text-text-primary">Achievements</p>
-        <p className="text-xs text-text-muted">
-          {unlockedIds.length} of {ACHIEVEMENTS.length} unlocked
-        </p>
-      </div>
+      {!embedded ? (
+        <div>
+          <p className="text-sm font-semibold text-text-primary">Achievements</p>
+          <p className="text-xs text-text-muted">
+            {unlockedIds.length} of {ACHIEVEMENTS.length} unlocked
+          </p>
+        </div>
+      ) : null}
 
       <ProgressBar
         value={completionPercent}

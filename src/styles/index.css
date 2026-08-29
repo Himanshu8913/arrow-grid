@@ -448,3 +448,112 @@ html.animations-disabled .tile-selection-breathe,
 html.animations-disabled .board-soft-vibrate {
   animation: none !important;
 }
+
+.menu-bg-gradient {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.16), transparent 40%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.2), rgba(15, 23, 42, 0.65));
+}
+
+.menu-bg-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: menu-grid-drift 24s linear infinite;
+}
+
+.menu-bg-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(12px);
+  opacity: 0.55;
+}
+
+.menu-bg-orb-a {
+  top: 12%;
+  left: 10%;
+  width: 120px;
+  height: 120px;
+  background: rgba(59, 130, 246, 0.35);
+  animation: menu-orb-float-a 9s ease-in-out infinite;
+}
+
+.menu-bg-orb-b {
+  right: 12%;
+  top: 28%;
+  width: 88px;
+  height: 88px;
+  background: rgba(245, 158, 11, 0.28);
+  animation: menu-orb-float-b 11s ease-in-out infinite;
+}
+
+.menu-bg-orb-c {
+  bottom: 14%;
+  left: 35%;
+  width: 150px;
+  height: 150px;
+  background: rgba(168, 85, 247, 0.22);
+  animation: menu-orb-float-c 13s ease-in-out infinite;
+}
+
+@keyframes menu-grid-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-40px, -40px, 0);
+  }
+}
+
+@keyframes menu-orb-float-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(24px, 18px, 0);
+  }
+}
+
+@keyframes menu-orb-float-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(-20px, 26px, 0);
+  }
+}
+
+@keyframes menu-orb-float-c {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(16px, -22px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-bg-grid,
+  .menu-bg-orb {
+    animation: none !important;
+  }
+}
+
+html.reduce-motion .menu-bg-grid,
+html.reduce-motion .menu-bg-orb {
+  animation: none !important;
+}
+
+html.animations-disabled .menu-bg-grid,
+html.animations-disabled .menu-bg-orb {
+  animation: none !important;
+}
