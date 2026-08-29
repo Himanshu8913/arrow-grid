@@ -23,6 +23,7 @@ export {
   type CardVariant,
 } from "./card";
 export { Dialog, type DialogProps } from "./dialog";
+export { Input, type InputProps } from "./input";
 export { Modal, type ModalProps } from "./modal";
 export {
   ProgressBar,

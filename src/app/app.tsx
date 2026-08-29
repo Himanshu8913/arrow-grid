@@ -13,13 +13,22 @@ import {
 } from "@/ui/card";
 import { Dialog } from "@/ui/dialog";
 import { Dropdown } from "@/ui/dropdown";
+import { Input } from "@/ui/input";
 import { ProgressBar } from "@/ui/progress-bar";
 import { Tooltip } from "@/ui/tooltip";
 
 export function App() {
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [gameMode, setGameMode] = useState("pvp");
+  const [playerName, setPlayerName] = useState("Guest Player");
   const { toast } = useToast();
+
+  const trimmedPlayerName = playerName.trim();
+  const displayName = trimmedPlayerName || "Guest Player";
+  const nameError =
+    trimmedPlayerName.length > 0 && trimmedPlayerName.length < 2
+      ? "Name must be at least 2 characters"
+      : undefined;
 
   return (
     <>
@@ -31,9 +40,9 @@ export function App() {
         >
           <CardHeader>
             <div className="mb-4 flex items-center justify-center gap-3">
-              <Avatar alt="Guest Player" name="Guest Player" size="lg" />
+              <Avatar alt={displayName} name={displayName} size="lg" />
               <div className="min-w-0 flex-1 text-left">
-                <p className="font-semibold text-text-primary">Guest Player</p>
+                <p className="font-semibold text-text-primary">{displayName}</p>
                 <p className="text-sm text-text-muted">Level 1</p>
                 <ProgressBar
                   className="mt-2 max-w-[12rem]"
@@ -56,6 +65,16 @@ export function App() {
               <Badge variant="secondary">PvP</Badge>
               <Badge variant="success">Alpha</Badge>
             </div>
+            <Input
+              wrapperClassName="mx-auto mt-4 max-w-xs"
+              label="Display Name"
+              value={playerName}
+              onChange={(event) => setPlayerName(event.target.value)}
+              placeholder="Enter your name"
+              hint="Shown on leaderboards and match results."
+              error={nameError}
+              maxLength={24}
+            />
             <Dropdown
               className="mx-auto mt-4 max-w-xs"
               label="Game Mode"
