@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 
 import {
   BOARD_TILE_GAP_PX,
+  ORB_SPAWN_MS,
   ORB_STEP_MS,
 } from "@/constants/animation";
 import type { Position } from "@/types/game";
@@ -12,6 +13,7 @@ export interface OrbLayerProps {
   position: Position;
   gridSize: number;
   gap?: number;
+  isSpawning?: boolean;
   className?: string;
 }
 
@@ -40,11 +42,18 @@ export function OrbLayer({
   position,
   gridSize,
   gap = BOARD_TILE_GAP_PX,
+  isSpawning = false,
   className,
 }: OrbLayerProps) {
   const style = useMemo(
-    () => getOrbCenterStyle(position.row, position.col, gridSize, gap),
-    [gap, gridSize, position.col, position.row],
+    () => ({
+      ...getOrbCenterStyle(position.row, position.col, gridSize, gap),
+      transition: isSpawning
+        ? "none"
+        : `left ${ORB_STEP_MS}ms ease-out, top ${ORB_STEP_MS}ms ease-out`,
+      animationDuration: isSpawning ? `${ORB_SPAWN_MS}ms` : undefined,
+    }),
+    [gap, gridSize, isSpawning, position.col, position.row],
   );
 
   return (
@@ -53,6 +62,7 @@ export function OrbLayer({
       className={cn(
         "pointer-events-none absolute z-10 rounded-full bg-accent-primary",
         "shadow-[0_0_16px_rgba(59,130,246,0.9)] ring-2 ring-white/40",
+        isSpawning && "orb-spawn-enter",
         className,
       )}
       style={style}

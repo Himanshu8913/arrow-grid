@@ -125,6 +125,30 @@
   .loader-bar-highlight {
     animation: loader-bar-slide 1.2s var(--ease-standard) infinite;
   }
+
+  .orb-spawn-enter {
+    animation: orb-spawn var(--duration-normal) var(--ease-standard) forwards;
+  }
+
+  .goal-tile-celebrate {
+    animation: goal-tile-pulse 700ms var(--ease-standard);
+  }
+
+  .goal-particle {
+    animation: goal-particle-burst 700ms var(--ease-standard) forwards;
+  }
+
+  .score-popup-rise {
+    animation: score-popup-rise 700ms var(--ease-standard) forwards;
+  }
+
+  .board-celebrate {
+    animation: board-celebrate 700ms var(--ease-standard);
+  }
+
+  .goal-glow-pulse {
+    animation: goal-glow-pulse 700ms var(--ease-standard);
+  }
 }
 
 @keyframes loader-orb-pulse {
@@ -161,5 +185,81 @@
 
   100% {
     transform: translateX(320%);
+  }
+}
+
+@keyframes orb-spawn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes goal-tile-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes goal-particle-burst {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(var(--particle-tx), var(--particle-ty)) scale(0.35);
+  }
+}
+
+@keyframes score-popup-rise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.75);
+  }
+
+  25% {
+    opacity: 1;
+    transform: translate(-50%, -65%) scale(1.08);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -95%) scale(1);
+  }
+}
+
+@keyframes board-celebrate {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.015);
+  }
+}
+
+@keyframes goal-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.35);
   }
 }

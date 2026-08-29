@@ -1,9 +1,16 @@
 import { BoardTile } from "@/components/board/board-tile";
+import { GoalCelebration } from "@/components/board/goal-celebration";
 import { OrbLayer } from "@/components/board/orb-layer";
 import { BOARD_TILE_GAP_PX } from "@/constants/animation";
-import type { Board, Position } from "@/types/game";
+import type { Board, PlayerId, Position } from "@/types/game";
 import { cn } from "@/utils/cn";
 import { positionsEqual } from "@/engine/position";
+
+export interface GoalCelebrationState {
+  position: Position;
+  score: number;
+  owner: PlayerId;
+}
 
 export interface BoardGridProps {
   board: Board;
@@ -12,6 +19,10 @@ export interface BoardGridProps {
   pathPositions?: Position[];
   trailPositions?: Position[];
   selectedPosition?: Position | null;
+  goalCelebration?: GoalCelebrationState | null;
+  isBoardCelebrating?: boolean;
+  isOrbSpawning?: boolean;
+  orbSpawnKey?: number;
   disabled?: boolean;
   onTileClick?: (position: Position) => void;
   className?: string;
@@ -27,6 +38,10 @@ export function BoardGrid({
   pathPositions = [],
   trailPositions = [],
   selectedPosition = null,
+  goalCelebration = null,
+  isBoardCelebrating = false,
+  isOrbSpawning = false,
+  orbSpawnKey = 0,
   disabled = false,
   onTileClick,
   className,
@@ -48,6 +63,7 @@ export function BoardGrid({
   return (
     <div className={cn("relative mx-auto w-full max-w-md", className)}>
       <div
+        className={cn(isBoardCelebrating && "board-celebrate")}
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
@@ -60,6 +76,9 @@ export function BoardGrid({
             const positionKey = `${rowIndex}-${colIndex}`;
             const trailKey = `${rowIndex},${colIndex}`;
             const trailOpacity = trailOpacityByKey.get(trailKey);
+            const isGoalCelebrating =
+              goalCelebration !== null &&
+              positionsEqual(position, goalCelebration.position);
 
             return (
               <BoardTile
@@ -69,6 +88,7 @@ export function BoardGrid({
                 isSpawn={positionsEqual(position, spawn)}
                 isOnPath={pathKeys.has(trailKey)}
                 trailOpacity={trailOpacity}
+                isGoalCelebrating={isGoalCelebrating}
                 isSelected={
                   selectedPosition
                     ? positionsEqual(position, selectedPosition)
@@ -82,8 +102,22 @@ export function BoardGrid({
         )}
       </div>
 
+      {goalCelebration ? (
+        <GoalCelebration
+          position={goalCelebration.position}
+          gridSize={size}
+          score={goalCelebration.score}
+          owner={goalCelebration.owner}
+        />
+      ) : null}
+
       {orbPosition ? (
-        <OrbLayer position={orbPosition} gridSize={size} />
+        <OrbLayer
+          key={orbSpawnKey}
+          position={orbPosition}
+          gridSize={size}
+          isSpawning={isOrbSpawning}
+        />
       ) : null}
     </div>
   );

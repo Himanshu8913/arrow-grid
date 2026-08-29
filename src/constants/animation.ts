@@ -9,3 +9,12 @@ export const ORB_TRAIL_FADE_MS = 500;
 
 /** Pixel gap between board tiles — must match BoardGrid. */
 export const BOARD_TILE_GAP_PX = 8;
+
+/** Orb appear animation when spawning at the start of a round. */
+export const ORB_SPAWN_MS = 300;
+
+/** Goal scored celebration sequence duration. */
+export const GOAL_CELEBRATION_MS = 700;
+
+/** Number of particles in a goal celebration burst. */
+export const GOAL_PARTICLE_COUNT = 8;

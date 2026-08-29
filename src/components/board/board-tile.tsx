@@ -9,6 +9,7 @@ export interface BoardTileProps {
   isSelected?: boolean;
   isOnPath?: boolean;
   trailOpacity?: number;
+  isGoalCelebrating?: boolean;
   disabled?: boolean;
   onClick?: (position: Position) => void;
 }
@@ -28,6 +29,7 @@ export function BoardTile({
   isSelected = false,
   isOnPath = false,
   trailOpacity,
+  isGoalCelebrating = false,
   disabled = false,
   onClick,
 }: BoardTileProps) {
@@ -54,6 +56,7 @@ export function BoardTile({
         tile.kind === "wall" && "bg-bg-primary text-text-muted",
         tile.kind === "empty" && "bg-bg-surface/60",
         tile.kind === "goal" && goalStyles[tile.owner],
+        isGoalCelebrating && "goal-tile-cebrate z-10",
       )}
       style={
         trailOpacity !== undefined
