@@ -15,3 +15,5 @@ export {
   type CardProps,
   type CardVariant,
 } from "./card";
+export { Dialog, type DialogProps } from "./dialog";
+export { Modal, type ModalProps } from "./modal";
