@@ -51,3 +51,4 @@ export {
   type OrbSimulationResult,
 } from "@/engine/orb-movement";
 export { createRandomSeed, SeededRandom } from "@/engine/random";
+export { chooseAiMove, type ChooseAiMoveOptions } from "@/engine/ai";

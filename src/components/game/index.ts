@@ -1,3 +1,4 @@
+export { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
 export {
   PlayPanel,
   type PlayPanelHandle,

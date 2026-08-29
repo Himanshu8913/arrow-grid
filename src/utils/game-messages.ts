@@ -23,7 +23,28 @@ export function getMoveErrorMessage(reason: InvalidMoveReason): string {
 export function getPlayerCountForMode(
   gameMode: string,
 ): 1 | 2 {
-  return gameMode === "pvp" ? 2 : 1;
+  return gameMode === "puzzle" ? 1 : 2;
+}
+
+/**
+ * Returns true when the match is human vs AI.
+ */
+export function isPracticeMode(gameMode: string): boolean {
+  return gameMode === "practice";
+}
+
+/**
+ * Returns true when the local human can take a turn in the current mode.
+ */
+export function isHumanPlayerTurn(
+  gameMode: string,
+  currentPlayer: PlayerId,
+): boolean {
+  if (!isPracticeMode(gameMode)) {
+    return true;
+  }
+
+  return currentPlayer === "player1";
 }
 
 const playerLabels: Record<PlayerId, string> = {

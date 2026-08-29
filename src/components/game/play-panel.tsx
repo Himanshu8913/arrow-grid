@@ -1,11 +1,14 @@
 import { forwardRef, useImperativeHandle } from "react";
 
 import { BoardGrid } from "@/components/board";
+import { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
 import { MatchResultBanner } from "@/components/game/match-result-banner";
 import { ScoreHud } from "@/components/game/score-hud";
 import { TurnIndicator } from "@/components/game/turn-indicator";
+import { AI_DIFFICULTY_OPTIONS } from "@/constants/ai";
 import { useGameplay } from "@/hooks/use-gameplay";
 import { useGameStore } from "@/state/game-store";
+import { isPracticeMode } from "@/utils/game-messages";
 import { Badge } from "@/ui/badge";
 import { Dropdown } from "@/ui/dropdown";
 import { LoaderOverlay } from "@/ui/loader";
@@ -24,12 +27,15 @@ export interface PlayPanelHandle {
 export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
   function PlayPanel({ onStartingChange }, ref) {
     const gameMode = useGameStore((state) => state.gameMode);
+    const aiDifficulty = useGameStore((state) => state.aiDifficulty);
     const setGameMode = useGameStore((state) => state.setGameMode);
+    const setAiDifficulty = useGameStore((state) => state.setAiDifficulty);
 
     const {
       game,
       isStartingGame,
       isInputLocked,
+      isAiThinking,
       displayBoard,
       displayOrbPosition,
       selectedPosition,
@@ -54,7 +60,8 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
         {isStartingGame ? <LoaderOverlay label="Starting game..." /> : null}
 
         <ScoreHud game={game} />
-        <TurnIndicator game={game} />
+        <TurnIndicator game={game} gameMode={gameMode} isAiThinking={isAiThinking} />
+        <AiThinkingIndicator visible={isAiThinking} />
         <MatchResultBanner game={game} />
 
         <BoardGrid
@@ -80,7 +87,9 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
 
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Badge variant="primary">Strategy</Badge>
-          <Badge variant="secondary">PvP</Badge>
+          <Badge variant={isPracticeMode(gameMode) ? "success" : "secondary"}>
+            {isPracticeMode(gameMode) ? "Vs AI" : "PvP"}
+          </Badge>
           <Badge variant="success">Alpha</Badge>
         </div>
 
@@ -91,10 +100,20 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           onValueChange={setGameMode}
           options={[
             { value: "pvp", label: "Player vs Player" },
+            { value: "practice", label: "Practice vs AI" },
             { value: "puzzle", label: "Puzzle Mode" },
-            { value: "practice", label: "Practice" },
           ]}
         />
+
+        {isPracticeMode(gameMode) ? (
+          <Dropdown
+            className="mx-auto max-w-xs"
+            label="AI Difficulty"
+            value={aiDifficulty}
+            onValueChange={(value) => setAiDifficulty(value as typeof aiDifficulty)}
+            options={AI_DIFFICULTY_OPTIONS}
+          />
+        ) : null}
       </div>
     );
   },
