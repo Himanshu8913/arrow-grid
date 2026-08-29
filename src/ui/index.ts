@@ -10,6 +10,7 @@ export {
   type BadgeSize,
   type BadgeVariant,
 } from "./badge";
+export { Avatar, type AvatarProps, type AvatarSize } from "./avatar";
 export {
   Card,
   CardContent,

@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useToast } from "@/hooks/use-toast";
+import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import {
@@ -25,6 +26,13 @@ export function App() {
           variant="surface"
         >
           <CardHeader>
+            <div className="mb-4 flex items-center justify-center gap-3">
+              <Avatar alt="Guest Player" name="Guest Player" size="lg" />
+              <div className="text-left">
+                <p className="font-semibold text-text-primary">Guest Player</p>
+                <p className="text-sm text-text-muted">Level 1</p>
+              </div>
+            </div>
             <CardTitle>
               {import.meta.env.VITE_APP_NAME ?? "Arrow Grid"}
             </CardTitle>
