@@ -1,4 +1,5 @@
 export { generateBoard } from "@/engine/board-generator";
+export { cloneBoard } from "@/engine/board-utils";
 export {
   createEmptyBoard,
   createRandomArrow,
@@ -18,10 +19,18 @@ export {
   createGameState,
   isLoopLoss,
   isMatchOver,
+  resetBoard,
   resolvePlayerTurn,
   type CreateGameStateOptions,
   type GameState,
 } from "@/engine/game-state";
+export {
+  createNewGame,
+  playTurn,
+  restartMatch,
+  startNewRound,
+  type NewGameOptions,
+} from "@/engine/game-controller";
 export {
   evaluateTurnOutcome,
   didReachGoal,

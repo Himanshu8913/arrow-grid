@@ -81,7 +81,8 @@ export type InvalidMoveReason =
   | "wall"
   | "goal"
   | "spawn"
-  | "empty";
+  | "empty"
+  | "game-over";
 
 export type MoveValidationResult =
   | { valid: true }

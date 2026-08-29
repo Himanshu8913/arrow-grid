@@ -1,4 +1,5 @@
 import { DEFAULT_WINNING_MATCH_POINTS } from "@/constants/scoring";
+import { cloneBoard } from "@/engine/board-utils";
 import { evaluateTurnOutcome } from "@/engine/outcome";
 import {
   applyScoringTurn,
@@ -7,13 +8,7 @@ import {
   createInitialPlayerScores,
   getOpponent,
 } from "@/engine/scoring";
-import type { ExecuteTurnResult } from "@/engine/turn";
-import type {
-  Board,
-  GeneratedBoard,
-  PlayerId,
-  Position,
-} from "@/types/game";
+import type { GeneratedBoard, PlayerId, Position } from "@/types/game";
 import type {
   MatchStatus,
   PlayerScoreState,
@@ -30,9 +25,12 @@ export interface CreateGameStateOptions {
 }
 
 export interface GameState {
-  board: Board;
+  board: GeneratedBoard["board"];
+  initialBoard: GeneratedBoard["board"];
   spawn: Position;
-  goals: Partial<Record<PlayerId, Position>>;
+  goals: GeneratedBoard["goals"];
+  seed: number;
+  orbPosition: Position;
   players: Record<PlayerId, PlayerScoreState>;
   currentPlayer: PlayerId;
   turnNumber: number;
@@ -56,9 +54,12 @@ export function createGameState(
   options: CreateGameStateOptions = {},
 ): GameState {
   return {
-    board: generated.board,
+    board: cloneBoard(generated.board),
+    initialBoard: cloneBoard(generated.board),
     spawn: generated.spawn,
     goals: generated.goals,
+    seed: generated.seed,
+    orbPosition: { ...generated.spawn },
     players: createInitialPlayerScores(),
     currentPlayer: "player1",
     turnNumber: 1,
@@ -73,11 +74,31 @@ export function createGameState(
 }
 
 /**
+ * Restores the board and orb to their initial round state.
+ * Match scores and turn order are preserved.
+ */
+export function resetBoard(state: GameState): GameState {
+  return {
+    ...state,
+    board: cloneBoard(state.initialBoard),
+    orbPosition: { ...state.spawn },
+    lastOutcome: undefined,
+    lastScore: undefined,
+  };
+}
+
+/**
  * Applies a completed player turn, updating scores and win/loss state.
+ * Starts a new round on the initial board when a goal is scored but the match continues.
  */
 export function resolvePlayerTurn(
   state: GameState,
-  turnResult: ExecuteTurnResult,
+  turnResult: {
+    board: GameState["board"];
+    orbPath: Position[];
+    orbPosition: Position;
+    movement: Parameters<typeof evaluateTurnOutcome>[0];
+  },
 ): GameState {
   const outcome = evaluateTurnOutcome(turnResult.movement, state.currentPlayer);
   const movesPlayed = state.movesPlayed + 1;
@@ -111,9 +132,10 @@ export function resolvePlayerTurn(
       ? getOpponent(state.currentPlayer)
       : state.currentPlayer;
 
-  return {
+  let nextState: GameState = {
     ...state,
     board: turnResult.board,
+    orbPosition: turnResult.orbPosition,
     players,
     movesPlayed,
     turnNumber: state.turnNumber + 1,
@@ -123,6 +145,12 @@ export function resolvePlayerTurn(
     lastOutcome: outcome,
     lastScore,
   };
+
+  if (outcome.scored && matchOutcome.status === "in-progress") {
+    nextState = resetBoard(nextState);
+  }
+
+  return nextState;
 }
 
 /**
