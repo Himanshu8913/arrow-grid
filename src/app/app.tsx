@@ -1,25 +1,34 @@
 import { Button } from "@/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/ui/card";
 
 export function App() {
   return (
     <div className="flex min-h-dvh items-center justify-center p-6">
-      <main className="w-full max-w-lg rounded-2xl bg-bg-surface p-8 text-center">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight sm:text-5xl">
-          {import.meta.env.VITE_APP_NAME ?? "Arrow Grid"}
-        </h1>
-        <p className="mb-8 text-text-muted">
-          Strategy puzzle game — coming soon
-        </p>
+      <Card
+        className="w-full max-w-lg text-center"
+        padding="lg"
+        variant="surface"
+      >
+        <CardHeader>
+          <CardTitle>{import.meta.env.VITE_APP_NAME ?? "Arrow Grid"}</CardTitle>
+          <CardDescription>Strategy puzzle game — coming soon</CardDescription>
+        </CardHeader>
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <CardFooter>
           <Button>Play</Button>
           <Button variant="secondary">How to Play</Button>
           <Button variant="ghost">Settings</Button>
           <Button variant="danger" size="sm">
             Quit
           </Button>
-        </div>
-      </main>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
