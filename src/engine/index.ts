@@ -50,5 +50,12 @@ export {
   type MovementStopReason,
   type OrbSimulationResult,
 } from "@/engine/orb-movement";
-export { createRandomSeed, SeededRandom } from "@/engine/random";
+export {
+  applyPuzzleMoveLimit,
+  buildPuzzleBoard,
+  calculatePuzzleStars,
+  cloneGameState,
+  createGameFromPuzzle,
+} from "@/engine/puzzle";
 export { chooseAiMove, type ChooseAiMoveOptions } from "@/engine/ai";
+export { createRandomSeed, SeededRandom } from "@/engine/random";

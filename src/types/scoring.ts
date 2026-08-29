@@ -1,7 +1,7 @@
 import type { MovementStopReason } from "@/engine/orb-movement";
 import type { PlayerId } from "@/types/game";
 
-export type MatchStatus = "in-progress" | "won" | "draw";
+export type MatchStatus = "in-progress" | "won" | "draw" | "lost";
 
 export interface TurnOutcome {
   scored: boolean;

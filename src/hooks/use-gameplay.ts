@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { GoalCelebrationState } from "@/components/board";
+import { getPuzzleById } from "@/data/puzzles";
 import {
+  chooseAiMove,
   evaluateTurnOutcome,
   executePlayerTurn,
   calculateTurnScore,
   resolvePlayerTurn,
+  applyPuzzleMoveLimit,
+  calculatePuzzleStars,
+  cloneGameState,
+  createGameFromPuzzle,
   type GameState,
 } from "@/engine";
 import type { ExecuteTurnResult } from "@/engine/turn";
@@ -19,17 +25,25 @@ import { useLoopAnimation } from "@/hooks/use-loop-animation";
 import { useOrbAnimation } from "@/hooks/use-orb-animation";
 import { useToast } from "@/hooks/use-toast";
 import { useGameStore } from "@/state/game-store";
+import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import type { Board, Position } from "@/types/game";
 import {
   getMoveErrorMessage,
   getPlayerLabel,
   isHumanPlayerTurn,
+  isPracticeMode,
+  isPuzzleMode,
 } from "@/utils/game-messages";
 
 function showTurnToasts(
   game: GameState,
+  gameMode: string,
   toast: ReturnType<typeof useToast>["toast"],
 ) {
+  if (isPuzzleMode(gameMode)) {
+    return;
+  }
+
   if (game.lastOutcome?.isLoop) {
     toast({
       title: "Loop detected",
@@ -70,6 +84,18 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   const setGame = useGameStore((state) => state.setGame);
   const startMatch = useGameStore((state) => state.startMatch);
 
+  const hintsUsed = usePuzzleSessionStore((state) => state.hintsUsed);
+  const hintPosition = usePuzzleSessionStore((state) => state.hintPosition);
+  const earnedStars = usePuzzleSessionStore((state) => state.earnedStars);
+  const incrementHintsUsed = usePuzzleSessionStore(
+    (state) => state.incrementHintsUsed,
+  );
+  const setHintPosition = usePuzzleSessionStore((state) => state.setHintPosition);
+  const setEarnedStars = usePuzzleSessionStore((state) => state.setEarnedStars);
+  const resetPuzzleSession = usePuzzleSessionStore(
+    (state) => state.resetPuzzleSession,
+  );
+
   const [isStartingGame, setIsStartingGame] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [pendingBoard, setPendingBoard] = useState<Board | null>(null);
@@ -83,6 +109,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   const [rotatingPosition, setRotatingPosition] = useState<Position | null>(
     null,
   );
+  const [undoStack, setUndoStack] = useState<GameState[]>([]);
 
   const celebrationTimerRef = useRef<number | undefined>(undefined);
   const rotationTimerRef = useRef<number | undefined>(undefined);
@@ -153,7 +180,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   );
 
   const playTurnAtPosition = useCallback(
-    (snapshot: GameState, position: Position) => {
+    (snapshot: GameState, position: Position, recordUndo = false) => {
       const turnResult = executePlayerTurn(
         snapshot.board,
         snapshot.spawn,
@@ -170,6 +197,11 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         return;
       }
 
+      if (recordUndo) {
+        setUndoStack((stack) => [...stack, cloneGameState(snapshot)]);
+      }
+
+      setHintPosition(null);
       setSelectedPosition(position);
       setRotatingPosition(position);
 
@@ -182,7 +214,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         });
       }, ARROW_ROTATION_MS);
     },
-    [handleOrbAnimationComplete, startOrbAnimation, toast],
+    [handleOrbAnimationComplete, setHintPosition, startOrbAnimation, toast],
   );
 
   const triggerOrbSpawn = useCallback(() => {
@@ -194,7 +226,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   const { isAiThinking, queueAiTurnIfNeeded, cancelAiTurn } = useAiTurn({
     gameMode,
     aiDifficulty,
-    onPlayMove: playTurnAtPosition,
+    onPlayMove: (snapshot, position) => playTurnAtPosition(snapshot, position),
   });
 
   const finishTurn = useCallback(
@@ -203,15 +235,34 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         turnResult.movement,
         snapshot.currentPlayer,
       );
-      const nextGame = resolvePlayerTurn(snapshot, turnResult);
+      let nextGame = resolvePlayerTurn(snapshot, turnResult);
+
+      if (isPuzzleMode(gameMode)) {
+        nextGame = applyPuzzleMoveLimit(nextGame);
+
+        if (nextGame.status === "won" && nextGame.puzzleId) {
+          const puzzle = getPuzzleById(nextGame.puzzleId);
+          const hintsUsedAtFinish =
+            usePuzzleSessionStore.getState().hintsUsed;
+          setEarnedStars(
+            calculatePuzzleStars(
+              nextGame.movesPlayed,
+              puzzle.targetMoves,
+              hintsUsedAtFinish,
+            ),
+          );
+        }
+      }
+
       setGame(nextGame);
       setPendingBoard(null);
       setFrozenOrbPosition(null);
       setGoalCelebration(null);
       setSelectedPosition(null);
-      showTurnToasts(nextGame, toast);
+      showTurnToasts(nextGame, gameMode, toast);
 
       if (
+        !isPuzzleMode(gameMode) &&
         nextGame.status === "in-progress" &&
         outcome.scored &&
         turnResult.movement.stoppedReason === "goal"
@@ -219,9 +270,18 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         triggerOrbSpawn();
       }
 
-      queueAiTurnIfNeeded(nextGame);
+      if (!isPuzzleMode(gameMode)) {
+        queueAiTurnIfNeeded(nextGame);
+      }
     },
-    [queueAiTurnIfNeeded, setGame, toast, triggerOrbSpawn],
+    [
+      gameMode,
+      queueAiTurnIfNeeded,
+      setEarnedStars,
+      setGame,
+      toast,
+      triggerOrbSpawn,
+    ],
   );
 
   useEffect(() => {
@@ -239,72 +299,49 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     };
   }, []);
 
-  const startGame = useCallback(() => {
+  const clearTransientState = useCallback(() => {
     window.clearTimeout(celebrationTimerRef.current);
     window.clearTimeout(rotationTimerRef.current);
     cancelAiTurn();
     resetLoopAnimation();
     resetOrbAnimation();
-    setIsStartingGame(true);
     setPendingBoard(null);
     setFrozenOrbPosition(null);
     setGoalCelebration(null);
     setRotatingPosition(null);
     setSelectedPosition(null);
+  }, [cancelAiTurn, resetLoopAnimation, resetOrbAnimation]);
+
+  const startGame = useCallback(() => {
+    clearTransientState();
+    setIsStartingGame(true);
+    setUndoStack([]);
+    resetPuzzleSession();
 
     window.setTimeout(() => {
       startMatch();
       setIsStartingGame(false);
-      triggerOrbSpawn();
+      if (!isPuzzleMode(gameMode)) {
+        triggerOrbSpawn();
+      }
       toast({
         title: "Game ready",
-        description: "A fresh board is ready to play.",
+        description: isPuzzleMode(gameMode)
+          ? "Puzzle loaded. Reach the goal within the move limit."
+          : "A fresh board is ready to play.",
         variant: "success",
       });
     }, 1500);
   }, [
-    cancelAiTurn,
-    resetLoopAnimation,
-    resetOrbAnimation,
+    clearTransientState,
+    gameMode,
+    resetPuzzleSession,
     startMatch,
     toast,
     triggerOrbSpawn,
   ]);
 
-  const handleTileClick = useCallback(
-    (position: Position) => {
-      if (
-        isStartingGame ||
-        isAnimating ||
-        isLoopAnimating ||
-        isAiThinking ||
-        rotatingPosition !== null ||
-        goalCelebration !== null ||
-        game.status === "won" ||
-        !isHumanPlayerTurn(gameMode, game.currentPlayer)
-      ) {
-        return;
-      }
-
-      playTurnAtPosition(game, position);
-    },
-    [
-      game,
-      gameMode,
-      goalCelebration,
-      isAiThinking,
-      isAnimating,
-      isLoopAnimating,
-      isStartingGame,
-      playTurnAtPosition,
-      rotatingPosition,
-    ],
-  );
-
-  const displayBoard = pendingBoard ?? game.board;
-  const displayOrbPosition =
-    frozenOrbPosition ??
-    (isAnimating ? animatedOrbPosition : game.orbPosition);
+  const isMatchOver = game.status === "won" || game.status === "lost";
   const isInputLocked =
     isStartingGame ||
     isAnimating ||
@@ -312,8 +349,83 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     isAiThinking ||
     rotatingPosition !== null ||
     goalCelebration !== null ||
-    game.status === "won" ||
+    isMatchOver ||
     !isHumanPlayerTurn(gameMode, game.currentPlayer);
+
+  const restartPuzzle = useCallback(() => {
+    if (!game.puzzleId) {
+      return;
+    }
+
+    clearTransientState();
+    setUndoStack([]);
+    resetPuzzleSession();
+    setGame(createGameFromPuzzle(getPuzzleById(game.puzzleId)));
+  }, [clearTransientState, game.puzzleId, resetPuzzleSession, setGame]);
+
+  const undoPuzzle = useCallback(() => {
+    if (undoStack.length === 0 || isInputLocked) {
+      return;
+    }
+
+    const previousState = undoStack[undoStack.length - 1];
+    clearTransientState();
+    setUndoStack((stack) => stack.slice(0, -1));
+    setGame(previousState);
+    setEarnedStars(null);
+  }, [clearTransientState, isInputLocked, setEarnedStars, setGame, undoStack]);
+
+  const requestHint = useCallback(() => {
+    if (!isPuzzleMode(gameMode) || game.status !== "in-progress" || isInputLocked) {
+      return;
+    }
+
+    const move = chooseAiMove(game, { difficulty: "medium" });
+
+    if (!move) {
+      toast({
+        title: "No hint available",
+        description: "There are no legal moves left on this board.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    setHintPosition(move);
+    incrementHintsUsed();
+    toast({
+      title: "Hint",
+      description: "Try rotating the highlighted arrow.",
+      variant: "default",
+    });
+  }, [
+    game,
+    gameMode,
+    incrementHintsUsed,
+    isInputLocked,
+    setHintPosition,
+    toast,
+  ]);
+
+  const handleTileClick = useCallback(
+    (position: Position) => {
+      if (isInputLocked) {
+        return;
+      }
+
+      playTurnAtPosition(
+        game,
+        position,
+        isPuzzleMode(gameMode) && game.status === "in-progress",
+      );
+    },
+    [game, gameMode, isInputLocked, playTurnAtPosition],
+  );
+
+  const displayBoard = pendingBoard ?? game.board;
+  const displayOrbPosition =
+    frozenOrbPosition ??
+    (isAnimating ? animatedOrbPosition : game.orbPosition);
 
   return {
     game,
@@ -321,6 +433,11 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     isStartingGame,
     isInputLocked,
     isAiThinking,
+    isPuzzleMode: isPuzzleMode(gameMode),
+    isPracticeMode: isPracticeMode(gameMode),
+    hintsUsed,
+    hintPosition,
+    earnedStars,
     displayBoard,
     displayOrbPosition,
     selectedPosition,
@@ -334,7 +451,11 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     orbSpawnKey,
     trailPositions,
     isAnimating,
+    canUndoPuzzle: undoStack.length > 0 && !isInputLocked,
     startGame,
     handleTileClick,
+    restartPuzzle,
+    undoPuzzle,
+    requestHint,
   };
 }

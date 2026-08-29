@@ -22,6 +22,8 @@ export interface CreateGameStateOptions {
   emptyTilesEnabled?: boolean;
   targetMoves?: number;
   shortestPathLength?: number;
+  moveLimit?: number;
+  puzzleId?: string;
 }
 
 export interface GameState {
@@ -40,6 +42,8 @@ export interface GameState {
   emptyTilesEnabled: boolean;
   targetMoves?: number;
   shortestPathLength?: number;
+  moveLimit?: number;
+  puzzleId?: string;
   status: MatchStatus;
   winner?: PlayerId;
   lastOutcome?: TurnOutcome;
@@ -70,6 +74,8 @@ export function createGameState(
     emptyTilesEnabled: options.emptyTilesEnabled ?? false,
     targetMoves: options.targetMoves,
     shortestPathLength: options.shortestPathLength,
+    moveLimit: options.moveLimit,
+    puzzleId: options.puzzleId,
     status: "in-progress",
   };
 }

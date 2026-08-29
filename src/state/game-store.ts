@@ -1,9 +1,15 @@
 import { create } from "zustand";
 
+import { getPuzzleById } from "@/data/puzzles";
 import type { AiDifficulty } from "@/constants/ai";
 import { createNewGame } from "@/engine";
+import { createGameFromPuzzle } from "@/engine/puzzle";
 import type { GameState } from "@/engine/game-state";
-import { getPlayerCountForMode } from "@/utils/game-messages";
+import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
+import {
+  getPlayerCountForMode,
+  isPuzzleMode,
+} from "@/utils/game-messages";
 
 interface GameStore {
   game: GameState;
@@ -27,6 +33,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setAiDifficulty: (aiDifficulty) => set({ aiDifficulty }),
   startMatch: (seed = Date.now()) => {
     const { gameMode } = get();
+
+    if (isPuzzleMode(gameMode)) {
+      const puzzleId = usePuzzleSessionStore.getState().selectedPuzzleId;
+      usePuzzleSessionStore.getState().resetPuzzleSession();
+      set({
+        game: createGameFromPuzzle(getPuzzleById(puzzleId)),
+      });
+      return;
+    }
+
     set({
       game: createNewGame({
         seed,

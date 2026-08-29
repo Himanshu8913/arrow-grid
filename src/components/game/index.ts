@@ -1,4 +1,7 @@
 export { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
+export { PuzzleControls } from "@/components/game/puzzle-controls";
+export { PuzzleHud } from "@/components/game/puzzle-hud";
+export { PuzzleResultBanner } from "@/components/game/puzzle-result-banner";
 export {
   PlayPanel,
   type PlayPanelHandle,

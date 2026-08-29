@@ -29,6 +29,7 @@ export interface BoardGridProps {
   isOrbFading?: boolean;
   isOrbFailure?: boolean;
   rotatingPosition?: Position | null;
+  hintPosition?: Position | null;
   isBoardVibrating?: boolean;
   orbSpawnKey?: number;
   disabled?: boolean;
@@ -55,6 +56,7 @@ export function BoardGrid({
   isOrbFading = false,
   isOrbFailure = false,
   rotatingPosition = null,
+  hintPosition = null,
   isBoardVibrating = false,
   orbSpawnKey = 0,
   disabled = false,
@@ -107,6 +109,8 @@ export function BoardGrid({
             const isArrowRotating =
               rotatingPosition !== null &&
               positionsEqual(position, rotatingPosition);
+            const isHinted =
+              hintPosition !== null && positionsEqual(position, hintPosition);
 
             return (
               <BoardTile
@@ -119,6 +123,7 @@ export function BoardGrid({
                 isGoalCelebrating={isGoalCelebrating}
                 isLoopTile={isLoopTile}
                 isLoopPulsing={isLoopPulsing}
+                isHinted={isHinted}
                 isArrowRotating={isArrowRotating}
                 isSelected={
                   selectedPosition

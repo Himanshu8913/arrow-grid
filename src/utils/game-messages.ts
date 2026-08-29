@@ -33,6 +33,10 @@ export function isPracticeMode(gameMode: string): boolean {
   return gameMode === "practice";
 }
 
+export function isPuzzleMode(gameMode: string): boolean {
+  return gameMode === "puzzle";
+}
+
 /**
  * Returns true when the local human can take a turn in the current mode.
  */
@@ -40,11 +44,11 @@ export function isHumanPlayerTurn(
   gameMode: string,
   currentPlayer: PlayerId,
 ): boolean {
-  if (!isPracticeMode(gameMode)) {
-    return true;
+  if (isPracticeMode(gameMode) && currentPlayer !== "player1") {
+    return false;
   }
 
-  return currentPlayer === "player1";
+  return true;
 }
 
 const playerLabels: Record<PlayerId, string> = {

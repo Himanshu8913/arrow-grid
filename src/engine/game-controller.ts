@@ -30,7 +30,7 @@ export function playTurn(
   state: GameState,
   move: RotateMove,
 ): GameState | { error: InvalidMoveReason } {
-  if (state.status === "won") {
+  if (state.status === "won" || state.status === "lost") {
     return { error: "game-over" };
   }
 

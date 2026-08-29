@@ -12,6 +12,7 @@ export interface BoardTileProps {
   isGoalCelebrating?: boolean;
   isLoopTile?: boolean;
   isLoopPulsing?: boolean;
+  isHinted?: boolean;
   isArrowRotating?: boolean;
   disabled?: boolean;
   onClick?: (position: Position) => void;
@@ -35,6 +36,7 @@ export function BoardTile({
   isGoalCelebrating = false,
   isLoopTile = false,
   isLoopPulsing = false,
+  isHinted = false,
   isArrowRotating = false,
   disabled = false,
   onClick,
@@ -65,6 +67,7 @@ export function BoardTile({
         isGoalCelebrating && "goal-tile-celebrate z-10",
         isLoopTile && "loop-tile-highlight",
         isLoopPulsing && "loop-tile-pulse z-10",
+        isHinted && "ring-2 ring-warning ring-offset-2 ring-offset-bg-surface",
       )}
       style={
         trailOpacity !== undefined

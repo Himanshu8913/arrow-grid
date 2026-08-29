@@ -1,14 +1,19 @@
 import { forwardRef, useImperativeHandle } from "react";
 
 import { BoardGrid } from "@/components/board";
+import { PUZZLE_CATALOG } from "@/data/puzzles";
 import { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
 import { MatchResultBanner } from "@/components/game/match-result-banner";
+import { PuzzleControls } from "@/components/game/puzzle-controls";
+import { PuzzleHud } from "@/components/game/puzzle-hud";
+import { PuzzleResultBanner } from "@/components/game/puzzle-result-banner";
 import { ScoreHud } from "@/components/game/score-hud";
 import { TurnIndicator } from "@/components/game/turn-indicator";
 import { AI_DIFFICULTY_OPTIONS } from "@/constants/ai";
 import { useGameplay } from "@/hooks/use-gameplay";
 import { useGameStore } from "@/state/game-store";
-import { isPracticeMode } from "@/utils/game-messages";
+import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
+import { isPracticeMode, isPuzzleMode } from "@/utils/game-messages";
 import { Badge } from "@/ui/badge";
 import { Dropdown } from "@/ui/dropdown";
 import { LoaderOverlay } from "@/ui/loader";
@@ -30,12 +35,22 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
     const aiDifficulty = useGameStore((state) => state.aiDifficulty);
     const setGameMode = useGameStore((state) => state.setGameMode);
     const setAiDifficulty = useGameStore((state) => state.setAiDifficulty);
+    const selectedPuzzleId = usePuzzleSessionStore(
+      (state) => state.selectedPuzzleId,
+    );
+    const setSelectedPuzzleId = usePuzzleSessionStore(
+      (state) => state.setSelectedPuzzleId,
+    );
 
     const {
       game,
       isStartingGame,
       isInputLocked,
       isAiThinking,
+      isPuzzleMode: isPuzzle,
+      hintsUsed,
+      hintPosition,
+      earnedStars,
       displayBoard,
       displayOrbPosition,
       selectedPosition,
@@ -49,8 +64,12 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       orbSpawnKey,
       trailPositions,
       isAnimating,
+      canUndoPuzzle,
       startGame,
       handleTileClick,
+      restartPuzzle,
+      undoPuzzle,
+      requestHint,
     } = useGameplay({ onStartingChange });
 
     useImperativeHandle(ref, () => ({ startGame }), [startGame]);
@@ -59,10 +78,29 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       <div className="relative space-y-4 text-center">
         {isStartingGame ? <LoaderOverlay label="Starting game..." /> : null}
 
-        <ScoreHud game={game} />
-        <TurnIndicator game={game} gameMode={gameMode} isAiThinking={isAiThinking} />
+        {isPuzzle ? (
+          <PuzzleHud game={game} hintsUsed={hintsUsed} earnedStars={earnedStars} />
+        ) : (
+          <ScoreHud game={game} />
+        )}
+
+        {!isPuzzle ? (
+          <TurnIndicator
+            game={game}
+            gameMode={gameMode}
+            isAiThinking={isAiThinking}
+          />
+        ) : null}
+
         <AiThinkingIndicator visible={isAiThinking} />
-        <MatchResultBanner game={game} />
+
+        {isPuzzle && game.status === "won" ? (
+          <PuzzleResultBanner status="won" stars={earnedStars} />
+        ) : null}
+        {isPuzzle && game.status === "lost" ? (
+          <PuzzleResultBanner status="lost" stars={null} />
+        ) : null}
+        {!isPuzzle ? <MatchResultBanner game={game} /> : null}
 
         <BoardGrid
           board={displayBoard}
@@ -72,6 +110,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           trailPositions={trailPositions}
           selectedPosition={selectedPosition}
           rotatingPosition={rotatingPosition}
+          hintPosition={hintPosition}
           goalCelebration={goalCelebration}
           loopTiles={loopTiles}
           activeLoopPulsePosition={activePulsePosition}
@@ -85,10 +124,24 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           onTileClick={handleTileClick}
         />
 
+        {isPuzzle ? (
+          <PuzzleControls
+            canUndo={canUndoPuzzle}
+            canHint={game.status === "in-progress" && !isInputLocked}
+            onRestart={restartPuzzle}
+            onUndo={undoPuzzle}
+            onHint={requestHint}
+          />
+        ) : null}
+
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Badge variant="primary">Strategy</Badge>
           <Badge variant={isPracticeMode(gameMode) ? "success" : "secondary"}>
-            {isPracticeMode(gameMode) ? "Vs AI" : "PvP"}
+            {isPuzzleMode(gameMode)
+              ? "Puzzle"
+              : isPracticeMode(gameMode)
+                ? "Vs AI"
+                : "PvP"}
           </Badge>
           <Badge variant="success">Alpha</Badge>
         </div>
@@ -104,6 +157,19 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             { value: "puzzle", label: "Puzzle Mode" },
           ]}
         />
+
+        {isPuzzle ? (
+          <Dropdown
+            className="mx-auto max-w-xs"
+            label="Puzzle"
+            value={selectedPuzzleId}
+            onValueChange={setSelectedPuzzleId}
+            options={PUZZLE_CATALOG.map((puzzle) => ({
+              value: puzzle.id,
+              label: puzzle.title,
+            }))}
+          />
+        ) : null}
 
         {isPracticeMode(gameMode) ? (
           <Dropdown
