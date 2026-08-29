@@ -8,6 +8,7 @@ import {
   LazySettingsDialog,
   LazyStatisticsDialog,
 } from "@/components/app/lazy-screens";
+import { ScreenTransition } from "@/components/app/screen-transition";
 import { MainMenu } from "@/components/menu";
 import { useToast } from "@/hooks/use-toast";
 import { getDailyDateKey } from "@/engine/daily-challenge";
@@ -58,9 +59,11 @@ export function App() {
   if (screen === "game") {
     return (
       <>
-        <LazyMount label="Loading game...">
-          <LazyGameScreen onBackToMenu={() => setScreen("menu")} />
-        </LazyMount>
+        <ScreenTransition screenKey="game">
+          <LazyMount label="Loading game...">
+            <LazyGameScreen onBackToMenu={() => setScreen("menu")} />
+          </LazyMount>
+        </ScreenTransition>
         {isSettingsOpen ? (
           <LazyMount label="Loading settings...">
             <LazySettingsDialog
@@ -75,16 +78,18 @@ export function App() {
 
   return (
     <>
-      <MainMenu
-        onPlay={openGame}
-        onDailyChallenge={handleDailyChallenge}
-        onContinue={handleContinue}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenStatistics={() => setIsStatisticsOpen(true)}
-        onOpenAchievements={() => setIsAchievementsOpen(true)}
-        onOpenCredits={() => setIsCreditsOpen(true)}
-        onExit={() => setIsExitOpen(true)}
-      />
+      <ScreenTransition screenKey="menu">
+        <MainMenu
+          onPlay={openGame}
+          onDailyChallenge={handleDailyChallenge}
+          onContinue={handleContinue}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenStatistics={() => setIsStatisticsOpen(true)}
+          onOpenAchievements={() => setIsAchievementsOpen(true)}
+          onOpenCredits={() => setIsCreditsOpen(true)}
+          onExit={() => setIsExitOpen(true)}
+        />
+      </ScreenTransition>
 
       {isSettingsOpen ? (
         <LazyMount label="Loading settings...">

@@ -47,7 +47,7 @@ export function MainMenu({
       <MenuBackground />
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="mb-8 text-center">
+        <div className="menu-hero-enter mb-8 text-center">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-accent-primary">
             Strategy Puzzle
           </p>
@@ -61,7 +61,7 @@ export function MainMenu({
 
         <nav
           aria-label="Main menu"
-          className="flex flex-col gap-3 rounded-3xl border border-bg-card/60 bg-bg-surface/80 p-4 shadow-[var(--shadow-strong)] backdrop-blur-sm sm:p-5"
+          className="menu-stagger flex flex-col gap-3 rounded-3xl border border-bg-card/60 bg-bg-surface/80 p-4 shadow-[var(--shadow-strong)] backdrop-blur-sm sm:p-5"
         >
           <MenuButton label="Play" onClick={onPlay} />
           <MenuButton
@@ -121,7 +121,7 @@ function MenuButton({
   onClick: () => void;
 }) {
   return (
-    <div className="text-left">
+    <div className="menu-stagger-item text-left">
       <Button
         type="button"
         variant={variant}

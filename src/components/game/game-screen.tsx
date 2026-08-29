@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { PlayPanel, type PlayPanelHandle } from "@/components/game";
 import { AchievementsPanel, StatisticsPanel } from "@/components/profile";
 import { useToast } from "@/hooks/use-toast";
+import { useGameStore } from "@/state/game-store";
 import { useProfileStore } from "@/state/profile-store";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -29,9 +30,11 @@ export interface GameScreenProps {
 export function GameScreen({ onBackToMenu }: GameScreenProps) {
   const [activeTab, setActiveTab] = useState("play");
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
+  const [isNewGameConfirmOpen, setIsNewGameConfirmOpen] = useState(false);
   const [isStartingGame, setIsStartingGame] = useState(false);
   const playPanelRef = useRef<PlayPanelHandle>(null);
   const { toast } = useToast();
+  const game = useGameStore((state) => state.game);
   const playerName = useProfileStore((state) => state.displayName);
   const setPlayerName = useProfileStore((state) => state.setDisplayName);
   const totalXp = useProfileStore((state) => state.totalXp);
@@ -42,6 +45,20 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
     trimmedPlayerName.length > 0 && trimmedPlayerName.length < 2
       ? "Name must be at least 2 characters"
       : undefined;
+
+  const handleStartGame = () => {
+    if (game.status === "in-progress" && game.movesPlayed > 0) {
+      setIsNewGameConfirmOpen(true);
+      return;
+    }
+
+    playPanelRef.current?.startGame();
+  };
+
+  const confirmNewGame = () => {
+    setIsNewGameConfirmOpen(false);
+    playPanelRef.current?.startGame();
+  };
 
   return (
     <>
@@ -119,11 +136,10 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
 
           <CardFooter className="flex-wrap">
             <Tooltip content="Start a new game">
-              <Button
-                disabled={isStartingGame}
-                onClick={() => playPanelRef.current?.startGame()}
-              >
-                Play
+              <Button disabled={isStartingGame} onClick={handleStartGame}>
+                {game.status === "in-progress" && game.movesPlayed > 0
+                  ? "New game"
+                  : "Play"}
               </Button>
             </Tooltip>
             <Tooltip content="Learn the basics" side="bottom">
@@ -142,6 +158,31 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
           </CardFooter>
         </Card>
       </div>
+
+      <Dialog
+        open={isNewGameConfirmOpen}
+        onClose={() => setIsNewGameConfirmOpen(false)}
+        title="Start a new game?"
+        description="Your current match progress will be replaced."
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsNewGameConfirmOpen(false)}
+            >
+              Keep playing
+            </Button>
+            <Button type="button" onClick={confirmNewGame}>
+              Start new game
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-text-muted">
+          Continue the current board or discard it and deal a fresh one.
+        </p>
+      </Dialog>
 
       <Dialog
         open={isHowToPlayOpen}

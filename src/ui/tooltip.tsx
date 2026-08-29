@@ -27,7 +27,7 @@ export interface TooltipProps {
 export function Tooltip({
   content,
   side = "top",
-  delayMs = 150,
+  delayMs = 180,
   children,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);

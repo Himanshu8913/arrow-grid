@@ -79,8 +79,10 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
 
     useImperativeHandle(ref, () => ({ startGame }), [startGame]);
 
+    const isMatchActive = game.status === "in-progress";
+
     useEffect(() => {
-      if (!isPuzzle || isDaily) {
+      if (!isPuzzle || isDaily || matchResultSummary) {
         return;
       }
 
@@ -96,6 +98,9 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
         }
 
         if (event.key === "r" || event.key === "R") {
+          if (isInputLocked) {
+            return;
+          }
           event.preventDefault();
           restartPuzzle();
           return;
@@ -127,6 +132,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       isDaily,
       isInputLocked,
       isPuzzle,
+      matchResultSummary,
       requestHint,
       restartPuzzle,
       undoPuzzle,
@@ -189,8 +195,11 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             summary={matchResultSummary}
             onPlayAgain={() => {
               clearMatchResult();
-              if (isPuzzle || isDaily) {
-                restartPuzzle();
+              if (isDaily) {
+                return;
+              }
+              if (isPuzzle) {
+                startGame();
                 return;
               }
               startGame();
@@ -243,6 +252,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             className="mx-auto max-w-xs"
             label="Game Mode"
             value={gameMode}
+            disabled={isMatchActive}
             onValueChange={setGameMode}
             options={[
               { value: "pvp", label: "Player vs Player" },
@@ -257,6 +267,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             className="mx-auto max-w-xs"
             label="Puzzle"
             value={selectedPuzzleId}
+            disabled={isMatchActive}
             onValueChange={setSelectedPuzzleId}
             options={PUZZLE_CATALOG.map((puzzle) => ({
               value: puzzle.id,
@@ -270,6 +281,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             className="mx-auto max-w-xs"
             label="AI Difficulty"
             value={aiDifficulty}
+            disabled={isMatchActive}
             onValueChange={(value) => setAiDifficulty(value as typeof aiDifficulty)}
             options={AI_DIFFICULTY_OPTIONS}
           />

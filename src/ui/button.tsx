@@ -47,7 +47,10 @@ export function Button({
       disabled={isDisabled}
       aria-busy={isLoading}
       onMouseEnter={() => {
-        if (!isDisabled) {
+        if (
+          !isDisabled &&
+          window.matchMedia("(hover: hover) and (pointer: fine)").matches
+        ) {
           playSfx("hover");
         }
       }}

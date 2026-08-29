@@ -148,12 +148,12 @@ export function Tabs({ value, onValueChange, items, className }: TabsProps) {
               disabled={item.disabled}
               tabIndex={isSelected ? 0 : -1}
               className={cn(
-                "rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200",
+                "rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-card",
                 "disabled:cursor-not-allowed disabled:opacity-50",
                 isSelected
-                  ? "bg-bg-surface text-text-primary shadow-[0_4px_16px_rgba(0,0,0,0.15)]"
-                  : "text-text-muted hover:text-text-primary",
+                  ? "scale-[1.02] bg-bg-surface text-text-primary shadow-[0_4px_16px_rgba(0,0,0,0.15)]"
+                  : "text-text-muted hover:bg-bg-surface/40 hover:text-text-primary",
               )}
               onClick={() => selectTabAtIndex(index)}
             >
@@ -165,10 +165,11 @@ export function Tabs({ value, onValueChange, items, className }: TabsProps) {
 
       {activeItem ? (
         <div
+          key={activeItem.value}
           role="tabpanel"
           id={`${baseId}-panel-${activeItem.value}`}
           aria-labelledby={`${baseId}-tab-${activeItem.value}`}
-          className="mt-4 text-left"
+          className="tab-panel-enter mt-4 text-left"
         >
           {activeItem.content}
         </div>

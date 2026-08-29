@@ -15,7 +15,7 @@ export function AiThinkingIndicator({ visible }: AiThinkingIndicatorProps) {
 
   return (
     <div
-      className="flex items-center justify-center gap-2 rounded-2xl border border-accent-secondary/30 bg-accent-secondary/10 px-4 py-2 text-sm text-accent-secondary"
+      className="thinking-indicator-enter flex items-center justify-center gap-2 rounded-2xl border border-accent-secondary/30 bg-accent-secondary/10 px-4 py-2 text-sm text-accent-secondary"
       role="status"
       aria-live="polite"
       aria-atomic="true"

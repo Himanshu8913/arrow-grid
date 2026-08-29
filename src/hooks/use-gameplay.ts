@@ -24,6 +24,7 @@ import {
   GOAL_CELEBRATION_MS,
   ORB_SPAWN_MS,
 } from "@/constants/animation";
+import { MAX_UNDO_STACK_DEPTH } from "@/constants/game";
 import { useAiTurn } from "@/hooks/use-ai-turn";
 import { useLoopAnimation } from "@/hooks/use-loop-animation";
 import { useOrbAnimation } from "@/hooks/use-orb-animation";
@@ -46,6 +47,7 @@ import {
 } from "@/utils/game-messages";
 import type { PuzzleStarRating } from "@/types/puzzle";
 import { useProfileStore } from "@/state/profile-store";
+import { useProgressStore } from "@/state/progress-store";
 import { getMatchStatisticsInput } from "@/utils/match-statistics";
 import { calculateMatchRewards } from "@/utils/match-rewards";
 
@@ -121,10 +123,27 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
 
   const celebrationTimerRef = useRef<number | undefined>(undefined);
   const rotationTimerRef = useRef<number | undefined>(undefined);
+  const startGameTimerRef = useRef<number | undefined>(undefined);
+  const orbSpawnTimerRef = useRef<number | undefined>(undefined);
+  const turnInFlightRef = useRef(false);
   const matchStartTimeRef = useRef(0);
 
   useEffect(() => {
-    matchStartTimeRef.current = Date.now();
+    const syncMatchTimer = () => {
+      const activeMatch = useProgressStore.getState().activeMatch;
+      if (activeMatch?.game.status === "in-progress") {
+        matchStartTimeRef.current = activeMatch.savedAt;
+        return;
+      }
+
+      matchStartTimeRef.current = Date.now();
+    };
+
+    if (useProgressStore.persist.hasHydrated()) {
+      syncMatchTimer();
+    }
+
+    return useProgressStore.persist.onFinishHydration(syncMatchTimer);
   }, []);
   const { toast } = useToast();
 
@@ -254,8 +273,16 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     [startLoopAnimation],
   );
 
+  const releaseTurnLock = useCallback(() => {
+    turnInFlightRef.current = false;
+  }, []);
+
   const playTurnAtPosition = useCallback(
     (snapshot: GameState, position: Position, recordUndo = false) => {
+      if (turnInFlightRef.current) {
+        return;
+      }
+
       const turnResult = executePlayerTurn(
         snapshot.board,
         snapshot.spawn,
@@ -272,8 +299,13 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         return;
       }
 
+      turnInFlightRef.current = true;
+
       if (recordUndo) {
-        setUndoStack((stack) => [...stack, cloneGameState(snapshot)]);
+        setUndoStack((stack) => {
+          const nextStack = [...stack, cloneGameState(snapshot)];
+          return nextStack.slice(-MAX_UNDO_STACK_DEPTH);
+        });
       }
 
       setHintPosition(null);
@@ -294,9 +326,13 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   );
 
   const triggerOrbSpawn = useCallback(() => {
+    window.clearTimeout(orbSpawnTimerRef.current);
     setOrbSpawnKey((key) => key + 1);
     setIsOrbSpawning(true);
-    window.setTimeout(() => setIsOrbSpawning(false), ORB_SPAWN_MS);
+    orbSpawnTimerRef.current = window.setTimeout(
+      () => setIsOrbSpawning(false),
+      ORB_SPAWN_MS,
+    );
   }, []);
 
   const { isAiThinking, queueAiTurnIfNeeded, cancelAiTurn } = useAiTurn({
@@ -401,6 +437,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       if (!isSoloChallengeMode(gameMode)) {
         queueAiTurnIfNeeded(nextGame);
       }
+
+      releaseTurnLock();
     },
     [
       checkAchievements,
@@ -410,6 +448,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       recordMatchStatistics,
       setEarnedStars,
       setGame,
+      releaseTurnLock,
       toast,
       triggerOrbSpawn,
     ],
@@ -427,12 +466,17 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     return () => {
       window.clearTimeout(celebrationTimerRef.current);
       window.clearTimeout(rotationTimerRef.current);
+      window.clearTimeout(startGameTimerRef.current);
+      window.clearTimeout(orbSpawnTimerRef.current);
     };
   }, []);
 
   const clearTransientState = useCallback(() => {
     window.clearTimeout(celebrationTimerRef.current);
     window.clearTimeout(rotationTimerRef.current);
+    window.clearTimeout(startGameTimerRef.current);
+    window.clearTimeout(orbSpawnTimerRef.current);
+    turnInFlightRef.current = false;
     cancelAiTurn();
     resetLoopAnimation();
     resetOrbAnimation();
@@ -456,6 +500,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       return;
     }
 
+    window.clearTimeout(startGameTimerRef.current);
     clearTransientState();
     recordedMatchKeyRef.current = null;
     matchSessionRef.current = { loops: 0 };
@@ -465,7 +510,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     setUndoStack([]);
     resetPuzzleSession();
 
-    window.setTimeout(() => {
+    startGameTimerRef.current = window.setTimeout(() => {
       startMatch();
       setIsStartingGame(false);
       if (!isSoloChallengeMode(gameMode)) {
@@ -496,8 +541,10 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     isAnimating ||
     isLoopAnimating ||
     isAiThinking ||
+    isOrbSpawning ||
     rotatingPosition !== null ||
     goalCelebration !== null ||
+    matchResultSummary !== null ||
     isMatchOver ||
     !isHumanPlayerTurn(gameMode, game.currentPlayer);
 
@@ -576,7 +623,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
 
   const handleTileClick = useCallback(
     (position: Position) => {
-      if (isInputLocked) {
+      if (isInputLocked || turnInFlightRef.current) {
         return;
       }
 

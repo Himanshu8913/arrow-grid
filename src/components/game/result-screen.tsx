@@ -1,6 +1,14 @@
+import { useEffect, useRef } from "react";
+
 import { ACHIEVEMENTS } from "@/data/achievements";
+import { useEscapeKey } from "@/hooks/use-escape-key";
 import type { MatchResultSummary } from "@/types/match-result";
-import { getPlayerLabel, isPracticeMode, isSoloChallengeMode } from "@/utils/game-messages";
+import {
+  getPlayerLabel,
+  isDailyChallengeMode,
+  isPracticeMode,
+  isSoloChallengeMode,
+} from "@/utils/game-messages";
 import {
   formatMatchDuration,
   getResultHeadline,
@@ -24,11 +32,19 @@ export function ResultScreen({
   onPlayAgain,
   onMainMenu,
 }: ResultScreenProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
   const { game, elapsedSeconds, stars, rewards, unlockedAchievements } =
     summary;
   const headline = getResultHeadline(game, gameMode, stars);
   const isPuzzle = isSoloChallengeMode(gameMode);
   const isWin = rewards.isWin;
+  const showPlayAgain = !isDailyChallengeMode(gameMode);
+
+  useEscapeKey(onMainMenu);
+
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
 
   const winnerLabel =
     game.status === "won" && game.winner
@@ -44,11 +60,13 @@ export function ResultScreen({
       role="dialog"
       aria-modal="true"
       aria-labelledby="result-screen-title"
-      className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-bg-primary/85 p-4 backdrop-blur-sm"
+      className="result-backdrop-enter fixed inset-0 z-30 flex items-center justify-center bg-bg-primary/85 p-4 backdrop-blur-sm"
     >
       <div
+        ref={panelRef}
+        tabIndex={-1}
         className={cn(
-          "w-full max-w-md rounded-3xl border p-5 text-left shadow-[var(--shadow-strong)] sm:p-6",
+          "result-panel-enter w-full max-w-md rounded-3xl border p-5 text-left shadow-[var(--shadow-strong)] outline-none sm:p-6",
           isWin
             ? "border-success/40 bg-bg-surface/95"
             : "border-danger/30 bg-bg-surface/95",
@@ -72,16 +90,30 @@ export function ResultScreen({
         ) : null}
 
         <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
-          <ResultStat label="Winner" value={winnerLabel} />
-          <ResultStat label="Score" value={rewards.score} />
-          <ResultStat label="Moves" value={game.movesPlayed} />
-          <ResultStat label="Time" value={formatMatchDuration(elapsedSeconds)} />
-          <ResultStat label="XP earned" value={`+${rewards.xp}`} highlight />
-          <ResultStat label="Coins earned" value={`+${rewards.coins}`} highlight />
+          <ResultStat label="Winner" value={winnerLabel} delayMs={60} />
+          <ResultStat label="Score" value={rewards.score} delayMs={90} />
+          <ResultStat label="Moves" value={game.movesPlayed} delayMs={120} />
+          <ResultStat
+            label="Time"
+            value={formatMatchDuration(elapsedSeconds)}
+            delayMs={150}
+          />
+          <ResultStat
+            label="XP earned"
+            value={`+${rewards.xp}`}
+            highlight
+            delayMs={180}
+          />
+          <ResultStat
+            label="Coins earned"
+            value={`+${rewards.coins}`}
+            highlight
+            delayMs={210}
+          />
         </dl>
 
         {unlockedAchievements.length > 0 ? (
-          <div className="mt-5 rounded-2xl bg-accent-primary/10 p-3">
+          <div className="result-stat-enter mt-5 rounded-2xl bg-accent-primary/10 p-3" style={{ animationDelay: "240ms" }}>
             <p className="text-xs font-semibold uppercase tracking-wide text-accent-primary">
               Achievements unlocked
             </p>
@@ -109,13 +141,18 @@ export function ResultScreen({
           </div>
         ) : null}
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Button type="button" className="flex-1" onClick={onPlayAgain}>
-            Play again
-          </Button>
+        <div
+          className="result-stat-enter mt-6 flex flex-col gap-3 sm:flex-row"
+          style={{ animationDelay: "280ms" }}
+        >
+          {showPlayAgain ? (
+            <Button type="button" className="flex-1" onClick={onPlayAgain}>
+              Play again
+            </Button>
+          ) : null}
           <Button
             type="button"
-            variant="secondary"
+            variant={showPlayAgain ? "secondary" : "primary"}
             className="flex-1"
             onClick={onMainMenu}
           >
@@ -131,13 +168,18 @@ function ResultStat({
   label,
   value,
   highlight = false,
+  delayMs = 0,
 }: {
   label: string;
   value: string | number;
   highlight?: boolean;
+  delayMs?: number;
 }) {
   return (
-    <div className="rounded-xl bg-bg-card/80 px-3 py-2">
+    <div
+      className="result-stat-enter rounded-xl bg-bg-card/80 px-3 py-2"
+      style={{ animationDelay: `${delayMs}ms` }}
+    >
       <dt className="text-xs text-text-muted">{label}</dt>
       <dd
         className={cn(

@@ -21,6 +21,7 @@ export function PuzzleControls({
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
       <Button type="button" variant="secondary" size="sm" onClick={onRestart}>
+        <span aria-hidden="true">↻</span>
         Restart
       </Button>
       <Button
@@ -30,6 +31,7 @@ export function PuzzleControls({
         disabled={!canUndo}
         onClick={onUndo}
       >
+        <span aria-hidden="true">↩</span>
         Undo
       </Button>
       <Button
@@ -39,6 +41,7 @@ export function PuzzleControls({
         disabled={!canHint}
         onClick={onHint}
       >
+        <span aria-hidden="true">?</span>
         Hint
       </Button>
     </div>

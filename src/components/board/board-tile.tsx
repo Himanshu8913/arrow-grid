@@ -1,4 +1,4 @@
-import { memo, type Ref } from "react";
+import { memo, useRef, type Ref } from "react";
 
 import { ArrowGlyph } from "@/components/board/arrow-glyph";
 import { playSfx } from "@/audio";
@@ -94,6 +94,10 @@ export const BoardTile = memo(function BoardTile({
   const isInteractive = Boolean(onClick) && !disabled;
   const useVirtualTile =
     boardSize !== undefined && shouldUseVirtualTiles(boardSize);
+  const canPlayHoverSfx = useRef(
+    typeof window === "undefined" ||
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+  ).current;
 
   return (
     <button
@@ -106,7 +110,7 @@ export const BoardTile = memo(function BoardTile({
       disabled={!isInteractive}
       onFocus={() => onFocus?.(position)}
       onMouseEnter={() => {
-        if (isInteractive) {
+        if (isInteractive && canPlayHoverSfx) {
           playSfx("hover");
         }
       }}

@@ -98,6 +98,78 @@
   }
 }
 
+@keyframes screen-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes menu-item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tab-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes result-stat-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes thinking-indicator-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltip-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @layer utilities {
   .modal-backdrop-enter {
     animation: modal-fade-in var(--duration-normal) var(--ease-standard);
@@ -112,7 +184,67 @@
   }
 
   .tooltip-enter {
-    animation: modal-fade-in var(--duration-fast) var(--ease-standard);
+    animation: tooltip-slide-in var(--duration-fast) var(--ease-standard);
+  }
+
+  .screen-enter {
+    animation: screen-enter var(--duration-slow) var(--ease-standard);
+  }
+
+  .menu-hero-enter {
+    animation: screen-enter 400ms var(--ease-standard);
+  }
+
+  .menu-stagger > .menu-stagger-item {
+    animation: menu-item-enter var(--duration-slow) var(--ease-standard) both;
+  }
+
+  .menu-stagger > .menu-stagger-item:nth-child(1) {
+    animation-delay: 40ms;
+  }
+
+  .menu-stagger > .menu-stagger-item:nth-child(2) {
+    animation-delay: 70ms;
+  }
+
+  .menu-stagger > .menu-stagger-item:nth-child(3) {
+    animation-delay: 100ms;
+  }
+
+  .menu-stagger > .menu-stagger-item:nth-child(4) {
+    animation-delay: 130ms;
+  }
+
+  .menu-stagger > .menu-stagger-item:nth-child(5) {
+    animation-delay: 160ms;
+  }
+
+  .menu-stagger > .menu-stagger-item:nth-child(6) {
+    animation-delay: 190ms;
+  }
+
+  .menu-stagger > .menu-stagger-item:nth-child(7) {
+    animation-delay: 220ms;
+  }
+
+  .tab-panel-enter {
+    animation: tab-panel-enter var(--duration-normal) var(--ease-standard);
+  }
+
+  .result-backdrop-enter {
+    animation: modal-fade-in var(--duration-slow) var(--ease-standard);
+  }
+
+  .result-panel-enter {
+    animation: modal-scale-in var(--duration-slow) var(--ease-standard);
+  }
+
+  .result-stat-enter {
+    animation: result-stat-enter var(--duration-normal) var(--ease-standard) both;
+  }
+
+  .thinking-indicator-enter {
+    animation: thinking-indicator-enter var(--duration-normal) var(--ease-standard);
   }
 
   .loader-orb-ring {
@@ -450,7 +582,15 @@ html.animations-disabled .loop-detected-label,
 html.animations-disabled .orb-fade-out,
 html.animations-disabled .arrow-rotate-click,
 html.animations-disabled .tile-selection-breathe,
-html.animations-disabled .board-soft-vibrate {
+html.animations-disabled .board-soft-vibrate,
+html.animations-disabled .screen-enter,
+html.animations-disabled .menu-hero-enter,
+html.animations-disabled .menu-stagger > .menu-stagger-item,
+html.animations-disabled .tab-panel-enter,
+html.animations-disabled .result-backdrop-enter,
+html.animations-disabled .result-panel-enter,
+html.animations-disabled .result-stat-enter,
+html.animations-disabled .thinking-indicator-enter {
   animation: none !important;
 }
 
