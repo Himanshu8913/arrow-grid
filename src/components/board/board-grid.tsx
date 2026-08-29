@@ -6,7 +6,10 @@ import { positionsEqual } from "@/engine/position";
 export interface BoardGridProps {
   board: Board;
   spawn: Position;
+  orbPosition?: Position;
+  pathPositions?: Position[];
   selectedPosition?: Position | null;
+  disabled?: boolean;
   onTileClick?: (position: Position) => void;
   className?: string;
 }
@@ -17,11 +20,17 @@ export interface BoardGridProps {
 export function BoardGrid({
   board,
   spawn,
+  orbPosition,
+  pathPositions = [],
   selectedPosition = null,
+  disabled = false,
   onTileClick,
   className,
 }: BoardGridProps) {
   const size = board.length;
+  const pathKeys = new Set(
+    pathPositions.map((position) => `${position.row},${position.col}`),
+  );
 
   return (
     <div
@@ -35,18 +44,22 @@ export function BoardGrid({
       {board.map((row, rowIndex) =>
         row.map((tile, colIndex) => {
           const position = { row: rowIndex, col: colIndex };
+          const positionKey = `${rowIndex}-${colIndex}`;
 
           return (
             <BoardTile
-              key={`${rowIndex}-${colIndex}`}
+              key={positionKey}
               tile={tile}
               position={position}
               isSpawn={positionsEqual(position, spawn)}
+              isOrb={orbPosition ? positionsEqual(position, orbPosition) : false}
+              isOnPath={pathKeys.has(`${rowIndex},${colIndex}`)}
               isSelected={
                 selectedPosition
                   ? positionsEqual(position, selectedPosition)
                   : false
               }
+              disabled={disabled}
               onClick={onTileClick}
             />
           );

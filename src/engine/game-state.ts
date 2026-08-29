@@ -44,6 +44,7 @@ export interface GameState {
   winner?: PlayerId;
   lastOutcome?: TurnOutcome;
   lastScore?: TurnScoreBreakdown;
+  lastOrbPath?: Position[];
 }
 
 /**
@@ -84,6 +85,7 @@ export function resetBoard(state: GameState): GameState {
     orbPosition: { ...state.spawn },
     lastOutcome: undefined,
     lastScore: undefined,
+    lastOrbPath: undefined,
   };
 }
 
@@ -144,6 +146,7 @@ export function resolvePlayerTurn(
     winner: matchOutcome.winner,
     lastOutcome: outcome,
     lastScore,
+    lastOrbPath: turnResult.orbPath,
   };
 
   if (outcome.scored && matchOutcome.status === "in-progress") {

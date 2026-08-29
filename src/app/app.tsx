@@ -1,10 +1,14 @@
 import { useState } from "react";
 
 import { BoardGrid } from "@/components/board";
-import { createNewGame } from "@/engine";
+import { createNewGame, playTurn } from "@/engine";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/hooks/use-theme";
 import type { Position } from "@/types/game";
+import {
+  getMoveErrorMessage,
+  getPlayerCountForMode,
+} from "@/utils/game-messages";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -29,7 +33,9 @@ export function App() {
   const [gameMode, setGameMode] = useState("pvp");
   const [playerName, setPlayerName] = useState("Guest Player");
   const [isStartingGame, setIsStartingGame] = useState(false);
-  const [game, setGame] = useState(() => createNewGame({ seed: 42 }));
+  const [game, setGame] = useState(() =>
+    createNewGame({ seed: 42, playerCount: 2 }),
+  );
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(
     null,
   );
@@ -46,7 +52,12 @@ export function App() {
   const handlePlay = () => {
     setIsStartingGame(true);
     window.setTimeout(() => {
-      setGame(createNewGame({ seed: Date.now() }));
+      setGame(
+        createNewGame({
+          seed: Date.now(),
+          playerCount: getPlayerCountForMode(gameMode),
+        }),
+      );
       setSelectedPosition(null);
       setIsStartingGame(false);
       toast({
@@ -58,12 +69,51 @@ export function App() {
   };
 
   const handleTileClick = (position: Position) => {
-    setSelectedPosition((current) =>
-      current?.row === position.row && current.col === position.col
-        ? null
-        : position,
-    );
+    if (isStartingGame || game.status === "won") {
+      return;
+    }
+
+    const result = playTurn(game, { type: "rotate", position });
+
+    if ("error" in result) {
+      toast({
+        title: "Invalid move",
+        description: getMoveErrorMessage(result.error),
+        variant: "danger",
+      });
+      return;
+    }
+
+    setGame(result);
+    setSelectedPosition(position);
+
+    if (result.lastOutcome?.isLoop) {
+      toast({
+        title: "Loop detected",
+        description: "The orb cycled without reaching a goal. No points awarded.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    if (result.lastOutcome?.scored && result.lastScore) {
+      toast({
+        title: "Goal scored!",
+        description: `+${result.lastScore.total} points`,
+        variant: "success",
+      });
+    }
+
+    if (result.status === "won") {
+      toast({
+        title: "Match won!",
+        description: `Player 1 finished with ${result.players.player1.matchPoints} match points.`,
+        variant: "success",
+      });
+    }
   };
+
+  const isBoardDisabled = isStartingGame || game.status === "won";
 
   return (
     <>
@@ -94,10 +144,27 @@ export function App() {
                   label: "Play",
                   content: (
                     <div className="space-y-4 text-center">
+                      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-bg-card px-4 py-2 text-sm">
+                        <span className="text-text-muted">
+                          Turn {game.turnNumber}
+                        </span>
+                        <span className="font-semibold text-text-primary">
+                          Score {game.players.player1.totalScore}
+                        </span>
+                        <span className="text-text-muted">
+                          Points {game.players.player1.matchPoints}
+                          {game.playerCount === 2
+                            ? ` · P2 ${game.players.player2.matchPoints}`
+                            : ""}
+                        </span>
+                      </div>
                       <BoardGrid
                         board={game.board}
                         spawn={game.spawn}
+                        orbPosition={game.orbPosition}
+                        pathPositions={game.lastOrbPath}
                         selectedPosition={selectedPosition}
+                        disabled={isBoardDisabled}
                         onTileClick={handleTileClick}
                       />
                       <div className="flex flex-wrap items-center justify-center gap-2">
