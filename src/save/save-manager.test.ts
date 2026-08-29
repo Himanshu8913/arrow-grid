@@ -5,6 +5,7 @@ import {
   getSaveSnapshot,
   hasSavedMatch,
   preparePlayLobby,
+  refreshLobbyPreview,
   resumeSavedMatch,
   syncActiveMatch,
 } from "@/save/save-manager";
@@ -63,6 +64,17 @@ describe("save manager integration", () => {
     preparePlayLobby();
 
     expect(useGameStore.getState().gameMode).toBe("pvp");
+    expect(useGameStore.getState().matchSessionActive).toBe(false);
+  });
+
+  it("refreshes the lobby preview when mode changes before starting", () => {
+    useProgressStore.getState().setGameMode("pvp");
+    preparePlayLobby();
+
+    useGameStore.getState().setGameMode("puzzle");
+    refreshLobbyPreview();
+
+    expect(useGameStore.getState().game.puzzleId).toBeTruthy();
     expect(useGameStore.getState().matchSessionActive).toBe(false);
   });
 

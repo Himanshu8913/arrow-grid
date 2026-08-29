@@ -1,3 +1,4 @@
+import { getAppVersion } from "@/constants/app";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 
@@ -24,7 +25,7 @@ export function CreditsDialog({ open, onClose }: CreditsDialogProps) {
     >
       <div className="space-y-4 text-sm text-text-muted">
         <p>Designed and developed by Himanshu Gupta.</p>
-        <p className="text-xs">Version 1.1.0</p>
+        <p className="text-xs">Version {getAppVersion()}</p>
       </div>
     </Dialog>
   );

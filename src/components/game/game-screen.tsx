@@ -5,6 +5,8 @@ import { AchievementsPanel, StatisticsPanel } from "@/components/profile";
 import { useToast } from "@/hooks/use-toast";
 import { useGameStore } from "@/state/game-store";
 import { useProfileStore } from "@/state/profile-store";
+import { getAppName } from "@/constants/app";
+import { getXpProgressInLevel, getPlayerLevel } from "@/utils/player-level";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import {
@@ -39,6 +41,8 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
   const playerName = useProfileStore((state) => state.displayName);
   const setPlayerName = useProfileStore((state) => state.setDisplayName);
   const totalXp = useProfileStore((state) => state.totalXp);
+  const playerLevel = getPlayerLevel(totalXp);
+  const xpProgress = getXpProgressInLevel(totalXp);
 
   const trimmedPlayerName = playerName.trim();
   const displayName = trimmedPlayerName || "Guest Player";
@@ -79,9 +83,7 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
                 ← Menu
               </Button>
             </div>
-            <CardTitle>
-              {import.meta.env.VITE_APP_NAME ?? "Arrow Grid"}
-            </CardTitle>
+            <CardTitle>{getAppName()}</CardTitle>
             <CardDescription>Rotate arrows. Guide the orb. Score goals.</CardDescription>
 
             <Tabs
@@ -111,7 +113,9 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
                           <p className="font-semibold text-text-primary">
                             {displayName}
                           </p>
-                          <p className="text-sm text-text-muted">Level 1</p>
+                          <p className="text-sm text-text-muted">
+                            Level {playerLevel}
+                          </p>
                         </div>
                       </div>
                       <Input
@@ -124,8 +128,8 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
                         maxLength={24}
                       />
                       <ProgressBar
-                        value={totalXp % 100}
-                        max={100}
+                        value={xpProgress.current}
+                        max={xpProgress.max}
                         label="XP to next level"
                         showValue
                         size="sm"

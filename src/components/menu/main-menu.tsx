@@ -1,3 +1,4 @@
+import { getAppName } from "@/constants/app";
 import { MenuBackground } from "@/components/menu/menu-background";
 import { getDailyDateKey } from "@/engine/daily-challenge";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
@@ -40,7 +41,7 @@ export function MainMenu({
   const dailyHint = todayResult
     ? `Completed today · ${formatDailyStars(todayResult.stars)}`
     : `Today's puzzle · ${formatDailyDateLabel(getDailyDateKey())}`;
-  const appName = import.meta.env.VITE_APP_NAME ?? "Arrow Grid";
+  const appName = getAppName();
 
   return (
     <div className="relative flex min-h-dvh items-center justify-center overflow-hidden p-4 sm:p-6">
