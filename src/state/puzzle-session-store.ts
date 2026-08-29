@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import { DEFAULT_PUZZLE_ID } from "@/data/puzzles";
+import { useProgressStore } from "@/state/progress-store";
 import type { Position } from "@/types/game";
 import type { PuzzleStarRating } from "@/types/puzzle";
 
@@ -24,7 +25,10 @@ export const usePuzzleSessionStore = create<PuzzleSessionStore>((set) => ({
   hintsUsed: 0,
   hintPosition: null,
   earnedStars: null,
-  setSelectedPuzzleId: (selectedPuzzleId) => set({ selectedPuzzleId }),
+  setSelectedPuzzleId: (selectedPuzzleId) => {
+    set({ selectedPuzzleId });
+    useProgressStore.getState().setSelectedPuzzleId(selectedPuzzleId);
+  },
   setHintPosition: (hintPosition) => set({ hintPosition }),
   incrementHintsUsed: () =>
     set((state) => ({ hintsUsed: state.hintsUsed + 1 })),

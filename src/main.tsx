@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "@/app/app";
 import { SettingsProvider } from "@/providers/settings-provider";
+import { SaveProvider } from "@/providers/save-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { ToastProvider } from "@/providers/toast-provider";
 import "@/styles/index.css";
@@ -17,7 +18,9 @@ createRoot(rootElement).render(
     <ThemeProvider>
       <ToastProvider>
         <SettingsProvider>
-          <App />
+          <SaveProvider>
+            <App />
+          </SaveProvider>
         </SettingsProvider>
       </ToastProvider>
     </ThemeProvider>

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { SAVE_KEYS } from "@/constants/save";
+
 import {
   createInitialStatistics,
   type PlayerStatistics,
@@ -71,7 +73,7 @@ export const useStatisticsStore = create<StatisticsStore>()(
       resetStatistics: () => set({ stats: createInitialStatistics() }),
     }),
     {
-      name: "arrow-grid-statistics",
+      name: SAVE_KEYS.statistics,
     },
   ),
 );

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { SAVE_KEYS } from "@/constants/save";
+
 import { createDefaultSettings, type AppLanguage, type Settings } from "@/types/settings";
 
 interface SettingsStore extends Settings {
@@ -34,7 +36,7 @@ export const useSettingsStore = create<SettingsStore>()(
       resetSettings: () => set(createDefaultSettings()),
     }),
     {
-      name: "arrow-grid-settings",
+      name: SAVE_KEYS.settings,
       merge: (persistedState, currentState) => ({
         ...currentState,
         ...(persistedState as Partial<Settings>),

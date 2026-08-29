@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { ACHIEVEMENTS } from "@/data/achievements";
+import { SAVE_KEYS } from "@/constants/save";
 import {
   createInitialAchievementState,
   type AchievementId,
@@ -64,7 +65,7 @@ export const useAchievementStore = create<AchievementStore>()(
       isUnlocked: (id) => get().unlockedIds.includes(id),
     }),
     {
-      name: "arrow-grid-achievements",
+      name: SAVE_KEYS.achievements,
     },
   ),
 );

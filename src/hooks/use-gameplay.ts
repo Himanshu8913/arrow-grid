@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { GoalCelebrationState } from "@/components/board";
 import { playSfx } from "@/audio";
+import { recordPuzzleCompletion } from "@/save";
 import { getPuzzleById } from "@/data/puzzles";
 import {
   chooseAiMove,
@@ -338,6 +339,14 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
           );
           setEarnedStars(starsForAchievements);
         }
+      }
+
+      if (
+        nextGame.status === "won" &&
+        nextGame.puzzleId &&
+        starsForAchievements
+      ) {
+        recordPuzzleCompletion(nextGame.puzzleId, starsForAchievements);
       }
 
       setGame(nextGame);

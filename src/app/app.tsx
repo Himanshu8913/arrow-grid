@@ -4,6 +4,7 @@ import { PlayPanel, type PlayPanelHandle } from "@/components/game";
 import { AchievementsPanel, StatisticsPanel } from "@/components/profile";
 import { SettingsDialog } from "@/components/settings";
 import { useToast } from "@/hooks/use-toast";
+import { useProfileStore } from "@/state/profile-store";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import {
@@ -23,10 +24,11 @@ export function App() {
   const [activeTab, setActiveTab] = useState("play");
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [playerName, setPlayerName] = useState("Guest Player");
   const [isStartingGame, setIsStartingGame] = useState(false);
   const playPanelRef = useRef<PlayPanelHandle>(null);
   const { toast } = useToast();
+  const playerName = useProfileStore((state) => state.displayName);
+  const setPlayerName = useProfileStore((state) => state.setDisplayName);
 
   const trimmedPlayerName = playerName.trim();
   const displayName = trimmedPlayerName || "Guest Player";

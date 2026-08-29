@@ -2,9 +2,8 @@ import { type ReactNode, useState } from "react";
 
 import { LANGUAGE_OPTIONS } from "@/constants/locale";
 import { useTheme } from "@/hooks/use-theme";
+import { clearGameplayProgress } from "@/save";
 import { useSettingsStore } from "@/state/settings-store";
-import { useStatisticsStore } from "@/state/statistics-store";
-import { useAchievementStore } from "@/state/achievement-store";
 import type { AppLanguage } from "@/types/settings";
 import type { ThemeMode } from "@/types/theme";
 import { Button } from "@/ui/button";
@@ -47,14 +46,9 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   );
   const setReducedMotion = useSettingsStore((state) => state.setReducedMotion);
   const setLanguage = useSettingsStore((state) => state.setLanguage);
-  const resetStatistics = useStatisticsStore((state) => state.resetStatistics);
-  const resetAchievements = useAchievementStore(
-    (state) => state.resetAchievements,
-  );
 
   const handleResetProgress = () => {
-    resetStatistics();
-    resetAchievements();
+    clearGameplayProgress();
     setIsResetConfirmOpen(false);
   };
 
@@ -136,7 +130,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               Reset progress
             </p>
             <p className="mt-1 text-xs text-text-muted">
-              Clears saved statistics and achievements on this device.
+              Clears saved statistics, achievements, and puzzle progress on this
+              device.
             </p>
             {isResetConfirmOpen ? (
               <div className="mt-3 flex flex-wrap gap-2">
