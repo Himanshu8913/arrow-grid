@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/ui/button";
 import {
   Card,
@@ -12,6 +13,7 @@ import { Dialog } from "@/ui/dialog";
 
 export function App() {
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
+  const { toast } = useToast();
 
   return (
     <>
@@ -38,7 +40,18 @@ export function App() {
             >
               How to Play
             </Button>
-            <Button variant="ghost">Settings</Button>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                toast({
+                  title: "Settings",
+                  description: "Settings will be available in a future update.",
+                  variant: "default",
+                })
+              }
+            >
+              Settings
+            </Button>
             <Button variant="danger" size="sm">
               Quit
             </Button>
@@ -56,7 +69,18 @@ export function App() {
             <Button variant="ghost" onClick={() => setIsHowToPlayOpen(false)}>
               Close
             </Button>
-            <Button onClick={() => setIsHowToPlayOpen(false)}>Got it</Button>
+            <Button
+              onClick={() => {
+                setIsHowToPlayOpen(false);
+                toast({
+                  title: "You're ready to play",
+                  description: "Good luck guiding the energy orb.",
+                  variant: "success",
+                });
+              }}
+            >
+              Got it
+            </Button>
           </>
         }
       >
