@@ -51,3 +51,20 @@ export interface BoardConfig {
   size: number;
   emptyTilesEnabled: boolean;
 }
+
+/** Fully generated board state used by the engine. */
+export interface GeneratedBoard {
+  board: Board;
+  size: number;
+  spawn: Position;
+  goals: Partial<Record<PlayerId, Position>>;
+  seed: number;
+}
+
+export interface GenerateBoardOptions {
+  size?: number;
+  seed?: number;
+  playerCount?: 1 | 2;
+  emptyTilesEnabled?: boolean;
+  maxAttempts?: number;
+}
