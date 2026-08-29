@@ -24,6 +24,14 @@ export {
 } from "./card";
 export { Dialog, type DialogProps } from "./dialog";
 export { Input, type InputProps } from "./input";
+export {
+  Loader,
+  LoaderOverlay,
+  type LoaderOverlayProps,
+  type LoaderProps,
+  type LoaderSize,
+  type LoaderVariant,
+} from "./loader";
 export { Modal, type ModalProps } from "./modal";
 export {
   ProgressBar,

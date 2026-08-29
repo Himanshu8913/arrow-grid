@@ -15,6 +15,7 @@ import { Dialog } from "@/ui/dialog";
 import { Dropdown } from "@/ui/dropdown";
 import { Input } from "@/ui/input";
 import { ProgressBar } from "@/ui/progress-bar";
+import { LoaderOverlay } from "@/ui/loader";
 import { Tabs } from "@/ui/tabs";
 import { Tooltip } from "@/ui/tooltip";
 
@@ -23,6 +24,7 @@ export function App() {
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [gameMode, setGameMode] = useState("pvp");
   const [playerName, setPlayerName] = useState("Guest Player");
+  const [isStartingGame, setIsStartingGame] = useState(false);
   const { toast } = useToast();
 
   const trimmedPlayerName = playerName.trim();
@@ -32,14 +34,29 @@ export function App() {
       ? "Name must be at least 2 characters"
       : undefined;
 
+  const handlePlay = () => {
+    setIsStartingGame(true);
+    window.setTimeout(() => {
+      setIsStartingGame(false);
+      toast({
+        title: "Game ready",
+        description: `${gameMode.toUpperCase()} mode will launch soon.`,
+        variant: "success",
+      });
+    }, 1500);
+  };
+
   return (
     <>
       <div className="flex min-h-dvh items-center justify-center p-6">
         <Card
-          className="w-full max-w-lg text-center"
+          className="relative w-full max-w-lg text-center"
           padding="lg"
           variant="surface"
         >
+          {isStartingGame ? (
+            <LoaderOverlay label="Starting game..." />
+          ) : null}
           <CardHeader>
             <CardTitle>
               {import.meta.env.VITE_APP_NAME ?? "Arrow Grid"}
@@ -116,7 +133,9 @@ export function App() {
 
           <CardFooter>
             <Tooltip content="Start a new game">
-              <Button>Play</Button>
+              <Button disabled={isStartingGame} onClick={handlePlay}>
+                Play
+              </Button>
             </Tooltip>
             <Tooltip content="Learn the basics" side="bottom">
               <Button
