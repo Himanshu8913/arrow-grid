@@ -15,6 +15,7 @@ export interface OrbLayerProps {
   gap?: number;
   isSpawning?: boolean;
   isFading?: boolean;
+  isFailure?: boolean;
   className?: string;
 }
 
@@ -45,6 +46,7 @@ export function OrbLayer({
   gap = BOARD_TILE_GAP_PX,
   isSpawning = false,
   isFading = false,
+  isFailure = false,
   className,
 }: OrbLayerProps) {
   const style = useMemo(
@@ -62,10 +64,13 @@ export function OrbLayer({
     <span
       aria-label="Energy orb"
       className={cn(
-        "pointer-events-none absolute z-10 rounded-full bg-accent-primary",
-        "shadow-[0_0_16px_rgba(59,130,246,0.9)] ring-2 ring-white/40",
+        "pointer-events-none absolute z-10 rounded-full ring-2 ring-white/40",
+        isFailure
+          ? "bg-danger shadow-[0_0_16px_rgba(239,68,68,0.9)]"
+          : "bg-accent-primary shadow-[0_0_16px_rgba(59,130,246,0.9)]",
         isSpawning && "orb-spawn-enter",
-        isFading && "orb-fade-out",
+        isFailure && "orb-fade-out",
+        !isFailure && isFading && "orb-fade-out",
         className,
       )}
       style={style}

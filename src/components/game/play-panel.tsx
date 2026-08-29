@@ -18,6 +18,7 @@ import {
 } from "@/engine";
 import type { ExecuteTurnResult } from "@/engine/turn";
 import {
+  ARROW_ROTATION_MS,
   GOAL_CELEBRATION_MS,
   ORB_SPAWN_MS,
 } from "@/constants/animation";
@@ -116,7 +117,11 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       useState<GoalCelebrationState | null>(null);
     const [isOrbSpawning, setIsOrbSpawning] = useState(false);
     const [orbSpawnKey, setOrbSpawnKey] = useState(0);
+    const [rotatingPosition, setRotatingPosition] = useState<Position | null>(
+      null,
+    );
     const celebrationTimerRef = useRef<number | undefined>(undefined);
+    const rotationTimerRef = useRef<number | undefined>(undefined);
     const { toast } = useToast();
     const {
       start: startOrbAnimation,
@@ -132,7 +137,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       loopTiles,
       activePulsePosition,
       isAnimating: isLoopAnimating,
-      isOrbFading,
+      isOrbFailure,
     } = useLoopAnimation();
 
     useEffect(() => {
@@ -142,6 +147,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
     useEffect(() => {
       return () => {
         window.clearTimeout(celebrationTimerRef.current);
+        window.clearTimeout(rotationTimerRef.current);
       };
     }, []);
 
@@ -223,12 +229,14 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
 
     const startGame = useCallback(() => {
       window.clearTimeout(celebrationTimerRef.current);
+      window.clearTimeout(rotationTimerRef.current);
       resetLoopAnimation();
       setIsStartingGame(true);
       resetOrbAnimation();
       setPendingBoard(null);
       setFrozenOrbPosition(null);
       setGoalCelebration(null);
+      setRotatingPosition(null);
 
       window.setTimeout(() => {
         setGame(
@@ -255,6 +263,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
         isStartingGame ||
         isAnimating ||
         isLoopAnimating ||
+        rotatingPosition !== null ||
         goalCelebration !== null ||
         game.status === "won"
       ) {
@@ -279,11 +288,16 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       }
 
       setSelectedPosition(position);
-      setPendingBoard(turnResult.board);
+      setRotatingPosition(position);
 
-      startOrbAnimation(turnResult.orbPath, () => {
-        handleOrbAnimationComplete(snapshot, turnResult);
-      });
+      rotationTimerRef.current = window.setTimeout(() => {
+        setRotatingPosition(null);
+        setPendingBoard(turnResult.board);
+
+        startOrbAnimation(turnResult.orbPath, () => {
+          handleOrbAnimationComplete(snapshot, turnResult);
+        });
+      }, ARROW_ROTATION_MS);
     };
 
     const displayBoard = pendingBoard ?? game.board;
@@ -294,6 +308,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       isStartingGame ||
       isAnimating ||
       isLoopAnimating ||
+      rotatingPosition !== null ||
       goalCelebration !== null ||
       game.status === "won";
 
@@ -310,13 +325,15 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           pathPositions={isAnimating || isLoopAnimating ? [] : game.lastOrbPath}
           trailPositions={trailPositions}
           selectedPosition={selectedPosition}
+          rotatingPosition={rotatingPosition}
           goalCelebration={goalCelebration}
           loopTiles={loopTiles}
           activeLoopPulsePosition={activePulsePosition}
           isLoopDetectionActive={isLoopAnimating}
           isBoardCelebrating={goalCelebration !== null}
+          isBoardVibrating={isLoopAnimating}
           isOrbSpawning={isOrbSpawning}
-          isOrbFading={isOrbFading}
+          isOrbFailure={isOrbFailure}
           orbSpawnKey={orbSpawnKey}
           disabled={isBoardDisabled}
           onTileClick={handleTileClick}

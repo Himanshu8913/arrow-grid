@@ -87,5 +87,6 @@ export function useLoopAnimation(duration: number = LOOP_DETECTION_MS) {
     activePulsePosition,
     isAnimating: state.isAnimating,
     isOrbFading: state.isAnimating,
+    isOrbFailure: state.isAnimating,
   };
 }

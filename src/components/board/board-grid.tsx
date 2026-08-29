@@ -27,6 +27,9 @@ export interface BoardGridProps {
   isBoardCelebrating?: boolean;
   isOrbSpawning?: boolean;
   isOrbFading?: boolean;
+  isOrbFailure?: boolean;
+  rotatingPosition?: Position | null;
+  isBoardVibrating?: boolean;
   orbSpawnKey?: number;
   disabled?: boolean;
   onTileClick?: (position: Position) => void;
@@ -50,6 +53,9 @@ export function BoardGrid({
   isBoardCelebrating = false,
   isOrbSpawning = false,
   isOrbFading = false,
+  isOrbFailure = false,
+  rotatingPosition = null,
+  isBoardVibrating = false,
   orbSpawnKey = 0,
   disabled = false,
   onTileClick,
@@ -75,7 +81,10 @@ export function BoardGrid({
   return (
     <div className={cn("relative mx-auto w-full max-w-md", className)}>
       <div
-        className={cn(isBoardCelebrating && "board-celebrate")}
+        className={cn(
+          isBoardCelebrating && "board-celebrate",
+          isBoardVibrating && "board-soft-vibrate",
+        )}
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
@@ -95,6 +104,9 @@ export function BoardGrid({
             const isLoopPulsing =
               activeLoopPulsePosition !== undefined &&
               positionsEqual(position, activeLoopPulsePosition);
+            const isArrowRotating =
+              rotatingPosition !== null &&
+              positionsEqual(position, rotatingPosition);
 
             return (
               <BoardTile
@@ -107,6 +119,7 @@ export function BoardGrid({
                 isGoalCelebrating={isGoalCelebrating}
                 isLoopTile={isLoopTile}
                 isLoopPulsing={isLoopPulsing}
+                isArrowRotating={isArrowRotating}
                 isSelected={
                   selectedPosition
                     ? positionsEqual(position, selectedPosition)
@@ -138,6 +151,7 @@ export function BoardGrid({
           gridSize={size}
           isSpawning={isOrbSpawning}
           isFading={isOrbFading}
+          isFailure={isOrbFailure}
         />
       ) : null}
     </div>

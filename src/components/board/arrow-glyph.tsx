@@ -1,30 +1,53 @@
+import type { CSSProperties } from "react";
+
+import { ARROW_ROTATION_MS } from "@/constants/animation";
 import type { Direction } from "@/types/game";
 import { cn } from "@/utils/cn";
 
-const rotationByDirection: Record<Direction, string> = {
-  up: "rotate-0",
-  right: "rotate-90",
-  down: "rotate-180",
-  left: "-rotate-90",
+const rotationDegrees: Record<Direction, number> = {
+  up: 0,
+  right: 90,
+  down: 180,
+  left: 270,
 };
 
 interface ArrowGlyphProps {
   direction: Direction;
+  isRotating?: boolean;
   className?: string;
 }
 
 /**
  * Renders a centered arrow glyph rotated to match the tile direction.
  */
-export function ArrowGlyph({ direction, className }: ArrowGlyphProps) {
+export function ArrowGlyph({
+  direction,
+  isRotating = false,
+  className,
+}: ArrowGlyphProps) {
+  const rotation = `${rotationDegrees[direction]}deg`;
+
   return (
     <span
       aria-hidden="true"
       className={cn(
-        "inline-block text-2xl font-bold leading-none transition-transform duration-200 ease-in-out sm:text-3xl",
-        rotationByDirection[direction],
+        "inline-block text-2xl font-bold leading-none sm:text-3xl",
+        isRotating && "arrow-rotate-click",
+        !isRotating && "transition-transform duration-200 ease-in-out",
+        !isRotating && direction === "up" && "rotate-0",
+        !isRotating && direction === "right" && "rotate-90",
+        !isRotating && direction === "down" && "rotate-180",
+        !isRotating && direction === "left" && "-rotate-90",
         className,
       )}
+      style={
+        isRotating
+          ? ({
+              "--arrow-rotation": rotation,
+              animationDuration: `${ARROW_ROTATION_MS}ms`,
+            } as CSSProperties)
+          : undefined
+      }
     >
       ↑
     </span>

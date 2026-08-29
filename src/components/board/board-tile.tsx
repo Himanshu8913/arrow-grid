@@ -12,6 +12,7 @@ export interface BoardTileProps {
   isGoalCelebrating?: boolean;
   isLoopTile?: boolean;
   isLoopPulsing?: boolean;
+  isArrowRotating?: boolean;
   disabled?: boolean;
   onClick?: (position: Position) => void;
 }
@@ -34,6 +35,7 @@ export function BoardTile({
   isGoalCelebrating = false,
   isLoopTile = false,
   isLoopPulsing = false,
+  isArrowRotating = false,
   disabled = false,
   onClick,
 }: BoardTileProps) {
@@ -52,7 +54,7 @@ export function BoardTile({
         isInteractive &&
           "cursor-pointer hover:-translate-y-0.5 hover:border-accent-primary/40 hover:shadow-[var(--shadow-medium)]",
         isSelected &&
-          "ring-2 ring-accent-primary ring-offset-2 ring-offset-bg-surface",
+          "ring-2 ring-accent-primary ring-offset-2 ring-offset-bg-surface tile-selection-breathe",
         isOnPath && !trailOpacity && "bg-accent-primary/10",
         trailOpacity !== undefined &&
           "bg-accent-primary/30 transition-opacity duration-500 ease-out",
@@ -70,7 +72,9 @@ export function BoardTile({
           : undefined
       }
     >
-      {tile.kind === "arrow" ? <ArrowGlyph direction={tile.direction} /> : null}
+      {tile.kind === "arrow" ? (
+        <ArrowGlyph direction={tile.direction} isRotating={isArrowRotating} />
+      ) : null}
       {tile.kind === "wall" ? (
         <span className="text-lg font-bold text-text-muted">■</span>
       ) : null}

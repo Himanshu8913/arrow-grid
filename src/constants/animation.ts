@@ -24,3 +24,6 @@ export const LOOP_DETECTION_MS = 600;
 
 /** Score counter tween duration. */
 export const SCORE_COUNT_MS = 500;
+
+/** Arrow clockwise rotation animation on player click. */
+export const ARROW_ROTATION_MS = 200;
