@@ -11,6 +11,7 @@ import {
 import { ScreenTransition } from "@/components/app/screen-transition";
 import { MainMenu } from "@/components/menu";
 import { useToast } from "@/hooks/use-toast";
+import { preparePlayLobby, resumeSavedMatch } from "@/save";
 import { getDailyDateKey } from "@/engine/daily-challenge";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { useGameStore } from "@/state/game-store";
@@ -30,6 +31,24 @@ export function App() {
 
   const openGame = () => setScreen("game");
   const { toast } = useToast();
+
+  const handlePlay = () => {
+    preparePlayLobby();
+    openGame();
+  };
+
+  const handleContinue = () => {
+    if (!resumeSavedMatch()) {
+      toast({
+        title: "No saved match",
+        description: "Start a new game with Play instead.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    openGame();
+  };
 
   const handleDailyChallenge = () => {
     if (useDailyChallengeStore.getState().hasAttemptedToday()) {
@@ -52,44 +71,28 @@ export function App() {
     openGame();
   };
 
-  const handleContinue = () => {
-    openGame();
-  };
-
-  if (screen === "game") {
-    return (
-      <>
+  return (
+    <>
+      {screen === "game" ? (
         <ScreenTransition screenKey="game">
           <LazyMount label="Loading game...">
             <LazyGameScreen onBackToMenu={() => setScreen("menu")} />
           </LazyMount>
         </ScreenTransition>
-        {isSettingsOpen ? (
-          <LazyMount label="Loading settings...">
-            <LazySettingsDialog
-              open={isSettingsOpen}
-              onClose={() => setIsSettingsOpen(false)}
-            />
-          </LazyMount>
-        ) : null}
-      </>
-    );
-  }
-
-  return (
-    <>
-      <ScreenTransition screenKey="menu">
-        <MainMenu
-          onPlay={openGame}
-          onDailyChallenge={handleDailyChallenge}
-          onContinue={handleContinue}
-          onOpenSettings={() => setIsSettingsOpen(true)}
-          onOpenStatistics={() => setIsStatisticsOpen(true)}
-          onOpenAchievements={() => setIsAchievementsOpen(true)}
-          onOpenCredits={() => setIsCreditsOpen(true)}
-          onExit={() => setIsExitOpen(true)}
-        />
-      </ScreenTransition>
+      ) : (
+        <ScreenTransition screenKey="menu">
+          <MainMenu
+            onPlay={handlePlay}
+            onDailyChallenge={handleDailyChallenge}
+            onContinue={handleContinue}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+            onOpenStatistics={() => setIsStatisticsOpen(true)}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenCredits={() => setIsCreditsOpen(true)}
+            onExit={() => setIsExitOpen(true)}
+          />
+        </ScreenTransition>
+      )}
 
       {isSettingsOpen ? (
         <LazyMount label="Loading settings...">

@@ -48,6 +48,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       game,
       isStartingGame,
       isInputLocked,
+      matchSessionActive,
       isAiThinking,
       isPuzzleMode: isPuzzle,
       isDailyChallengeMode: isDaily,
@@ -141,6 +142,12 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
     return (
       <div className="relative space-y-4 text-center">
         {isStartingGame ? <LoaderOverlay label="Starting game..." /> : null}
+
+        {!matchSessionActive && !isStartingGame ? (
+          <p className="rounded-2xl border border-accent-primary/30 bg-accent-primary/10 px-4 py-2 text-sm text-accent-primary">
+            Choose your mode, then press Play to deal a fresh board.
+          </p>
+        ) : null}
 
         {isDaily ? (
           <DailyChallengeHud game={game} earnedStars={earnedStars} />

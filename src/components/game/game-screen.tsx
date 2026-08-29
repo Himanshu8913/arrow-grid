@@ -35,6 +35,7 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
   const playPanelRef = useRef<PlayPanelHandle>(null);
   const { toast } = useToast();
   const game = useGameStore((state) => state.game);
+  const matchSessionActive = useGameStore((state) => state.matchSessionActive);
   const playerName = useProfileStore((state) => state.displayName);
   const setPlayerName = useProfileStore((state) => state.setDisplayName);
   const totalXp = useProfileStore((state) => state.totalXp);
@@ -47,7 +48,11 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
       : undefined;
 
   const handleStartGame = () => {
-    if (game.status === "in-progress" && game.movesPlayed > 0) {
+    if (
+      matchSessionActive &&
+      game.status === "in-progress" &&
+      game.movesPlayed > 0
+    ) {
       setIsNewGameConfirmOpen(true);
       return;
     }
@@ -137,7 +142,9 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
           <CardFooter className="flex-wrap">
             <Tooltip content="Start a new game">
               <Button disabled={isStartingGame} onClick={handleStartGame}>
-                {game.status === "in-progress" && game.movesPlayed > 0
+                {matchSessionActive &&
+                game.status === "in-progress" &&
+                game.movesPlayed > 0
                   ? "New game"
                   : "Play"}
               </Button>

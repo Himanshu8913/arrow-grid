@@ -10,6 +10,8 @@ import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Dropdown } from "@/ui/dropdown";
 import { Slider } from "@/ui/slider";
+import { Switch } from "@/ui/switch";
+import { cn } from "@/utils/cn";
 
 export interface SettingsDialogProps {
   open: boolean;
@@ -62,13 +64,14 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       onClose={onClose}
       title="Settings"
       description="Preferences are saved automatically on this device."
+      size="large"
       footer={
         <Button type="button" variant="ghost" onClick={onClose}>
           Close
         </Button>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-5">
         <SettingsSection title="Audio">
           <ToggleRow
             label="Mute all"
@@ -76,41 +79,58 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             checked={muted}
             onChange={setMuted}
           />
-          <ToggleRow
-            label="Music"
-            description="Ambient background music."
-            checked={musicEnabled}
-            onChange={setMusicEnabled}
-            disabled={muted}
-          />
-          <Slider
-            label="Music volume"
-            value={musicVolume}
-            onChange={setMusicVolume}
-          />
-          <ToggleRow
-            label="Sound effects"
-            description="UI and gameplay feedback."
-            checked={sfxEnabled}
-            onChange={setSfxEnabled}
-            disabled={muted}
-          />
-          <Slider label="SFX volume" value={sfxVolume} onChange={setSfxVolume} />
+          <div
+            className={cn(
+              "space-y-3 rounded-2xl border border-bg-card/80 bg-bg-card/40 p-3",
+              muted && "opacity-60",
+            )}
+          >
+            <ToggleRow
+              label="Music"
+              description="Ambient background music."
+              checked={musicEnabled}
+              onChange={setMusicEnabled}
+              disabled={muted}
+              embedded
+            />
+            <Slider
+              label="Music volume"
+              value={musicVolume}
+              onChange={setMusicVolume}
+              className={muted ? "pointer-events-none" : undefined}
+            />
+            <ToggleRow
+              label="Sound effects"
+              description="UI and gameplay feedback."
+              checked={sfxEnabled}
+              onChange={setSfxEnabled}
+              disabled={muted}
+              embedded
+            />
+            <Slider
+              label="SFX volume"
+              value={sfxVolume}
+              onChange={setSfxVolume}
+              className={muted ? "pointer-events-none" : undefined}
+            />
+          </div>
         </SettingsSection>
 
         <SettingsSection title="Display">
-          <Dropdown
-            label="Theme"
-            value={theme}
-            options={THEME_OPTIONS}
-            onValueChange={(value) => setTheme(value as ThemeMode)}
-          />
-          <Dropdown
-            label="Language"
-            value={language}
-            options={LANGUAGE_OPTIONS}
-            onValueChange={(value) => setLanguage(value as AppLanguage)}
-          />
+          <div className="space-y-3 rounded-2xl border border-bg-card/80 bg-bg-card/40 p-3">
+            <Dropdown
+              label="Theme"
+              value={theme}
+              options={THEME_OPTIONS}
+              onValueChange={(value) => setTheme(value as ThemeMode)}
+            />
+            <Dropdown
+              label="Language"
+              value={language}
+              options={LANGUAGE_OPTIONS}
+              onValueChange={(value) => setLanguage(value as AppLanguage)}
+            />
+          </div>
         </SettingsSection>
 
         <SettingsSection title="Accessibility">
@@ -208,35 +228,39 @@ function ToggleRow({
   description,
   checked,
   disabled = false,
+  embedded = false,
   onChange,
 }: {
   label: string;
   description: string;
   checked: boolean;
   disabled?: boolean;
+  embedded?: boolean;
   onChange: (checked: boolean) => void;
 }) {
   const inputId = `settings-${label.toLowerCase().replace(/\s+/g, "-")}`;
 
   return (
-    <label
-      htmlFor={inputId}
-      className="flex items-start justify-between gap-4 rounded-2xl bg-bg-card p-3"
+    <div
+      className={cn(
+        "flex items-center justify-between gap-4 rounded-2xl p-3",
+        !embedded && "border border-bg-card/80 bg-bg-card/40",
+      )}
     >
-      <span>
+      <label htmlFor={inputId} className="min-w-0 flex-1 cursor-pointer">
         <span className="block text-sm font-semibold text-text-primary">
           {label}
         </span>
-        <span className="mt-1 block text-xs text-text-muted">{description}</span>
-      </span>
-      <input
+        <span className="mt-1 block text-xs leading-relaxed text-text-muted">
+          {description}
+        </span>
+      </label>
+      <Switch
         id={inputId}
-        type="checkbox"
         checked={checked}
         disabled={disabled}
-        onChange={(event) => onChange(event.target.checked)}
-        className="mt-1 size-4 accent-accent-primary"
+        onChange={onChange}
       />
-    </label>
+    </div>
   );
 }

@@ -6,7 +6,7 @@ import { getInitialGamePreferences, useProgressStore } from "@/state/progress-st
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 
 function hydrateFromSave() {
-  const { gameMode, aiDifficulty, selectedPuzzleId, activeMatch } =
+  const { gameMode, aiDifficulty, selectedPuzzleId } =
     getInitialGamePreferences();
   const gameStore = useGameStore.getState();
   const puzzleStore = usePuzzleSessionStore.getState();
@@ -14,10 +14,6 @@ function hydrateFromSave() {
   gameStore.setGameMode(gameMode);
   gameStore.setAiDifficulty(aiDifficulty);
   puzzleStore.setSelectedPuzzleId(selectedPuzzleId);
-
-  if (activeMatch?.game.status === "in-progress") {
-    gameStore.setGame(activeMatch.game, { persist: false });
-  }
 }
 
 /**

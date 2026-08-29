@@ -87,6 +87,7 @@ export interface UseGameplayOptions {
  */
 export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   const game = useGameStore((state) => state.game);
+  const matchSessionActive = useGameStore((state) => state.matchSessionActive);
   const gameMode = useGameStore((state) => state.gameMode);
   const aiDifficulty = useGameStore((state) => state.aiDifficulty);
   const setGame = useGameStore((state) => state.setGame);
@@ -546,6 +547,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     goalCelebration !== null ||
     matchResultSummary !== null ||
     isMatchOver ||
+    !matchSessionActive ||
     !isHumanPlayerTurn(gameMode, game.currentPlayer);
 
   const restartPuzzle = useCallback(() => {
@@ -648,6 +650,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     gameMode,
     isStartingGame,
     isInputLocked,
+    matchSessionActive,
     isAiThinking,
     isPuzzleMode: isPuzzleMode(gameMode),
     isDailyChallengeMode: isDailyChallengeMode(gameMode),

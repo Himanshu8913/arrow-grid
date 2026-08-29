@@ -25,9 +25,11 @@ interface GameStore {
   game: GameState;
   gameMode: string;
   aiDifficulty: AiDifficulty;
+  matchSessionActive: boolean;
   setGame: (game: GameState, options?: SetGameOptions) => void;
   setGameMode: (gameMode: string) => void;
   setAiDifficulty: (aiDifficulty: AiDifficulty) => void;
+  setMatchSessionActive: (active: boolean) => void;
   startMatch: (seed?: number) => void;
 }
 
@@ -38,6 +40,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   game: createNewGame({ seed: 42, playerCount: 2 }),
   gameMode: "pvp",
   aiDifficulty: "medium",
+  matchSessionActive: false,
   setGame: (game, options) => {
     set({ game });
 
@@ -53,6 +56,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ aiDifficulty });
     useProgressStore.getState().setAiDifficulty(aiDifficulty);
   },
+  setMatchSessionActive: (matchSessionActive) => set({ matchSessionActive }),
   startMatch: (seed = Date.now()) => {
     const { gameMode } = get();
 
@@ -60,7 +64,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const dateKey = getDailyDateKey();
       usePuzzleSessionStore.getState().resetPuzzleSession();
       const nextGame = createDailyChallengeGame(dateKey);
-      set({ game: nextGame });
+      set({ game: nextGame, matchSessionActive: true });
       useProgressStore.getState().syncActiveMatch(nextGame);
       return;
     }
@@ -69,7 +73,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const puzzleId = usePuzzleSessionStore.getState().selectedPuzzleId;
       usePuzzleSessionStore.getState().resetPuzzleSession();
       const nextGame = createGameFromPuzzle(getPuzzleById(puzzleId));
-      set({ game: nextGame });
+      set({ game: nextGame, matchSessionActive: true });
       useProgressStore.getState().syncActiveMatch(nextGame);
       return;
     }
@@ -78,7 +82,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       seed,
       playerCount: getPlayerCountForMode(gameMode),
     });
-    set({ game: nextGame });
+    set({ game: nextGame, matchSessionActive: true });
     useProgressStore.getState().syncActiveMatch(nextGame);
   },
 }));
