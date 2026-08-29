@@ -1,7 +1,10 @@
 import { useState } from "react";
 
+import { BoardGrid } from "@/components/board";
+import { createNewGame } from "@/engine";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/hooks/use-theme";
+import type { Position } from "@/types/game";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -26,6 +29,10 @@ export function App() {
   const [gameMode, setGameMode] = useState("pvp");
   const [playerName, setPlayerName] = useState("Guest Player");
   const [isStartingGame, setIsStartingGame] = useState(false);
+  const [game, setGame] = useState(() => createNewGame({ seed: 42 }));
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(
+    null,
+  );
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
 
@@ -39,20 +46,30 @@ export function App() {
   const handlePlay = () => {
     setIsStartingGame(true);
     window.setTimeout(() => {
+      setGame(createNewGame({ seed: Date.now() }));
+      setSelectedPosition(null);
       setIsStartingGame(false);
       toast({
         title: "Game ready",
-        description: `${gameMode.toUpperCase()} mode will launch soon.`,
+        description: `${gameMode.toUpperCase()} mode board generated.`,
         variant: "success",
       });
     }, 1500);
+  };
+
+  const handleTileClick = (position: Position) => {
+    setSelectedPosition((current) =>
+      current?.row === position.row && current.col === position.col
+        ? null
+        : position,
+    );
   };
 
   return (
     <>
       <div className="flex min-h-dvh items-center justify-center p-6">
         <Card
-          className="relative w-full max-w-lg text-center"
+          className="relative w-full max-w-xl text-center"
           padding="lg"
           variant="surface"
         >
@@ -77,6 +94,12 @@ export function App() {
                   label: "Play",
                   content: (
                     <div className="space-y-4 text-center">
+                      <BoardGrid
+                        board={game.board}
+                        spawn={game.spawn}
+                        selectedPosition={selectedPosition}
+                        onTileClick={handleTileClick}
+                      />
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         <Badge variant="primary">Strategy</Badge>
                         <Badge variant="secondary">PvP</Badge>
