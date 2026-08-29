@@ -10,6 +10,30 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return;
+          }
+
+          if (
+            id.includes("/react-dom/") ||
+            id.includes("/react/") ||
+            id.includes("/scheduler/")
+          ) {
+            return "react-vendor";
+          }
+
+          if (id.includes("/zustand/")) {
+            return "zustand-vendor";
+          }
+        },
+      },
+    },
+  },
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],

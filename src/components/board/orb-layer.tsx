@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import type { CSSProperties } from "react";
 
 import {
@@ -40,7 +40,7 @@ function getOrbCenterStyle(
 /**
  * Absolutely positioned energy orb that glides between tile centers.
  */
-export function OrbLayer({
+export const OrbLayer = memo(function OrbLayer({
   position,
   gridSize,
   gap = BOARD_TILE_GAP_PX,
@@ -56,15 +56,16 @@ export function OrbLayer({
         ? "none"
         : `left ${ORB_STEP_MS}ms ease-out, top ${ORB_STEP_MS}ms ease-out`,
       animationDuration: isSpawning ? `${ORB_SPAWN_MS}ms` : undefined,
+      willChange: isSpawning || isFading ? "left, top, opacity" : undefined,
     }),
-    [gap, gridSize, isSpawning, position.col, position.row],
+    [gap, gridSize, isFading, isSpawning, position.col, position.row],
   );
 
   return (
     <span
       aria-label="Energy orb"
       className={cn(
-        "pointer-events-none absolute z-10 rounded-full ring-2 ring-white/40",
+        "pointer-events-none absolute z-10 rounded-full ring-2 ring-white/40 orb-layer",
         isFailure
           ? "bg-danger shadow-[0_0_16px_rgba(239,68,68,0.9)]"
           : "bg-accent-primary shadow-[0_0_16px_rgba(59,130,246,0.9)]",
@@ -76,4 +77,4 @@ export function OrbLayer({
       style={style}
     />
   );
-}
+});

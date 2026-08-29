@@ -1,4 +1,5 @@
 import { HOVER_THROTTLE_MS, SFX_DEFINITIONS } from "@/constants/audio";
+import { MAX_CONCURRENT_SFX_VOICES } from "@/constants/performance";
 import { useSettingsStore } from "@/state/settings-store";
 import type { SfxId } from "@/types/audio";
 import type { Settings } from "@/types/settings";
@@ -26,6 +27,20 @@ class AudioManager {
   unlock(): void {
     const context = this.getContext();
     if (context.state === "suspended") {
+      void context.resume();
+    }
+  }
+
+  suspend(): void {
+    const context = this.context;
+    if (context && context.state === "running") {
+      void context.suspend();
+    }
+  }
+
+  resume(): void {
+    const context = this.context;
+    if (context && context.state === "suspended") {
       void context.resume();
     }
   }
@@ -62,6 +77,7 @@ class AudioManager {
 
     const definition = SFX_DEFINITIONS[id];
     this.stopSfxBelowPriority(definition.priority);
+    this.trimSfxVoices();
 
     const context = this.getContext();
     const destination = this.getSfxGain(context);
@@ -219,6 +235,13 @@ class AudioManager {
   private stopAllSfx(): void {
     this.sfxVoices.forEach((voice) => voice.stop());
     this.sfxVoices = [];
+  }
+
+  private trimSfxVoices(): void {
+    while (this.sfxVoices.length >= MAX_CONCURRENT_SFX_VOICES) {
+      const voice = this.sfxVoices.shift();
+      voice?.stop();
+    }
   }
 
   private applyGain(settings: Settings): void {

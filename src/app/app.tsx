@@ -1,13 +1,14 @@
 import { useState } from "react";
 
-import { GameScreen } from "@/components/game/game-screen";
 import {
-  AchievementsDialog,
-  CreditsDialog,
-  MainMenu,
-  StatisticsDialog,
-} from "@/components/menu";
-import { SettingsDialog } from "@/components/settings";
+  LazyAchievementsDialog,
+  LazyCreditsDialog,
+  LazyGameScreen,
+  LazyMount,
+  LazySettingsDialog,
+  LazyStatisticsDialog,
+} from "@/components/app/lazy-screens";
+import { MainMenu } from "@/components/menu";
 import { useToast } from "@/hooks/use-toast";
 import { getDailyDateKey } from "@/engine/daily-challenge";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
@@ -57,11 +58,17 @@ export function App() {
   if (screen === "game") {
     return (
       <>
-        <GameScreen onBackToMenu={() => setScreen("menu")} />
-        <SettingsDialog
-          open={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
+        <LazyMount label="Loading game...">
+          <LazyGameScreen onBackToMenu={() => setScreen("menu")} />
+        </LazyMount>
+        {isSettingsOpen ? (
+          <LazyMount label="Loading settings...">
+            <LazySettingsDialog
+              open={isSettingsOpen}
+              onClose={() => setIsSettingsOpen(false)}
+            />
+          </LazyMount>
+        ) : null}
       </>
     );
   }
@@ -79,19 +86,38 @@ export function App() {
         onExit={() => setIsExitOpen(true)}
       />
 
-      <SettingsDialog
-        open={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
-      <StatisticsDialog
-        open={isStatisticsOpen}
-        onClose={() => setIsStatisticsOpen(false)}
-      />
-      <AchievementsDialog
-        open={isAchievementsOpen}
-        onClose={() => setIsAchievementsOpen(false)}
-      />
-      <CreditsDialog open={isCreditsOpen} onClose={() => setIsCreditsOpen(false)} />
+      {isSettingsOpen ? (
+        <LazyMount label="Loading settings...">
+          <LazySettingsDialog
+            open={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+          />
+        </LazyMount>
+      ) : null}
+      {isStatisticsOpen ? (
+        <LazyMount label="Loading statistics...">
+          <LazyStatisticsDialog
+            open={isStatisticsOpen}
+            onClose={() => setIsStatisticsOpen(false)}
+          />
+        </LazyMount>
+      ) : null}
+      {isAchievementsOpen ? (
+        <LazyMount label="Loading achievements...">
+          <LazyAchievementsDialog
+            open={isAchievementsOpen}
+            onClose={() => setIsAchievementsOpen(false)}
+          />
+        </LazyMount>
+      ) : null}
+      {isCreditsOpen ? (
+        <LazyMount label="Loading credits...">
+          <LazyCreditsDialog
+            open={isCreditsOpen}
+            onClose={() => setIsCreditsOpen(false)}
+          />
+        </LazyMount>
+      ) : null}
 
       <Dialog
         open={isExitOpen}

@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { memo, type CSSProperties } from "react";
 
 import { ARROW_ROTATION_MS } from "@/constants/animation";
 import type { Direction } from "@/types/game";
@@ -20,7 +20,7 @@ interface ArrowGlyphProps {
 /**
  * Renders a centered arrow glyph rotated to match the tile direction.
  */
-export function ArrowGlyph({
+export const ArrowGlyph = memo(function ArrowGlyph({
   direction,
   isRotating = false,
   className,
@@ -52,4 +52,4 @@ export function ArrowGlyph({
       ↑
     </span>
   );
-}
+});

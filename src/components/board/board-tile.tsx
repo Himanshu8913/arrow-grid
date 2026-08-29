@@ -1,7 +1,10 @@
+import { memo } from "react";
+
 import { ArrowGlyph } from "@/components/board/arrow-glyph";
 import { playSfx } from "@/audio";
 import type { PlayerId, Position, Tile } from "@/types/game";
 import { cn } from "@/utils/cn";
+import { shouldUseVirtualTiles } from "@/utils/virtual-board";
 
 export interface BoardTileProps {
   tile: Tile;
@@ -17,6 +20,7 @@ export interface BoardTileProps {
   isArrowRotating?: boolean;
   disabled?: boolean;
   onClick?: (position: Position) => void;
+  boardSize?: number;
 }
 
 const goalStyles: Record<PlayerId, string> = {
@@ -24,10 +28,33 @@ const goalStyles: Record<PlayerId, string> = {
   player2: "border-accent-secondary/60 bg-accent-secondary/20 text-accent-secondary",
 };
 
+function boardTilePropsAreEqual(
+  previous: BoardTileProps,
+  next: BoardTileProps,
+): boolean {
+  return (
+    previous.tile === next.tile &&
+    previous.position.row === next.position.row &&
+    previous.position.col === next.position.col &&
+    previous.isSpawn === next.isSpawn &&
+    previous.isSelected === next.isSelected &&
+    previous.isOnPath === next.isOnPath &&
+    previous.trailOpacity === next.trailOpacity &&
+    previous.isGoalCelebrating === next.isGoalCelebrating &&
+    previous.isLoopTile === next.isLoopTile &&
+    previous.isLoopPulsing === next.isLoopPulsing &&
+    previous.isHinted === next.isHinted &&
+    previous.isArrowRotating === next.isArrowRotating &&
+    previous.disabled === next.disabled &&
+    previous.boardSize === next.boardSize &&
+    previous.onClick === next.onClick
+  );
+}
+
 /**
  * Renders a single board cell with tile-specific visuals.
  */
-export function BoardTile({
+export const BoardTile = memo(function BoardTile({
   tile,
   position,
   isSpawn = false,
@@ -41,8 +68,11 @@ export function BoardTile({
   isArrowRotating = false,
   disabled = false,
   onClick,
+  boardSize,
 }: BoardTileProps) {
   const isInteractive = Boolean(onClick) && !disabled;
+  const useVirtualTile =
+    boardSize !== undefined && shouldUseVirtualTiles(boardSize);
 
   return (
     <button
@@ -62,6 +92,7 @@ export function BoardTile({
       }}
       className={cn(
         "relative flex aspect-square items-center justify-center rounded-tile",
+        useVirtualTile && "board-tile-virtual",
         "border border-bg-card/80 bg-bg-card shadow-[var(--shadow-soft)]",
         "transition-all duration-200 ease-out",
         isInteractive &&
@@ -107,4 +138,4 @@ export function BoardTile({
       ) : null}
     </button>
   );
-}
+}, boardTilePropsAreEqual);

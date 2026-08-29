@@ -449,6 +449,19 @@ html.animations-disabled .board-soft-vibrate {
   animation: none !important;
 }
 
+.board-grid-contain {
+  contain: layout style;
+}
+
+.board-tile-virtual {
+  content-visibility: auto;
+  contain-intrinsic-size: 64px 64px;
+}
+
+.orb-layer {
+  transform: translateZ(0);
+}
+
 .menu-bg-gradient {
   background:
     radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.18), transparent 45%),

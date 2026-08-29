@@ -64,5 +64,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     });
   }, [musicEnabled, muted, musicVolume, sfxVolume]);
 
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        audioManager.suspend();
+        return;
+      }
+
+      audioManager.resume();
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, []);
+
   return children;
 }
