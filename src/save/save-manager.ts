@@ -7,6 +7,7 @@ import {
 } from "@/engine/daily-challenge";
 import type { GameState } from "@/engine/game-state";
 import { createGameFromPuzzle } from "@/engine/puzzle";
+import { createPuzzleGameForSelection } from "@/engine/random-puzzle";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { useAchievementStore } from "@/state/achievement-store";
 import { useGameStore } from "@/state/game-store";
@@ -62,7 +63,9 @@ function createLobbyGame(
   }
 
   if (isPuzzleMode(gameMode)) {
-    return createGameFromPuzzle(getPuzzleById(selectedPuzzleId));
+    return createPuzzleGameForSelection(selectedPuzzleId, (puzzleId) =>
+      createGameFromPuzzle(getPuzzleById(puzzleId)),
+    );
   }
 
   return createNewGame({

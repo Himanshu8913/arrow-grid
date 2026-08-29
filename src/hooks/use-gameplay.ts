@@ -3,7 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { GoalCelebrationState } from "@/components/board";
 import { playSfx } from "@/audio";
 import { recordPuzzleCompletion } from "@/save";
-import { getPuzzleById } from "@/data/puzzles";
+import { isCatalogPuzzleId, getPuzzleById } from "@/data/puzzles";
+import { getPuzzleTargetMoves } from "@/utils/puzzle-display";
 import {
   applyPuzzleMoveLimit,
   calculatePuzzleStars,
@@ -11,6 +12,7 @@ import {
   calculateTurnScore,
   cloneGameState,
   createGameFromPuzzle,
+  createPuzzleGameForSelection,
   DAILY_TARGET_MOVES,
   evaluateTurnOutcome,
   executePlayerTurn,
@@ -360,7 +362,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
             usePuzzleSessionStore.getState().hintsUsed;
           const targetMoves = isDailyChallengeMode(gameMode)
             ? DAILY_TARGET_MOVES
-            : getPuzzleById(nextGame.puzzleId!).targetMoves;
+            : getPuzzleTargetMoves(nextGame);
 
           starsForAchievements = calculatePuzzleStars(
             nextGame.movesPlayed,
@@ -375,7 +377,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         isPuzzleMode(gameMode) &&
         nextGame.status === "won" &&
         nextGame.puzzleId &&
-        starsForAchievements
+        starsForAchievements &&
+        isCatalogPuzzleId(nextGame.puzzleId)
       ) {
         recordPuzzleCompletion(nextGame.puzzleId, starsForAchievements);
       }
@@ -571,7 +574,12 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     setMatchResultSummary(null);
     setUndoStack([]);
     resetPuzzleSession();
-    setGame(createGameFromPuzzle(getPuzzleById(game.puzzleId)));
+    const selectedPuzzleId = usePuzzleSessionStore.getState().selectedPuzzleId;
+    setGame(
+      createPuzzleGameForSelection(selectedPuzzleId, (puzzleId) =>
+        createGameFromPuzzle(getPuzzleById(puzzleId)),
+      ),
+    );
   }, [clearTransientState, game.puzzleId, gameMode, resetPuzzleSession, setGame, toast]);
 
   const undoPuzzle = useCallback(() => {

@@ -12,9 +12,18 @@ export async function startCurrentMatch(page: Page) {
   await expect(page.getByText("Game ready")).toBeVisible({ timeout: 5000 });
 }
 
-export async function openPuzzleMode(page: Page) {
+export async function openPuzzleMode(
+  page: Page,
+  puzzleName: "Random Puzzle" | "First Steps" | "Corner Route" = "Random Puzzle",
+) {
   await openGameScreen(page);
   await page.getByRole("button", { name: "Game Mode" }).click();
   await page.getByRole("option", { name: "Puzzle Mode" }).click();
+
+  if (puzzleName !== "Random Puzzle") {
+    await page.getByRole("button", { name: "Puzzle" }).click();
+    await page.getByRole("option", { name: puzzleName }).click();
+  }
+
   await startCurrentMatch(page);
 }

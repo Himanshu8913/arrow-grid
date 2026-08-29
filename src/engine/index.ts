@@ -57,6 +57,13 @@ export {
   cloneGameState,
   createGameFromPuzzle,
 } from "@/engine/puzzle";
+export {
+  createRandomPuzzleGame,
+  createPuzzleGameForSelection,
+  getRandomPuzzleSeed,
+  isRandomPuzzleId,
+  RANDOM_PUZZLE_ID,
+} from "@/engine/random-puzzle";
 export { createDailyChallengeGame, getDailyDateKey, getDailySeed, DAILY_TARGET_MOVES } from "@/engine/daily-challenge";
 export { chooseAiMove, type ChooseAiMoveOptions } from "@/engine/ai";
 export { createRandomSeed, SeededRandom } from "@/engine/random";

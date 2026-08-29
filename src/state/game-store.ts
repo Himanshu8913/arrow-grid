@@ -7,6 +7,7 @@ import {
   getDailyDateKey,
 } from "@/engine/daily-challenge";
 import { createGameFromPuzzle } from "@/engine/puzzle";
+import { createPuzzleGameForSelection } from "@/engine/random-puzzle";
 import type { GameState } from "@/engine/game-state";
 import { getPuzzleById } from "@/data/puzzles";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
@@ -72,7 +73,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (isPuzzleMode(gameMode)) {
       const puzzleId = usePuzzleSessionStore.getState().selectedPuzzleId;
       usePuzzleSessionStore.getState().resetPuzzleSession();
-      const nextGame = createGameFromPuzzle(getPuzzleById(puzzleId));
+      const nextGame = createPuzzleGameForSelection(puzzleId, (id) =>
+        createGameFromPuzzle(getPuzzleById(id)),
+      );
       set({ game: nextGame, matchSessionActive: true });
       useProgressStore.getState().syncActiveMatch(nextGame);
       return;

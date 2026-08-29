@@ -74,7 +74,9 @@ describe("save manager integration", () => {
     useGameStore.getState().setGameMode("puzzle");
     refreshLobbyPreview();
 
-    expect(useGameStore.getState().game.puzzleId).toBeTruthy();
+    expect(useGameStore.getState().game.puzzleId?.startsWith("random-")).toBe(
+      true,
+    );
     expect(useGameStore.getState().matchSessionActive).toBe(false);
   });
 

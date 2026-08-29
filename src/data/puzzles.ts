@@ -44,7 +44,24 @@ const cornerRoute: PuzzleDefinition = {
 
 export const PUZZLE_CATALOG: PuzzleDefinition[] = [firstSteps, cornerRoute];
 
-export const DEFAULT_PUZZLE_ID = firstSteps.id;
+export const RANDOM_PUZZLE_ID = "random";
+
+export const DEFAULT_PUZZLE_ID = RANDOM_PUZZLE_ID;
+
+export const PUZZLE_MODE_OPTIONS = [
+  { value: RANDOM_PUZZLE_ID, label: "Random Puzzle" },
+  ...PUZZLE_CATALOG.map((puzzle) => ({
+    value: puzzle.id,
+    label: puzzle.title,
+  })),
+];
+
+/**
+ * Returns true for handcrafted catalog puzzle ids.
+ */
+export function isCatalogPuzzleId(puzzleId: string): boolean {
+  return PUZZLE_CATALOG.some((puzzle) => puzzle.id === puzzleId);
+}
 
 /**
  * Returns a puzzle definition by id, falling back to the first catalog entry.

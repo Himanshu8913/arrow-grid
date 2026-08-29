@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle } from "react";
 
 import { BoardGrid } from "@/components/board";
 import { getAppVersion } from "@/constants/app";
-import { PUZZLE_CATALOG } from "@/data/puzzles";
+import { PUZZLE_MODE_OPTIONS } from "@/data/puzzles";
 import { GameStatusAnnouncer } from "@/components/game/game-status-announcer";
 import { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
 import { DailyChallengeHud } from "@/components/game/daily-challenge-hud";
@@ -288,10 +288,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
                 refreshLobbyPreview();
               }
             }}
-            options={PUZZLE_CATALOG.map((puzzle) => ({
-              value: puzzle.id,
-              label: puzzle.title,
-            }))}
+            options={PUZZLE_MODE_OPTIONS}
           />
         ) : null}
 

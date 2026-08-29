@@ -1,6 +1,6 @@
-import { getPuzzleById } from "@/data/puzzles";
 import type { GameState } from "@/engine/game-state";
 import { cn } from "@/utils/cn";
+import { getPuzzleDisplayInfo } from "@/utils/puzzle-display";
 import type { PuzzleStarRating } from "@/types/puzzle";
 
 export interface PuzzleHudProps {
@@ -28,19 +28,17 @@ function renderStars(stars: PuzzleStarRating | null, max = 3) {
  * Puzzle move counter, limits, and star display.
  */
 export function PuzzleHud({ game, hintsUsed, earnedStars }: PuzzleHudProps) {
-  const puzzle = game.puzzleId ? getPuzzleById(game.puzzleId) : null;
-  const moveLimit = game.moveLimit ?? puzzle?.moveLimit ?? 0;
-  const targetMoves = game.targetMoves ?? puzzle?.targetMoves ?? 0;
+  const puzzleInfo = getPuzzleDisplayInfo(game);
+  const moveLimit = game.moveLimit ?? 0;
+  const targetMoves = game.targetMoves ?? 0;
   const movesRemaining = Math.max(moveLimit - game.movesPlayed, 0);
 
   return (
     <div className="space-y-2 rounded-2xl border border-bg-card bg-bg-card px-4 py-3 text-left text-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-semibold text-text-primary">
-            {puzzle?.title ?? "Puzzle"}
-          </p>
-          <p className="text-xs text-text-muted">{puzzle?.description}</p>
+          <p className="font-semibold text-text-primary">{puzzleInfo.title}</p>
+          <p className="text-xs text-text-muted">{puzzleInfo.description}</p>
         </div>
         <div className="flex items-center gap-0.5" aria-label="Puzzle stars">
           {renderStars(earnedStars)}

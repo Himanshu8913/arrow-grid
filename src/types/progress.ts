@@ -27,7 +27,7 @@ export function createInitialGameProgress(): GameProgress {
     version: SAVE_VERSION,
     gameMode: "pvp",
     aiDifficulty: "medium",
-    selectedPuzzleId: "first-steps",
+    selectedPuzzleId: "random",
     puzzleProgress: {},
     activeMatch: null,
   };
