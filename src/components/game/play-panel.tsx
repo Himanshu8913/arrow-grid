@@ -3,6 +3,7 @@ import { forwardRef, useImperativeHandle } from "react";
 import { BoardGrid } from "@/components/board";
 import { PUZZLE_CATALOG } from "@/data/puzzles";
 import { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
+import { DailyChallengeHud } from "@/components/game/daily-challenge-hud";
 import { ResultScreen } from "@/components/game/result-screen";
 import { PuzzleControls } from "@/components/game/puzzle-controls";
 import { PuzzleHud } from "@/components/game/puzzle-hud";
@@ -48,6 +49,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       isInputLocked,
       isAiThinking,
       isPuzzleMode: isPuzzle,
+      isDailyChallengeMode: isDaily,
       hintsUsed,
       hintPosition,
       earnedStars,
@@ -80,13 +82,15 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       <div className="relative space-y-4 text-center">
         {isStartingGame ? <LoaderOverlay label="Starting game..." /> : null}
 
-        {isPuzzle ? (
+        {isDaily ? (
+          <DailyChallengeHud game={game} earnedStars={earnedStars} />
+        ) : isPuzzle ? (
           <PuzzleHud game={game} hintsUsed={hintsUsed} earnedStars={earnedStars} />
         ) : (
           <ScoreHud game={game} />
         )}
 
-        {!isPuzzle ? (
+        {!isPuzzle && !isDaily ? (
           <TurnIndicator
             game={game}
             gameMode={gameMode}
@@ -124,7 +128,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
             summary={matchResultSummary}
             onPlayAgain={() => {
               clearMatchResult();
-              if (isPuzzle) {
+              if (isPuzzle || isDaily) {
                 restartPuzzle();
                 return;
               }
@@ -137,7 +141,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           />
         ) : null}
 
-        {isPuzzle ? (
+        {isPuzzle && !isDaily ? (
           <PuzzleControls
             canUndo={canUndoPuzzle}
             canHint={game.status === "in-progress" && !isInputLocked}
@@ -149,29 +153,33 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
 
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Badge variant="primary">Strategy</Badge>
-          <Badge variant={isPracticeMode(gameMode) ? "success" : "secondary"}>
-            {isPuzzleMode(gameMode)
-              ? "Puzzle"
-              : isPracticeMode(gameMode)
-                ? "Vs AI"
-                : "PvP"}
+          <Badge variant={isDaily ? "warning" : isPracticeMode(gameMode) ? "success" : "secondary"}>
+            {isDaily
+              ? "Daily"
+              : isPuzzleMode(gameMode)
+                ? "Puzzle"
+                : isPracticeMode(gameMode)
+                  ? "Vs AI"
+                  : "PvP"}
           </Badge>
           <Badge variant="success">Alpha</Badge>
         </div>
 
-        <Dropdown
-          className="mx-auto max-w-xs"
-          label="Game Mode"
-          value={gameMode}
-          onValueChange={setGameMode}
-          options={[
-            { value: "pvp", label: "Player vs Player" },
-            { value: "practice", label: "Practice vs AI" },
-            { value: "puzzle", label: "Puzzle Mode" },
-          ]}
-        />
+        {!isDaily ? (
+          <Dropdown
+            className="mx-auto max-w-xs"
+            label="Game Mode"
+            value={gameMode}
+            onValueChange={setGameMode}
+            options={[
+              { value: "pvp", label: "Player vs Player" },
+              { value: "practice", label: "Practice vs AI" },
+              { value: "puzzle", label: "Puzzle Mode" },
+            ]}
+          />
+        ) : null}
 
-        {isPuzzle ? (
+        {isPuzzle && !isDaily ? (
           <Dropdown
             className="mx-auto max-w-xs"
             label="Puzzle"

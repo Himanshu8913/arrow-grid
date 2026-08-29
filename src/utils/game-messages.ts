@@ -23,7 +23,11 @@ export function getMoveErrorMessage(reason: InvalidMoveReason): string {
 export function getPlayerCountForMode(
   gameMode: string,
 ): 1 | 2 {
-  return gameMode === "puzzle" ? 1 : 2;
+  if (gameMode === "puzzle" || gameMode === "daily") {
+    return 1;
+  }
+
+  return 2;
 }
 
 /**
@@ -35,6 +39,17 @@ export function isPracticeMode(gameMode: string): boolean {
 
 export function isPuzzleMode(gameMode: string): boolean {
   return gameMode === "puzzle";
+}
+
+export function isDailyChallengeMode(gameMode: string): boolean {
+  return gameMode === "daily";
+}
+
+/**
+ * Puzzle or daily challenge — shared single-player move-limit flow.
+ */
+export function isSoloChallengeMode(gameMode: string): boolean {
+  return isPuzzleMode(gameMode) || isDailyChallengeMode(gameMode);
 }
 
 /**

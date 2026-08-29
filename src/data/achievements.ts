@@ -32,6 +32,12 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
     icon: "🔥",
   },
   {
+    id: "daily-challenge-winner",
+    title: "Daily Challenge Winner",
+    description: "Complete today's daily challenge.",
+    icon: "📅",
+  },
+  {
     id: "century-club",
     title: "100 Games",
     description: "Play 100 games.",

@@ -1,6 +1,6 @@
 import { ACHIEVEMENTS } from "@/data/achievements";
 import type { MatchResultSummary } from "@/types/match-result";
-import { getPlayerLabel, isPracticeMode, isPuzzleMode } from "@/utils/game-messages";
+import { getPlayerLabel, isPracticeMode, isSoloChallengeMode } from "@/utils/game-messages";
 import {
   formatMatchDuration,
   getResultHeadline,
@@ -27,7 +27,7 @@ export function ResultScreen({
   const { game, elapsedSeconds, stars, rewards, unlockedAchievements } =
     summary;
   const headline = getResultHeadline(game, gameMode, stars);
-  const isPuzzle = isPuzzleMode(gameMode);
+  const isPuzzle = isSoloChallengeMode(gameMode);
   const isWin = rewards.isWin;
 
   const winnerLabel =

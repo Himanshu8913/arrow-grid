@@ -2,6 +2,10 @@ import { create } from "zustand";
 
 import type { AiDifficulty } from "@/constants/ai";
 import { createNewGame } from "@/engine";
+import {
+  createDailyChallengeGame,
+  getDailyDateKey,
+} from "@/engine/daily-challenge";
 import { createGameFromPuzzle } from "@/engine/puzzle";
 import type { GameState } from "@/engine/game-state";
 import { getPuzzleById } from "@/data/puzzles";
@@ -9,6 +13,7 @@ import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import { useProgressStore } from "@/state/progress-store";
 import {
   getPlayerCountForMode,
+  isDailyChallengeMode,
   isPuzzleMode,
 } from "@/utils/game-messages";
 
@@ -50,6 +55,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   startMatch: (seed = Date.now()) => {
     const { gameMode } = get();
+
+    if (isDailyChallengeMode(gameMode)) {
+      const dateKey = getDailyDateKey();
+      usePuzzleSessionStore.getState().resetPuzzleSession();
+      const nextGame = createDailyChallengeGame(dateKey);
+      set({ game: nextGame });
+      useProgressStore.getState().syncActiveMatch(nextGame);
+      return;
+    }
 
     if (isPuzzleMode(gameMode)) {
       const puzzleId = usePuzzleSessionStore.getState().selectedPuzzleId;

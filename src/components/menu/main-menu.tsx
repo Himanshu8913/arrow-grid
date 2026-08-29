@@ -1,11 +1,15 @@
 import { MenuBackground } from "@/components/menu/menu-background";
+import { getDailyDateKey } from "@/engine/daily-challenge";
+import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { useProfileStore } from "@/state/profile-store";
 import { useProgressStore } from "@/state/progress-store";
+import { formatDailyDateLabel, formatDailyStars } from "@/utils/daily-challenge";
 import { Button } from "@/ui/button";
 import { cn } from "@/utils/cn";
 
 export interface MainMenuProps {
   onPlay: () => void;
+  onDailyChallenge: () => void;
   onContinue: () => void;
   onOpenSettings: () => void;
   onOpenStatistics: () => void;
@@ -19,6 +23,7 @@ export interface MainMenuProps {
  */
 export function MainMenu({
   onPlay,
+  onDailyChallenge,
   onContinue,
   onOpenSettings,
   onOpenStatistics,
@@ -28,7 +33,13 @@ export function MainMenu({
 }: MainMenuProps) {
   const displayName = useProfileStore((state) => state.displayName);
   const activeMatch = useProgressStore((state) => state.activeMatch);
+  const todayResult = useDailyChallengeStore(
+    (state) => state.history[getDailyDateKey()] ?? null,
+  );
   const canContinue = activeMatch?.game.status === "in-progress";
+  const dailyHint = todayResult
+    ? `Completed today · ${formatDailyStars(todayResult.stars)}`
+    : `Today's puzzle · ${formatDailyDateLabel(getDailyDateKey())}`;
   const appName = import.meta.env.VITE_APP_NAME ?? "Arrow Grid";
 
   return (
@@ -53,6 +64,13 @@ export function MainMenu({
           className="flex flex-col gap-3 rounded-3xl border border-bg-card/60 bg-bg-surface/80 p-4 shadow-[var(--shadow-strong)] backdrop-blur-sm sm:p-5"
         >
           <MenuButton label="Play" onClick={onPlay} />
+          <MenuButton
+            label="Daily Challenge"
+            variant="secondary"
+            hint={dailyHint}
+            disabled={Boolean(todayResult)}
+            onClick={onDailyChallenge}
+          />
           <MenuButton
             label="Continue"
             variant="secondary"

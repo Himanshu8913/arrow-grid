@@ -10,6 +10,8 @@ import type { PuzzleStarRating } from "@/types/puzzle";
 import {
   isPracticeMode,
   isPuzzleMode,
+  isDailyChallengeMode,
+  isSoloChallengeMode,
 } from "@/utils/game-messages";
 
 export interface MatchRewards {
@@ -46,8 +48,8 @@ function isMatchWin(game: GameState, gameMode: string): boolean {
     return false;
   }
 
-  if (isPuzzleMode(gameMode)) {
-    return true;
+  if (isPuzzleMode(gameMode) || isDailyChallengeMode(gameMode)) {
+    return game.status === "won";
   }
 
   if (isPracticeMode(gameMode)) {
@@ -58,7 +60,7 @@ function isMatchWin(game: GameState, gameMode: string): boolean {
 }
 
 function getResultScore(game: GameState, gameMode: string): number {
-  if (isPuzzleMode(gameMode) || isPracticeMode(gameMode)) {
+  if (isSoloChallengeMode(gameMode) || isPracticeMode(gameMode)) {
     return game.players.player1.totalScore;
   }
 
@@ -90,12 +92,18 @@ export function getResultHeadline(
   gameMode: string,
   stars: PuzzleStarRating | null,
 ): string {
-  if (isPuzzleMode(gameMode)) {
+  if (isSoloChallengeMode(gameMode)) {
     if (game.status === "won") {
-      return stars === 3 ? "Perfect puzzle!" : "Puzzle complete!";
+      return isDailyChallengeMode(gameMode)
+        ? "Daily challenge complete!"
+        : stars === 3
+          ? "Perfect puzzle!"
+          : "Puzzle complete!";
     }
 
-    return "Out of moves";
+    return isDailyChallengeMode(gameMode)
+      ? "Daily challenge failed"
+      : "Out of moves";
   }
 
   if (game.status === "won" && game.winner) {

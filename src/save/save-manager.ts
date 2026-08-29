@@ -1,4 +1,5 @@
 import { SAVE_KEYS } from "@/constants/save";
+import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { useAchievementStore } from "@/state/achievement-store";
 import { useGameStore } from "@/state/game-store";
 import { useProfileStore } from "@/state/profile-store";
@@ -45,6 +46,7 @@ export function getSaveSnapshot(): SaveSnapshot {
 export function clearGameplayProgress(): void {
   useStatisticsStore.getState().resetStatistics();
   useAchievementStore.getState().resetAchievements();
+  useDailyChallengeStore.getState().resetDailyChallenge();
   useProgressStore.getState().resetProgress();
 
   const defaults = createInitialGameProgress();

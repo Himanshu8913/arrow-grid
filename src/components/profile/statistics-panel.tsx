@@ -35,6 +35,12 @@ export function StatisticsPanel({ embedded = false }: { embedded?: boolean }) {
         <StatItem label="Wins" value={stats.wins} />
         <StatItem label="Losses" value={stats.losses} />
         <StatItem label="Puzzles" value={stats.puzzlesCompleted} />
+        <StatItem label="Daily won" value={stats.dailyChallengesWon} />
+        <StatItem label="Daily played" value={stats.dailyChallengesPlayed} />
+        <StatItem
+          label="Best daily"
+          value={stats.bestDailyMoves ?? "—"}
+        />
         <StatItem label="Best score" value={stats.bestScore} />
         <StatItem label="Avg moves" value={averageMoves} />
         <StatItem

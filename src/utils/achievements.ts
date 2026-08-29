@@ -2,7 +2,7 @@ import type {
   AchievementCheckContext,
   AchievementId,
 } from "@/types/achievement";
-import { isPuzzleMode } from "@/utils/game-messages";
+import { isDailyChallengeMode, isPuzzleMode } from "@/utils/game-messages";
 
 /**
  * Returns achievement IDs that should unlock for the given context.
@@ -43,11 +43,20 @@ export function getNewlyUnlockedAchievements(
 
     if (
       !unlocked.has("perfect-puzzle") &&
-      isPuzzleMode(context.match.gameMode) &&
+      (isPuzzleMode(context.match.gameMode) ||
+        isDailyChallengeMode(context.match.gameMode)) &&
       context.match.stars === 3 &&
       context.match.hintsUsed === 0
     ) {
       candidates.push("perfect-puzzle");
+    }
+
+    if (
+      !unlocked.has("daily-challenge-winner") &&
+      isDailyChallengeMode(context.match.gameMode) &&
+      context.match.outcome === "win"
+    ) {
+      candidates.push("daily-challenge-winner");
     }
   }
 

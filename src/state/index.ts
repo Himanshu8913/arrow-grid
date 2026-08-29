@@ -5,3 +5,4 @@ export { useSettingsStore } from "@/state/settings-store";
 export { useAchievementStore } from "@/state/achievement-store";
 export { useProfileStore } from "@/state/profile-store";
 export { useProgressStore } from "@/state/progress-store";
+export { useDailyChallengeStore } from "@/state/daily-challenge-store";

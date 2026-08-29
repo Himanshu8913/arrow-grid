@@ -5,15 +5,17 @@ import { playSfx } from "@/audio";
 import { recordPuzzleCompletion } from "@/save";
 import { getPuzzleById } from "@/data/puzzles";
 import {
-  chooseAiMove,
-  evaluateTurnOutcome,
-  executePlayerTurn,
-  calculateTurnScore,
-  resolvePlayerTurn,
   applyPuzzleMoveLimit,
   calculatePuzzleStars,
+  chooseAiMove,
+  calculateTurnScore,
   cloneGameState,
   createGameFromPuzzle,
+  DAILY_TARGET_MOVES,
+  evaluateTurnOutcome,
+  executePlayerTurn,
+  getDailyDateKey,
+  resolvePlayerTurn,
   type GameState,
 } from "@/engine";
 import type { ExecuteTurnResult } from "@/engine/turn";
@@ -28,6 +30,7 @@ import { useOrbAnimation } from "@/hooks/use-orb-animation";
 import { useToast } from "@/hooks/use-toast";
 import { useGameStore } from "@/state/game-store";
 import { useAchievementStore } from "@/state/achievement-store";
+import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import { useStatisticsStore } from "@/state/statistics-store";
 import type { Board, Position } from "@/types/game";
@@ -37,7 +40,9 @@ import {
   getMoveErrorMessage,
   isHumanPlayerTurn,
   isPracticeMode,
+  isDailyChallengeMode,
   isPuzzleMode,
+  isSoloChallengeMode,
 } from "@/utils/game-messages";
 import type { PuzzleStarRating } from "@/types/puzzle";
 import { useProfileStore } from "@/state/profile-store";
@@ -49,7 +54,7 @@ function showTurnToasts(
   gameMode: string,
   toast: ReturnType<typeof useToast>["toast"],
 ) {
-  if (isPuzzleMode(gameMode)) {
+  if (isSoloChallengeMode(gameMode)) {
     return;
   }
 
@@ -310,28 +315,45 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
 
       let starsForAchievements: PuzzleStarRating | null = earnedStars;
 
-      if (isPuzzleMode(gameMode)) {
+      if (isSoloChallengeMode(gameMode)) {
         nextGame = applyPuzzleMoveLimit(nextGame);
 
-        if (nextGame.status === "won" && nextGame.puzzleId) {
-          const puzzle = getPuzzleById(nextGame.puzzleId);
+        if (nextGame.status === "won") {
           const hintsUsedAtFinish =
             usePuzzleSessionStore.getState().hintsUsed;
+          const targetMoves = isDailyChallengeMode(gameMode)
+            ? DAILY_TARGET_MOVES
+            : getPuzzleById(nextGame.puzzleId!).targetMoves;
+
           starsForAchievements = calculatePuzzleStars(
             nextGame.movesPlayed,
-            puzzle.targetMoves,
-            hintsUsedAtFinish,
+            targetMoves,
+            isDailyChallengeMode(gameMode) ? 0 : hintsUsedAtFinish,
           );
           setEarnedStars(starsForAchievements);
         }
       }
 
       if (
+        isPuzzleMode(gameMode) &&
         nextGame.status === "won" &&
         nextGame.puzzleId &&
         starsForAchievements
       ) {
         recordPuzzleCompletion(nextGame.puzzleId, starsForAchievements);
+      }
+
+      if (
+        isDailyChallengeMode(gameMode) &&
+        (nextGame.status === "won" || nextGame.status === "lost")
+      ) {
+        useDailyChallengeStore.getState().recordAttempt({
+          dateKey: getDailyDateKey(),
+          outcome: nextGame.status === "won" ? "win" : "loss",
+          movesPlayed: nextGame.movesPlayed,
+          score: nextGame.players.player1.totalScore,
+          stars: starsForAchievements,
+        });
       }
 
       setGame(nextGame);
@@ -368,7 +390,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       }
 
       if (
-        !isPuzzleMode(gameMode) &&
+        !isSoloChallengeMode(gameMode) &&
         nextGame.status === "in-progress" &&
         outcome.scored &&
         turnResult.movement.stoppedReason === "goal"
@@ -376,7 +398,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         triggerOrbSpawn();
       }
 
-      if (!isPuzzleMode(gameMode)) {
+      if (!isSoloChallengeMode(gameMode)) {
         queueAiTurnIfNeeded(nextGame);
       }
     },
@@ -422,6 +444,18 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   }, [cancelAiTurn, resetLoopAnimation, resetOrbAnimation]);
 
   const startGame = useCallback(() => {
+    if (
+      isDailyChallengeMode(gameMode) &&
+      useDailyChallengeStore.getState().hasAttemptedToday()
+    ) {
+      toast({
+        title: "Daily challenge complete",
+        description: "You've already used today's attempt. Come back tomorrow.",
+        variant: "warning",
+      });
+      return;
+    }
+
     clearTransientState();
     recordedMatchKeyRef.current = null;
     matchSessionRef.current = { loops: 0 };
@@ -434,14 +468,16 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     window.setTimeout(() => {
       startMatch();
       setIsStartingGame(false);
-      if (!isPuzzleMode(gameMode)) {
+      if (!isSoloChallengeMode(gameMode)) {
         triggerOrbSpawn();
       }
       toast({
         title: "Game ready",
-        description: isPuzzleMode(gameMode)
-          ? "Puzzle loaded. Reach the goal within the move limit."
-          : "A fresh board is ready to play.",
+        description: isDailyChallengeMode(gameMode)
+          ? "Today's daily challenge is ready. One attempt only."
+          : isPuzzleMode(gameMode)
+            ? "Puzzle loaded. Reach the goal within the move limit."
+            : "A fresh board is ready to play.",
         variant: "success",
       });
     }, 1500);
@@ -466,6 +502,15 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     !isHumanPlayerTurn(gameMode, game.currentPlayer);
 
   const restartPuzzle = useCallback(() => {
+    if (isDailyChallengeMode(gameMode)) {
+      toast({
+        title: "No retries",
+        description: "The daily challenge allows one attempt per day.",
+        variant: "warning",
+      });
+      return;
+    }
+
     if (!game.puzzleId) {
       return;
     }
@@ -478,7 +523,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     setUndoStack([]);
     resetPuzzleSession();
     setGame(createGameFromPuzzle(getPuzzleById(game.puzzleId)));
-  }, [clearTransientState, game.puzzleId, resetPuzzleSession, setGame]);
+  }, [clearTransientState, game.puzzleId, gameMode, resetPuzzleSession, setGame, toast]);
 
   const undoPuzzle = useCallback(() => {
     if (undoStack.length === 0 || isInputLocked) {
@@ -493,7 +538,12 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   }, [clearTransientState, isInputLocked, setEarnedStars, setGame, undoStack]);
 
   const requestHint = useCallback(() => {
-    if (!isPuzzleMode(gameMode) || game.status !== "in-progress" || isInputLocked) {
+    if (
+      isDailyChallengeMode(gameMode) ||
+      !isPuzzleMode(gameMode) ||
+      game.status !== "in-progress" ||
+      isInputLocked
+    ) {
       return;
     }
 
@@ -533,7 +583,9 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       playTurnAtPosition(
         game,
         position,
-        isPuzzleMode(gameMode) && game.status === "in-progress",
+        isPuzzleMode(gameMode) &&
+          !isDailyChallengeMode(gameMode) &&
+          game.status === "in-progress",
       );
     },
     [game, gameMode, isInputLocked, playTurnAtPosition],
@@ -551,6 +603,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     isInputLocked,
     isAiThinking,
     isPuzzleMode: isPuzzleMode(gameMode),
+    isDailyChallengeMode: isDailyChallengeMode(gameMode),
     isPracticeMode: isPracticeMode(gameMode),
     hintsUsed,
     hintPosition,

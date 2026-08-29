@@ -6,6 +6,7 @@ export type AchievementId =
   | "perfect-puzzle"
   | "no-loops"
   | "streak-10"
+  | "daily-challenge-winner"
   | "puzzle-solver";
 
 export interface AchievementDefinition {

@@ -1,5 +1,5 @@
 import type { GameState } from "@/engine/game-state";
-import { isPracticeMode, isPuzzleMode } from "@/utils/game-messages";
+import { isPracticeMode, isSoloChallengeMode } from "@/utils/game-messages";
 
 export interface MatchStatisticsInput {
   game: GameState;
@@ -17,7 +17,7 @@ export function getMatchStatisticsInput({
     return null;
   }
 
-  if (isPuzzleMode(gameMode)) {
+  if (isSoloChallengeMode(gameMode)) {
     return {
       outcome: game.status === "won" ? ("win" as const) : ("loss" as const),
       movesPlayed: game.movesPlayed,

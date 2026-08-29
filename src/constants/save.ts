@@ -9,6 +9,7 @@ export const SAVE_KEYS = {
   progress: "arrow-grid-progress",
   profile: "arrow-grid-profile",
   theme: "arrow-grid-theme",
+  dailyChallenge: "arrow-grid-daily-challenge",
 } as const;
 
 export type SaveKey = (typeof SAVE_KEYS)[keyof typeof SAVE_KEYS];

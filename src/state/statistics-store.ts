@@ -8,7 +8,7 @@ import {
   type PlayerStatistics,
   type RecordMatchEndInput,
 } from "@/types/statistics";
-import { isPuzzleMode } from "@/utils/game-messages";
+import { isDailyChallengeMode, isPuzzleMode } from "@/utils/game-messages";
 
 interface StatisticsStore {
   stats: PlayerStatistics;
@@ -46,6 +46,21 @@ function applyMatchEnd(
 
   if (isPuzzleMode(input.gameMode) && input.outcome === "win") {
     nextStats.puzzlesCompleted += 1;
+  }
+
+  if (isDailyChallengeMode(input.gameMode)) {
+    nextStats.dailyChallengesPlayed += 1;
+
+    if (input.outcome === "win") {
+      nextStats.dailyChallengesWon += 1;
+
+      if (
+        nextStats.bestDailyMoves === null ||
+        input.movesPlayed < nextStats.bestDailyMoves
+      ) {
+        nextStats.bestDailyMoves = input.movesPlayed;
+      }
+    }
   }
 
   return nextStats;

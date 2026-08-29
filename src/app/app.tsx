@@ -8,8 +8,13 @@ import {
   StatisticsDialog,
 } from "@/components/menu";
 import { SettingsDialog } from "@/components/settings";
+import { useToast } from "@/hooks/use-toast";
+import { getDailyDateKey } from "@/engine/daily-challenge";
+import { useDailyChallengeStore } from "@/state/daily-challenge-store";
+import { useGameStore } from "@/state/game-store";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
+import { formatDailyStars } from "@/utils/daily-challenge";
 
 type AppScreen = "menu" | "game";
 
@@ -22,6 +27,28 @@ export function App() {
   const [isExitOpen, setIsExitOpen] = useState(false);
 
   const openGame = () => setScreen("game");
+  const { toast } = useToast();
+
+  const handleDailyChallenge = () => {
+    if (useDailyChallengeStore.getState().hasAttemptedToday()) {
+      const result = useDailyChallengeStore
+        .getState()
+        .getTodayResult(getDailyDateKey());
+
+      toast({
+        title: "Already played today",
+        description: result
+          ? `You finished with ${formatDailyStars(result.stars)} stars. New puzzle tomorrow.`
+          : "Come back tomorrow for a new challenge.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    useGameStore.getState().setGameMode("daily");
+    useGameStore.getState().startMatch();
+    openGame();
+  };
 
   const handleContinue = () => {
     openGame();
@@ -43,6 +70,7 @@ export function App() {
     <>
       <MainMenu
         onPlay={openGame}
+        onDailyChallenge={handleDailyChallenge}
         onContinue={handleContinue}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenStatistics={() => setIsStatisticsOpen(true)}

@@ -3,6 +3,9 @@ export interface PlayerStatistics {
   wins: number;
   losses: number;
   puzzlesCompleted: number;
+  dailyChallengesPlayed: number;
+  dailyChallengesWon: number;
+  bestDailyMoves: number | null;
   totalMoves: number;
   bestScore: number;
   fastestWinMoves: number | null;
@@ -23,6 +26,9 @@ export function createInitialStatistics(): PlayerStatistics {
     wins: 0,
     losses: 0,
     puzzlesCompleted: 0,
+    dailyChallengesPlayed: 0,
+    dailyChallengesWon: 0,
+    bestDailyMoves: null,
     totalMoves: 0,
     bestScore: 0,
     fastestWinMoves: null,
