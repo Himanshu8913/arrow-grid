@@ -26,6 +26,7 @@ import { useOrbAnimation } from "@/hooks/use-orb-animation";
 import { useToast } from "@/hooks/use-toast";
 import { useGameStore } from "@/state/game-store";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
+import { useStatisticsStore } from "@/state/statistics-store";
 import type { Board, Position } from "@/types/game";
 import {
   getMoveErrorMessage,
@@ -34,6 +35,7 @@ import {
   isPracticeMode,
   isPuzzleMode,
 } from "@/utils/game-messages";
+import { getMatchStatisticsInput } from "@/utils/match-statistics";
 
 function showTurnToasts(
   game: GameState,
@@ -135,6 +137,41 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   const finishTurnRef = useRef<
     (snapshot: GameState, turnResult: ExecuteTurnResult) => void
   >(() => undefined);
+  const recordedMatchKeyRef = useRef<string | null>(null);
+
+  const recordMatchStatistics = useCallback(
+    (nextGame: GameState) => {
+      if (nextGame.status !== "won" && nextGame.status !== "lost") {
+        return;
+      }
+
+      const matchKey = `${nextGame.puzzleId ?? "match"}-${nextGame.movesPlayed}-${nextGame.status}-${nextGame.winner ?? "none"}`;
+      if (recordedMatchKeyRef.current === matchKey) {
+        return;
+      }
+
+      recordedMatchKeyRef.current = matchKey;
+
+      const statisticsInput = getMatchStatisticsInput({
+        game: nextGame,
+        gameMode,
+      });
+
+      if (!statisticsInput) {
+        return;
+      }
+
+      const { recordMatchEnd, recordPvpGame } = useStatisticsStore.getState();
+
+      if ("kind" in statisticsInput && statisticsInput.kind === "pvp") {
+        recordPvpGame(statisticsInput.movesPlayed);
+        return;
+      }
+
+      recordMatchEnd(statisticsInput);
+    },
+    [gameMode],
+  );
 
   const handleOrbAnimationComplete = useCallback(
     (snapshot: GameState, turnResult: ExecuteTurnResult) => {
@@ -260,6 +297,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       setGoalCelebration(null);
       setSelectedPosition(null);
       showTurnToasts(nextGame, gameMode, toast);
+      recordMatchStatistics(nextGame);
 
       if (
         !isPuzzleMode(gameMode) &&
@@ -277,6 +315,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     [
       gameMode,
       queueAiTurnIfNeeded,
+      recordMatchStatistics,
       setEarnedStars,
       setGame,
       toast,
@@ -314,6 +353,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
 
   const startGame = useCallback(() => {
     clearTransientState();
+    recordedMatchKeyRef.current = null;
     setIsStartingGame(true);
     setUndoStack([]);
     resetPuzzleSession();
@@ -358,6 +398,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     }
 
     clearTransientState();
+    recordedMatchKeyRef.current = null;
     setUndoStack([]);
     resetPuzzleSession();
     setGame(createGameFromPuzzle(getPuzzleById(game.puzzleId)));

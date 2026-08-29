@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 
 import { PlayPanel, type PlayPanelHandle } from "@/components/game";
+import { StatisticsPanel } from "@/components/profile";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/hooks/use-theme";
 import { Avatar } from "@/ui/avatar";
@@ -108,6 +109,7 @@ export function App() {
                           {theme === "dark" ? "Light mode" : "Dark mode"}
                         </Button>
                       </div>
+                      <StatisticsPanel />
                     </div>
                   ),
                 },
