@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/hooks/use-theme";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -26,6 +27,7 @@ export function App() {
   const [playerName, setPlayerName] = useState("Guest Player");
   const [isStartingGame, setIsStartingGame] = useState(false);
   const { toast } = useToast();
+  const { theme, toggleTheme } = useTheme();
 
   const trimmedPlayerName = playerName.trim();
   const displayName = trimmedPlayerName || "Guest Player";
@@ -124,6 +126,19 @@ export function App() {
                         showValue
                         size="sm"
                       />
+                      <div className="flex items-center justify-between gap-3 rounded-2xl bg-bg-card p-3">
+                        <div className="text-left">
+                          <p className="text-sm font-semibold text-text-primary">
+                            Appearance
+                          </p>
+                          <p className="text-xs text-text-muted">
+                            Current theme: {theme}
+                          </p>
+                        </div>
+                        <Button type="button" variant="secondary" onClick={toggleTheme}>
+                          {theme === "dark" ? "Light mode" : "Dark mode"}
+                        </Button>
+                      </div>
                     </div>
                   ),
                 },
