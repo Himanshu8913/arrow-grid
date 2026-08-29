@@ -33,8 +33,9 @@ coverage
 playwright-report
 test-results
 
-# Markdown
+# Markdown (planning docs only; keep README tracked)
 *.md
+!README.md
 
 # Test
 coverage
