@@ -15,7 +15,7 @@ import { refreshLobbyPreview } from "@/save";
 import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
 import { useGameStore } from "@/state/game-store";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
-import { getPuzzleModeOptions } from "@/utils/puzzle-options";
+import { PuzzlePicker } from "@/components/game/puzzle-picker";
 import { isPracticeMode, isPuzzleMode } from "@/utils/game-messages";
 import { Badge } from "@/ui/badge";
 import { Dropdown } from "@/ui/dropdown";
@@ -46,7 +46,6 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       (state) => state.setSelectedPuzzleId,
     );
     useCustomPuzzleStore((state) => state.puzzles);
-    const puzzleModeOptions = getPuzzleModeOptions();
 
     const {
       game,
@@ -280,18 +279,15 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
         ) : null}
 
         {isPuzzle && !isDaily ? (
-          <Dropdown
-            className="mx-auto max-w-xs"
-            label="Puzzle"
+          <PuzzlePicker
             value={selectedPuzzleId}
             disabled={isModeLocked}
-            onValueChange={(value) => {
-              setSelectedPuzzleId(value);
+            onValueChange={(nextValue) => {
+              setSelectedPuzzleId(nextValue);
               if (!matchSessionActive) {
                 refreshLobbyPreview();
               }
             }}
-            options={puzzleModeOptions}
           />
         ) : null}
 
