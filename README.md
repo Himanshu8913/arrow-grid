@@ -45,7 +45,7 @@ cp .env.example .env
 | Variable | Description |
 |----------|-------------|
 | `VITE_APP_NAME` | Display name in menus and UI |
-| `VITE_APP_VERSION` | Version shown in credits and play screen |
+| `VITE_APP_VERSION` | Version shown in credits (defaults to `package.json` version `1.1.0`) |
 
 ### Development
 
