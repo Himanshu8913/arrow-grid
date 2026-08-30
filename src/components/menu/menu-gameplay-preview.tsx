@@ -28,15 +28,9 @@ function getTravelBounds(rotationIndex: number) {
 }
 
 /**
- * Looping miniature board that demonstrates a multi-step puzzle solve.
+ * Looping hero board that demonstrates a multi-step puzzle solve.
  */
-export function MenuGameplayPreview({
-  className,
-  variant = "default",
-}: {
-  className?: string;
-  variant?: "default" | "hero";
-}) {
+export function MenuGameplayPreview({ className }: { className?: string }) {
   const baseGame = useMemo(() => createPreviewBaseGame(DEMO), []);
   const [phase, setPhase] = useState<DemoPhase>("ready");
   const [rotationIndex, setRotationIndex] = useState(0);
@@ -132,56 +126,10 @@ export function MenuGameplayPreview({
   }, [phase, rotationIndex]);
 
   return (
-    <div
-      className={cn(
-        "menu-gameplay-preview",
-        variant === "hero" && "menu-dashboard__preview-hero",
-        className,
-      )}
-    >
-      {variant !== "hero" ? (
-        <div className="menu-gameplay-preview__halo" aria-hidden="true" />
-      ) : null}
+    <div className={cn("menu-gameplay-preview menu-dashboard__preview-hero", className)}>
       <div className="menu-gameplay-preview__panel">
-        {variant !== "hero" ? (
-          <div className="menu-gameplay-preview__meta">
-            <div className="menu-gameplay-preview__header">
-              <div>
-                <p className="menu-gameplay-preview__label">Live preview</p>
-                <p className="menu-gameplay-preview__title">{DEMO.title}</p>
-              </div>
-              <span className="menu-gameplay-preview__badge">Demo</span>
-            </div>
-
-            <div className="menu-gameplay-preview__steps" aria-hidden="true">
-              {STEPS.map((entry, index) => (
-                <span
-                  key={entry.id}
-                  className={cn(
-                    "menu-gameplay-preview__step",
-                    index === activeStepIndex && "menu-gameplay-preview__step--active",
-                    index < activeStepIndex && "menu-gameplay-preview__step--done",
-                  )}
-                >
-                  {entry.label}
-                </span>
-              ))}
-            </div>
-
-            <p className="menu-gameplay-preview__caption">{DEMO.caption}</p>
-          </div>
-        ) : null}
-
         <div className="menu-gameplay-preview__stage">
-          {variant !== "hero" ? (
-            <div className="menu-gameplay-preview__stage-glow" aria-hidden="true" />
-          ) : null}
-          <div
-            className={cn(
-              "menu-gameplay-preview__board-wrap",
-              variant === "hero" && "menu-gameplay-preview__board-wrap--hero",
-            )}
-          >
+          <div className="menu-gameplay-preview__board-wrap menu-gameplay-preview__board-wrap--hero">
             <BoardGrid
               className="menu-gameplay-preview__board pointer-events-none h-full w-full max-w-none"
               board={displayBoard}
@@ -206,22 +154,18 @@ export function MenuGameplayPreview({
         </div>
       </div>
 
-      {variant === "hero" ? (
-        <>
-          <p className="menu-dashboard__preview-caption">{DEMO.caption}</p>
-          <div className="menu-dashboard__preview-dots" aria-hidden="true">
-            {STEPS.map((entry, index) => (
-              <span
-                key={entry.id}
-                className={cn(
-                  "menu-dashboard__preview-dot",
-                  index === activeStepIndex && "menu-dashboard__preview-dot--active",
-                )}
-              />
-            ))}
-          </div>
-        </>
-      ) : null}
+      <p className="menu-dashboard__preview-caption">{DEMO.caption}</p>
+      <div className="menu-dashboard__preview-dots" aria-hidden="true">
+        {STEPS.map((entry, index) => (
+          <span
+            key={entry.id}
+            className={cn(
+              "menu-dashboard__preview-dot",
+              index === activeStepIndex && "menu-dashboard__preview-dot--active",
+            )}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -95,20 +95,17 @@ export function MainMenu({
             ) : null}
 
             <div className="menu-dashboard__mini-grid menu-stagger-item">
-              <MenuDailyChallengeCard
-                variant="compact"
-                onPlay={onDailyChallenge}
-              />
+              <MenuDailyChallengeCard onPlay={onDailyChallenge} />
               <MenuCommunityMiniCard onOpenCommunity={onOpenCommunity} />
             </div>
 
             <div className="menu-stagger-item">
-              <MenuHomeInsights layout="sidebar" />
+              <MenuHomeInsights />
             </div>
           </aside>
 
           <section className="menu-dashboard__hero menu-stagger-item">
-            <MenuGameplayPreview variant="hero" />
+            <MenuGameplayPreview />
           </section>
         </div>
 
