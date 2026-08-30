@@ -152,6 +152,8 @@ export const BoardTile = memo(function BoardTile({
         tile.kind === "empty" && "bg-bg-surface/60",
         tile.kind === "goal" && goalStyles[tile.owner],
         tile.kind === "teleporter" && getTeleporterStyle(tile.portalId),
+        tile.kind === "ice" &&
+          "board-tile-ice border-sky-300/50 bg-sky-400/15 text-sky-200",
         isGoalCelebrating && "goal-tile-celebrate z-10",
         isLoopTile && "loop-tile-highlight",
         isLoopPulsing && "loop-tile-pulse z-10",
@@ -191,6 +193,25 @@ export const BoardTile = memo(function BoardTile({
         <span className="text-lg font-bold" aria-hidden="true">
           ⟡
         </span>
+      ) : null}
+      {tile.kind === "ice" ? (
+        <>
+          <span
+            className="pointer-events-none absolute inset-1 rounded-[inherit] bg-gradient-to-br from-sky-200/20 to-sky-500/10"
+            aria-hidden="true"
+          />
+          {tile.direction ? (
+            <ArrowGlyph
+              direction={tile.direction}
+              className="opacity-40"
+              isRotating={false}
+            />
+          ) : (
+            <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
+              ICE
+            </span>
+          )}
+        </>
       ) : null}
 
       {isSpawn ? (

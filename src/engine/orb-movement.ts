@@ -26,6 +26,10 @@ export interface OrbSimulationResult {
   loopSegment?: Position[];
 }
 
+function isIceTileAt(board: Board, position: Position): boolean {
+  return getTile(board, position)?.kind === "ice";
+}
+
 /**
  * Resolves the outgoing direction for the tile under the orb.
  * Spawn cells are rendered separately but always contain an arrow underneath.
@@ -53,7 +57,8 @@ function getOutgoingDirection(
     tile.kind === "wall" ||
     tile.kind === "goal" ||
     tile.kind === "spawn" ||
-    tile.kind === "teleporter"
+    tile.kind === "teleporter" ||
+    tile.kind === "ice"
   ) {
     return null;
   }
@@ -76,6 +81,19 @@ function createLoopResult(
   return { path, stoppedReason: "loop", loopSegment };
 }
 
+function applyIceMomentum(
+  board: Board,
+  position: Position,
+  travelDirection: Direction,
+  momentum: Direction | null,
+): Direction | null {
+  if (!isIceTileAt(board, position)) {
+    return null;
+  }
+
+  return momentum ?? travelDirection;
+}
+
 /**
  * Handles goal, wall, empty, and teleporter resolution after the orb lands on a cell.
  */
@@ -87,6 +105,7 @@ function resolveLanding(
   teleporterTargets: Map<string, Position>,
   emptyTilesEnabled: boolean,
   arrivedViaTeleport: boolean,
+  travelDirection: Direction,
 ): OrbSimulationResult | "continue" {
   const landedTile = getTile(board, position);
 
@@ -130,6 +149,7 @@ function resolveLanding(
       teleporterTargets,
       emptyTilesEnabled,
       true,
+      travelDirection,
     );
   }
 
@@ -149,6 +169,7 @@ export function simulateOrbMovement(
   const path: Position[] = [start];
   const visited = new Set<string>([positionKey(start)]);
   let position = start;
+  let momentum: Direction | null = null;
 
   for (let step = 0; step < MAX_ORB_PATH_STEPS; step += 1) {
     const currentTile = getTile(board, position);
@@ -169,11 +190,14 @@ export function simulateOrbMovement(
       return { path, stoppedReason: "wall" };
     }
 
-    const direction = getOutgoingDirection(
-      board,
-      position,
-      emptyTilesEnabled,
-    );
+    let direction: Direction | null;
+
+    if (momentum !== null && isIceTileAt(board, position)) {
+      direction = momentum;
+    } else {
+      momentum = null;
+      direction = getOutgoingDirection(board, position, emptyTilesEnabled);
+    }
 
     if (!direction) {
       return { path, stoppedReason: "no-direction" };
@@ -203,6 +227,7 @@ export function simulateOrbMovement(
       teleporterTargets,
       emptyTilesEnabled,
       false,
+      direction,
     );
 
     if (landingResult !== "continue") {
@@ -210,6 +235,7 @@ export function simulateOrbMovement(
     }
 
     position = path[path.length - 1];
+    momentum = applyIceMomentum(board, position, direction, momentum);
   }
 
   return { path, stoppedReason: "max-steps" };

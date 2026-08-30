@@ -50,6 +50,13 @@ export function getTileAriaLabel(
     case "teleporter":
       details.push(`Teleporter ${tile.portalId.toUpperCase()}`);
       break;
+    case "ice":
+      details.push(
+        tile.direction
+          ? `Ice tile with decoy arrow pointing ${DIRECTION_LABELS[tile.direction]}`
+          : "Ice tile",
+      );
+      break;
   }
 
   if (state.isSpawn) {

@@ -61,6 +61,11 @@ function serializeTile(tile: Tile): SerializedTile {
         portalId: tile.portalId,
         target: serializePosition(tile.target),
       };
+    case "ice":
+      return {
+        kind: "ice",
+        direction: tile.direction,
+      };
   }
 }
 
@@ -82,6 +87,10 @@ function deserializeTile(tile: SerializedTile): Tile {
         portalId: tile.portalId ?? "a",
         target: deserializePosition(tile.target ?? { row: 0, col: 0 }),
       };
+    case "ice":
+      return tile.direction
+        ? { kind: "ice", direction: tile.direction }
+        : { kind: "ice" };
   }
 }
 

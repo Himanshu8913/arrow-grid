@@ -23,6 +23,10 @@ export function cloneBoard(board: Board): Board {
             portalId: tile.portalId,
             target: { ...tile.target },
           };
+        case "ice":
+          return tile.direction
+            ? { kind: "ice", direction: tile.direction }
+            : { kind: "ice" };
       }
     }),
   );

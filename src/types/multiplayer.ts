@@ -1,7 +1,7 @@
 import type { Direction, PlayerId, RotateMove } from "@/types/game";
 
 /** Wire format version for multiplayer payloads. */
-export const MULTIPLAYER_WIRE_VERSION = 2;
+export const MULTIPLAYER_WIRE_VERSION = 3;
 
 export type MoveSource = "local" | "remote" | "ai" | "replay";
 
@@ -25,7 +25,7 @@ export interface SerializedRotateMove {
 }
 
 export interface SerializedTile {
-  kind: "arrow" | "wall" | "empty" | "goal" | "spawn" | "teleporter";
+  kind: "arrow" | "wall" | "empty" | "goal" | "spawn" | "teleporter" | "ice";
   direction?: Direction;
   owner?: PlayerId;
   portalId?: string;

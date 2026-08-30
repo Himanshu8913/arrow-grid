@@ -55,10 +55,41 @@ const portalHop: PuzzleDefinition = {
   placements: [
     { row: 0, col: 0, tile: { kind: "arrow", direction: "right" } },
     { row: 0, col: 1, tile: { kind: "arrow", direction: "up" } },
-    { row: 0, col: 2, tile: { kind: "teleporter", portalId: "alpha", target: { row: 4, col: 2 } } },
+    {
+      row: 0,
+      col: 2,
+      tile: {
+        kind: "teleporter",
+        portalId: "alpha",
+        target: { row: 4, col: 2 },
+      },
+    },
     { row: 4, col: 2, tile: { kind: "arrow", direction: "left" } },
     { row: 4, col: 1, tile: { kind: "arrow", direction: "left" } },
     { row: 4, col: 0, tile: { kind: "goal", owner: "player1" } },
+  ],
+};
+
+const iceSlide: PuzzleDefinition = {
+  id: "ice-slide",
+  title: "Ice Slide",
+  description:
+    "Slide across the ice, then turn the orb down before it hits the wall.",
+  size: 5,
+  spawn: { row: 0, col: 0 },
+  goal: { row: 4, col: 3 },
+  targetMoves: 1,
+  moveLimit: 6,
+  shortestPathLength: 6,
+  placements: [
+    { row: 0, col: 0, tile: { kind: "arrow", direction: "right" } },
+    { row: 0, col: 1, tile: { kind: "ice" } },
+    { row: 0, col: 2, tile: { kind: "ice", direction: "down" } },
+    { row: 0, col: 3, tile: { kind: "arrow", direction: "right" } },
+    { row: 1, col: 3, tile: { kind: "arrow", direction: "down" } },
+    { row: 2, col: 3, tile: { kind: "arrow", direction: "down" } },
+    { row: 3, col: 3, tile: { kind: "arrow", direction: "down" } },
+    { row: 4, col: 3, tile: { kind: "goal", owner: "player1" } },
   ],
 };
 
@@ -66,6 +97,7 @@ export const PUZZLE_CATALOG: PuzzleDefinition[] = [
   firstSteps,
   cornerRoute,
   portalHop,
+  iceSlide,
 ];
 
 export const RANDOM_PUZZLE_ID = "random";

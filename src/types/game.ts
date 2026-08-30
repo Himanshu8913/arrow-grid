@@ -10,7 +10,8 @@ export type TileKind =
   | "wall"
   | "goal"
   | "spawn"
-  | "teleporter";
+  | "teleporter"
+  | "ice";
 
 export interface Position {
   row: number;
@@ -47,13 +48,20 @@ export interface TeleporterTile {
   target: Position;
 }
 
+export interface IceTile {
+  kind: "ice";
+  /** Optional decoy arrow; ignored while the orb is sliding on ice. */
+  direction?: Direction;
+}
+
 export type Tile =
   | ArrowTile
   | WallTile
   | EmptyTile
   | SpawnTile
   | GoalTile
-  | TeleporterTile;
+  | TeleporterTile
+  | IceTile;
 
 /** Row-major 2D board. Each cell holds exactly one tile object. */
 export type Board = Tile[][];
