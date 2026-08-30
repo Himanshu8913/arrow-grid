@@ -13,5 +13,5 @@ export const PERFECT_BONUS = 100;
 /** Multiplier applied to `(targetMoves - actualMoves)`. */
 export const EFFICIENCY_BONUS_PER_MOVE = 10;
 
-/** Default match points required to win multiplayer. */
+/** Default match points required to win multiplayer (5-match / first to 3). */
 export const DEFAULT_WINNING_MATCH_POINTS = 3;

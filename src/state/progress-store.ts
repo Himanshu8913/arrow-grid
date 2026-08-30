@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 import { SAVE_KEYS, SAVE_VERSION } from "@/constants/save";
 import { DEFAULT_PUZZLE_ID } from "@/data/puzzles";
 import type { AiDifficulty } from "@/constants/ai";
+import type { MatchFormat } from "@/constants/match-format";
 import type { GameState } from "@/engine/game-state";
 import {
   createInitialGameProgress,
@@ -15,6 +16,7 @@ import type { PuzzleStarRating } from "@/types/puzzle";
 interface ProgressStore extends GameProgress {
   setGameMode: (gameMode: string) => void;
   setAiDifficulty: (aiDifficulty: AiDifficulty) => void;
+  setMatchFormat: (matchFormat: MatchFormat) => void;
   setSelectedPuzzleId: (puzzleId: string) => void;
   syncActiveMatch: (game: GameState) => void;
   recordPuzzleCompletion: (puzzleId: string, stars: PuzzleStarRating) => void;
@@ -51,6 +53,7 @@ export const useProgressStore = create<ProgressStore>()(
       ...createInitialGameProgress(),
       setGameMode: (gameMode) => set({ gameMode }),
       setAiDifficulty: (aiDifficulty) => set({ aiDifficulty }),
+      setMatchFormat: (matchFormat) => set({ matchFormat }),
       setSelectedPuzzleId: (selectedPuzzleId) => set({ selectedPuzzleId }),
       syncActiveMatch: (game) =>
         set({
@@ -76,6 +79,9 @@ export const useProgressStore = create<ProgressStore>()(
       merge: (persistedState, currentState) => ({
         ...currentState,
         ...(persistedState as Partial<GameProgress>),
+        matchFormat:
+          (persistedState as Partial<GameProgress>).matchFormat ??
+          currentState.matchFormat,
         version: SAVE_VERSION,
       }),
     },
@@ -88,6 +94,7 @@ export function getInitialGamePreferences() {
   return {
     gameMode: progress.gameMode,
     aiDifficulty: progress.aiDifficulty,
+    matchFormat: progress.matchFormat,
     selectedPuzzleId: progress.selectedPuzzleId || DEFAULT_PUZZLE_ID,
     activeMatch: progress.activeMatch,
   };

@@ -1,3 +1,4 @@
+import { formatMatchPointsProgress } from "@/constants/match-format";
 import type { GameState } from "@/engine/game-state";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { getPlayerLabel, isPracticeMode } from "@/utils/game-messages";
@@ -38,6 +39,7 @@ export function ScoreHud({ game, gameMode }: ScoreHudProps) {
         label={getPlayerLabel("player1", gameMode)}
         score={playerOneScore}
         points={playerOnePoints}
+        pointsTarget={game.winningScore}
         isActive={game.currentPlayer === "player1" && game.status === "in-progress"}
         activeTurnLabel="Your turn"
         tone="primary"
@@ -46,6 +48,7 @@ export function ScoreHud({ game, gameMode }: ScoreHudProps) {
         label={getPlayerLabel("player2", gameMode)}
         score={playerTwoScore}
         points={playerTwoPoints}
+        pointsTarget={game.winningScore}
         isActive={game.currentPlayer === "player2" && game.status === "in-progress"}
         activeTurnLabel={practiceMode ? "AI turn" : "Your turn"}
         tone="secondary"
@@ -58,6 +61,7 @@ interface PlayerScoreCardProps {
   label: string;
   score: number;
   points: number;
+  pointsTarget: number;
   isActive: boolean;
   activeTurnLabel: string;
   tone: "primary" | "secondary";
@@ -67,6 +71,7 @@ function PlayerScoreCard({
   label,
   score,
   points,
+  pointsTarget,
   isActive,
   activeTurnLabel,
   tone,
@@ -110,7 +115,9 @@ function PlayerScoreCard({
       </div>
       <div className="mt-1 flex items-center justify-between gap-2 tabular-nums">
         <span className="text-text-muted">Score {score}</span>
-        <span className="font-semibold text-text-primary">Pts {points}</span>
+        <span className="font-semibold text-text-primary">
+          Rounds {formatMatchPointsProgress(points, pointsTarget)}
+        </span>
       </div>
     </div>
   );

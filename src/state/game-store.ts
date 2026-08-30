@@ -1,6 +1,8 @@
 import { create } from "zustand";
 
 import type { AiDifficulty } from "@/constants/ai";
+import type { MatchFormat } from "@/constants/match-format";
+import { getWinningScoreForFormat, DEFAULT_MATCH_FORMAT } from "@/constants/match-format";
 import { createNewGame } from "@/engine";
 import {
   createDailyChallengeGame,
@@ -19,6 +21,7 @@ import {
   getPlayerCountForMode,
   isDailyChallengeMode,
   isPuzzleMode,
+  isVersusMatchMode,
 } from "@/utils/game-messages";
 
 interface SetGameOptions {
@@ -29,10 +32,12 @@ interface GameStore {
   game: GameState;
   gameMode: string;
   aiDifficulty: AiDifficulty;
+  matchFormat: MatchFormat;
   matchSessionActive: boolean;
   setGame: (game: GameState, options?: SetGameOptions) => void;
   setGameMode: (gameMode: string) => void;
   setAiDifficulty: (aiDifficulty: AiDifficulty) => void;
+  setMatchFormat: (matchFormat: MatchFormat) => void;
   setMatchSessionActive: (active: boolean) => void;
   startMatch: (seed?: number) => void;
 }
@@ -44,6 +49,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   game: createNewGame({ seed: 42, playerCount: 2 }),
   gameMode: "pvp",
   aiDifficulty: "medium",
+  matchFormat: DEFAULT_MATCH_FORMAT,
   matchSessionActive: false,
   setGame: (game, options) => {
     const normalizedGame = normalizeGameState(game);
@@ -60,6 +66,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setAiDifficulty: (aiDifficulty) => {
     set({ aiDifficulty });
     useProgressStore.getState().setAiDifficulty(aiDifficulty);
+  },
+  setMatchFormat: (matchFormat) => {
+    set({ matchFormat });
+    useProgressStore.getState().setMatchFormat(matchFormat);
   },
   setMatchSessionActive: (matchSessionActive) => set({ matchSessionActive }),
   startMatch: (seed = Date.now()) => {
@@ -91,6 +101,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const nextGame = createNewGame({
       seed,
       playerCount: getPlayerCountForMode(gameMode),
+      winningScore: isVersusMatchMode(gameMode)
+        ? getWinningScoreForFormat(get().matchFormat)
+        : undefined,
     });
     set({ game: nextGame, matchSessionActive: true });
     useProgressStore.getState().syncActiveMatch(nextGame);

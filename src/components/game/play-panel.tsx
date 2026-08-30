@@ -10,6 +10,7 @@ import { PuzzleHud } from "@/components/game/puzzle-hud";
 import { ScoreHud } from "@/components/game/score-hud";
 import { TurnIndicator } from "@/components/game/turn-indicator";
 import { AiDifficultyPicker } from "@/components/game/ai-difficulty-picker";
+import { MatchFormatPicker } from "@/components/game/match-format-picker";
 import { GameModePicker } from "@/components/game/game-mode-picker";
 import { PuzzlePicker } from "@/components/game/puzzle-picker";
 import { useGameplay } from "@/hooks/use-gameplay";
@@ -17,7 +18,7 @@ import { refreshLobbyPreview } from "@/save";
 import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
 import { useGameStore } from "@/state/game-store";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
-import { isPracticeMode } from "@/utils/game-messages";
+import { isPracticeMode, isVersusMatchMode } from "@/utils/game-messages";
 import { LoaderOverlay } from "@/ui/loader";
 
 export interface PlayPanelProps {
@@ -36,8 +37,10 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
   function PlayPanel({ onStartingChange, onReturnToMenu }, ref) {
     const gameMode = useGameStore((state) => state.gameMode);
     const aiDifficulty = useGameStore((state) => state.aiDifficulty);
+    const matchFormat = useGameStore((state) => state.matchFormat);
     const setGameMode = useGameStore((state) => state.setGameMode);
     const setAiDifficulty = useGameStore((state) => state.setAiDifficulty);
+    const setMatchFormat = useGameStore((state) => state.setMatchFormat);
     const selectedPuzzleId = usePuzzleSessionStore(
       (state) => state.selectedPuzzleId,
     );
@@ -264,6 +267,19 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
               disabled={isModeLocked}
               onValueChange={(nextValue) => {
                 setSelectedPuzzleId(nextValue);
+                if (!matchSessionActive) {
+                  refreshLobbyPreview();
+                }
+              }}
+            />
+          ) : null}
+
+          {isVersusMatchMode(gameMode) ? (
+            <MatchFormatPicker
+              value={matchFormat}
+              disabled={isModeLocked}
+              onValueChange={(nextValue) => {
+                setMatchFormat(nextValue);
                 if (!matchSessionActive) {
                   refreshLobbyPreview();
                 }

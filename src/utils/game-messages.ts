@@ -37,6 +37,13 @@ export function isPracticeMode(gameMode: string): boolean {
   return gameMode === "practice";
 }
 
+/**
+ * Local two-player or human-vs-AI matches that use round-based scoring.
+ */
+export function isVersusMatchMode(gameMode: string): boolean {
+  return gameMode === "practice" || gameMode === "pvp";
+}
+
 export function isPuzzleMode(gameMode: string): boolean {
   return gameMode === "puzzle";
 }

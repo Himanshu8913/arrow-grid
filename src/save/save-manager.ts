@@ -1,3 +1,4 @@
+import { getWinningScoreForFormat } from "@/constants/match-format";
 import { SAVE_KEYS } from "@/constants/save";
 import { DEFAULT_PUZZLE_ID } from "@/data/puzzles";
 import { createNewGame } from "@/engine";
@@ -26,6 +27,7 @@ import {
   getPlayerCountForMode,
   isDailyChallengeMode,
   isPuzzleMode,
+  isVersusMatchMode,
 } from "@/utils/game-messages";
 
 export interface SaveSnapshot {
@@ -72,9 +74,14 @@ function createLobbyGame(
     );
   }
 
+  const matchFormat = useProgressStore.getState().matchFormat;
+
   return createNewGame({
     seed,
     playerCount: getPlayerCountForMode(gameMode),
+    winningScore: isVersusMatchMode(gameMode)
+      ? getWinningScoreForFormat(matchFormat)
+      : undefined,
   });
 }
 
@@ -110,6 +117,7 @@ export function preparePlayLobby(): void {
 
   gameStore.setGameMode(lobbyMode);
   gameStore.setAiDifficulty(progress.aiDifficulty);
+  gameStore.setMatchFormat(progress.matchFormat);
   usePuzzleSessionStore.getState().setSelectedPuzzleId(selectedPuzzleId);
   usePuzzleSessionStore.getState().resetPuzzleSession();
 
@@ -133,6 +141,7 @@ export function resumeSavedMatch(): boolean {
 
   gameStore.setGameMode(progress.gameMode);
   gameStore.setAiDifficulty(progress.aiDifficulty);
+  gameStore.setMatchFormat(progress.matchFormat);
   usePuzzleSessionStore.getState().setSelectedPuzzleId(selectedPuzzleId);
   gameStore.setGame(activeMatch.game, { persist: false });
   gameStore.setMatchSessionActive(true);
@@ -153,6 +162,7 @@ export function clearGameplayProgress(): void {
   const gameStore = useGameStore.getState();
   gameStore.setGameMode(defaults.gameMode);
   gameStore.setAiDifficulty(defaults.aiDifficulty);
+  gameStore.setMatchFormat(defaults.matchFormat);
   usePuzzleSessionStore.getState().setSelectedPuzzleId(defaults.selectedPuzzleId);
   gameStore.startMatch();
 }
