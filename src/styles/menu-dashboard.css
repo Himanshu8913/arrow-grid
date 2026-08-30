@@ -6,7 +6,6 @@
 
 .menu-dashboard__shell {
   display: flex;
-  min-height: 100dvh;
   flex-direction: column;
   gap: 1rem;
   padding-bottom: 5.5rem;

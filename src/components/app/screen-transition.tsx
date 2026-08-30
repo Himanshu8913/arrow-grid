@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import { cn } from "@/utils/cn";
 
@@ -16,6 +16,12 @@ export function ScreenTransition({
   children,
   className,
 }: ScreenTransitionProps) {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [screenKey]);
+
   return (
     <div key={screenKey} className={cn("screen-enter min-h-dvh", className)}>
       {children}

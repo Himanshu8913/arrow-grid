@@ -56,7 +56,7 @@ export function MainMenu({
   const dailyStreak = getDailyChallengeStreak(dailyHistory);
 
   return (
-    <div className="menu-dashboard relative min-h-dvh overflow-hidden px-4 py-4 sm:px-6 lg:px-8">
+    <div className="menu-dashboard relative min-h-dvh px-4 py-4 sm:px-6 lg:px-8">
       <MenuBackground />
 
       <div className="menu-dashboard__shell menu-hero-enter relative z-10 mx-auto w-full max-w-[90rem]">
