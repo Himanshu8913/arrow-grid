@@ -40,11 +40,21 @@ export function createGameFromPuzzle(puzzle: PuzzleDefinition): GameState {
   }
 
   const board = buildPuzzleBoard(puzzle);
+  const goals: GeneratedBoard["goals"] = {};
+
+  if (puzzle.goal) {
+    goals.player1 = puzzle.goal;
+  }
+
+  if (puzzle.goal2) {
+    goals.player2 = puzzle.goal2;
+  }
+
   const generated: GeneratedBoard = {
     board,
     size: puzzle.size,
     spawn: puzzle.spawn,
-    goals: { player1: puzzle.goal },
+    goals,
     seed: hashPuzzleId(puzzle.id),
   };
 

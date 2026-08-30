@@ -29,6 +29,9 @@ import { generateBoard } from "@/engine/board-generator";
 import { createGameState } from "@/engine/game-state";
 import type { GameState } from "@/engine/game-state";
 import { createRandomSeed } from "@/engine/random";
+import { isCustomPuzzleId } from "@/engine/custom-puzzle";
+import { createGameFromPuzzle } from "@/engine/puzzle";
+import { resolvePuzzleDefinition } from "@/engine/puzzle-resolver";
 import type { Position } from "@/types/game";
 
 export const RANDOM_PUZZLE_ID = "random";
@@ -167,6 +170,10 @@ export function createPuzzleGameForSelection(
 
       throw new Error(`Failed to generate a ${route.id} puzzle.`);
     }
+  }
+
+  if (isCustomPuzzleId(puzzleId)) {
+    return createGameFromPuzzle(resolvePuzzleDefinition(puzzleId));
   }
 
   return createCatalogGame(puzzleId);

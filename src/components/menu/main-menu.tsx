@@ -12,6 +12,8 @@ export interface MainMenuProps {
   onPlay: () => void;
   onDailyChallenge: () => void;
   onContinue: () => void;
+  onOpenEditor: () => void;
+  onOpenCommunity: () => void;
   onOpenSettings: () => void;
   onOpenStatistics: () => void;
   onOpenAchievements: () => void;
@@ -27,6 +29,8 @@ export function MainMenu({
   onPlay,
   onDailyChallenge,
   onContinue,
+  onOpenEditor,
+  onOpenCommunity,
   onOpenSettings,
   onOpenStatistics,
   onOpenAchievements,
@@ -84,6 +88,18 @@ export function MainMenu({
                 : "No saved match in progress"
             }
             onClick={onContinue}
+          />
+          <MenuButton
+            label="Puzzle Editor"
+            variant="secondary"
+            hint="Create and test your own puzzles"
+            onClick={onOpenEditor}
+          />
+          <MenuButton
+            label="Community Puzzles"
+            variant="secondary"
+            hint="Play, rate, and import shared puzzles"
+            onClick={onOpenCommunity}
           />
           <MenuButton
             label="Settings"

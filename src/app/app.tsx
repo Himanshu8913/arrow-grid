@@ -10,6 +10,8 @@ import {
   LazyStatisticsDialog,
 } from "@/components/app/lazy-screens";
 import { ScreenTransition } from "@/components/app/screen-transition";
+import { CommunityScreen } from "@/components/community/community-screen";
+import { PuzzleEditorScreen } from "@/components/editor/puzzle-editor-screen";
 import { MainMenu } from "@/components/menu";
 import { useToast } from "@/hooks/use-toast";
 import { preparePlayLobby, resumeSavedMatch } from "@/save";
@@ -20,7 +22,7 @@ import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { formatDailyStars } from "@/utils/daily-challenge";
 
-type AppScreen = "menu" | "game";
+type AppScreen = "menu" | "game" | "editor" | "community";
 
 export function App() {
   const [screen, setScreen] = useState<AppScreen>("menu");
@@ -30,6 +32,7 @@ export function App() {
   const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [isExitOpen, setIsExitOpen] = useState(false);
+  const [editingPuzzleId, setEditingPuzzleId] = useState<string | undefined>();
 
   const openGame = () => setScreen("game");
   const { toast } = useToast();
@@ -81,12 +84,39 @@ export function App() {
             <LazyGameScreen onBackToMenu={() => setScreen("menu")} />
           </LazyMount>
         </ScreenTransition>
+      ) : screen === "editor" ? (
+        <ScreenTransition screenKey="editor">
+          <PuzzleEditorScreen
+            editingPuzzleId={editingPuzzleId}
+            onBack={() => {
+              setEditingPuzzleId(undefined);
+              setScreen("menu");
+            }}
+            onPlayTest={() => setScreen("game")}
+          />
+        </ScreenTransition>
+      ) : screen === "community" ? (
+        <ScreenTransition screenKey="community">
+          <CommunityScreen
+            onBack={() => setScreen("menu")}
+            onEditPuzzle={(puzzleId) => {
+              setEditingPuzzleId(puzzleId);
+              setScreen("editor");
+            }}
+            onPlay={() => setScreen("game")}
+          />
+        </ScreenTransition>
       ) : (
         <ScreenTransition screenKey="menu">
           <MainMenu
             onPlay={handlePlay}
             onDailyChallenge={handleDailyChallenge}
             onContinue={handleContinue}
+            onOpenEditor={() => {
+              setEditingPuzzleId(undefined);
+              setScreen("editor");
+            }}
+            onOpenCommunity={() => setScreen("community")}
             onOpenSettings={() => setIsSettingsOpen(true)}
             onOpenStatistics={() => setIsStatisticsOpen(true)}
             onOpenAchievements={() => setIsAchievementsOpen(true)}

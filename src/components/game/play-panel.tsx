@@ -2,7 +2,8 @@ import { forwardRef, useEffect, useImperativeHandle } from "react";
 
 import { BoardGrid } from "@/components/board";
 import { getAppVersion } from "@/constants/app";
-import { PUZZLE_MODE_OPTIONS } from "@/data/puzzles";
+import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
+import { getPuzzleModeOptions } from "@/utils/puzzle-options";
 import { GameStatusAnnouncer } from "@/components/game/game-status-announcer";
 import { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
 import { DailyChallengeHud } from "@/components/game/daily-challenge-hud";
@@ -45,6 +46,8 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
     const setSelectedPuzzleId = usePuzzleSessionStore(
       (state) => state.setSelectedPuzzleId,
     );
+    useCustomPuzzleStore((state) => state.puzzles);
+    const puzzleModeOptions = getPuzzleModeOptions();
 
     const {
       game,
@@ -290,7 +293,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
                 refreshLobbyPreview();
               }
             }}
-            options={PUZZLE_MODE_OPTIONS}
+            options={puzzleModeOptions}
           />
         ) : null}
 

@@ -1,5 +1,5 @@
 import { SAVE_KEYS } from "@/constants/save";
-import { DEFAULT_PUZZLE_ID, getPuzzleById } from "@/data/puzzles";
+import { DEFAULT_PUZZLE_ID } from "@/data/puzzles";
 import { createNewGame } from "@/engine";
 import {
   createDailyChallengeGame,
@@ -7,8 +7,10 @@ import {
 } from "@/engine/daily-challenge";
 import type { GameState } from "@/engine/game-state";
 import { createGameFromPuzzle } from "@/engine/puzzle";
+import { resolvePuzzleDefinition } from "@/engine/puzzle-resolver";
 import { createPuzzleGameForSelection } from "@/engine/random-puzzle";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
+import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
 import { useCosmeticsStore } from "@/state/cosmetics-store";
 import { useAchievementStore } from "@/state/achievement-store";
 import { useGameStore } from "@/state/game-store";
@@ -65,7 +67,7 @@ function createLobbyGame(
 
   if (isPuzzleMode(gameMode)) {
     return createPuzzleGameForSelection(selectedPuzzleId, (puzzleId) =>
-      createGameFromPuzzle(getPuzzleById(puzzleId)),
+      createGameFromPuzzle(resolvePuzzleDefinition(puzzleId)),
     );
   }
 
@@ -159,6 +161,7 @@ export function clearGameplayProgress(): void {
  */
 export function clearAllSaves(): void {
   clearGameplayProgress();
+  useCustomPuzzleStore.getState().resetLibrary();
   useSettingsStore.getState().resetSettings();
   useProfileStore.getState().resetProfile();
   useCosmeticsStore.getState().resetCosmetics();

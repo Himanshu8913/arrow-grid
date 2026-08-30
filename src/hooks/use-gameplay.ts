@@ -3,7 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { GoalCelebrationState } from "@/components/board";
 import { playSfx } from "@/audio";
 import { recordPuzzleCompletion } from "@/save";
-import { isCatalogPuzzleId, getPuzzleById } from "@/data/puzzles";
+import { isCustomPuzzleId } from "@/engine/custom-puzzle";
+import { isCatalogPuzzleId } from "@/data/puzzles";
+import { resolvePuzzleDefinition } from "@/engine/puzzle-resolver";
 import { getPuzzleTargetMoves } from "@/utils/puzzle-display";
 import {
   applyPuzzleMoveLimit,
@@ -383,7 +385,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         nextGame.status === "won" &&
         nextGame.puzzleId &&
         starsForAchievements &&
-        isCatalogPuzzleId(nextGame.puzzleId)
+        (isCatalogPuzzleId(nextGame.puzzleId) ||
+          isCustomPuzzleId(nextGame.puzzleId))
       ) {
         recordPuzzleCompletion(nextGame.puzzleId, starsForAchievements);
       }
@@ -587,7 +590,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     const selectedPuzzleId = usePuzzleSessionStore.getState().selectedPuzzleId;
     setGame(
       createPuzzleGameForSelection(selectedPuzzleId, (puzzleId) =>
-        createGameFromPuzzle(getPuzzleById(puzzleId)),
+        createGameFromPuzzle(resolvePuzzleDefinition(puzzleId)),
       ),
     );
   }, [clearTransientState, game.puzzleId, gameMode, resetPuzzleSession, setGame, toast]);

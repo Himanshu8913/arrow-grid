@@ -1,4 +1,5 @@
 import type { GameState } from "@/engine/game-state";
+import { isCustomPuzzleId } from "@/engine/custom-puzzle";
 import {
   getMechanicPuzzleSeed,
   isProceduralMechanicPuzzleId,
@@ -8,6 +9,7 @@ import {
   isRandomPuzzleId,
 } from "@/engine/random-puzzle";
 import { getPuzzleById, isCatalogPuzzleId, resolveCatalogPuzzleId } from "@/data/puzzles";
+import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
 
 export interface PuzzleDisplayInfo {
   title: string;
@@ -50,6 +52,15 @@ export function getPuzzleDisplayInfo(game: GameState): PuzzleDisplayInfo {
     };
   }
 
+  if (game.puzzleId && isCustomPuzzleId(game.puzzleId)) {
+    const record = useCustomPuzzleStore.getState().getPuzzle(game.puzzleId);
+
+    return {
+      title: record?.puzzle.title ?? "Community Puzzle",
+      description: record?.puzzle.description ?? "A player-created puzzle.",
+    };
+  }
+
   if (game.puzzleId && isCatalogPuzzleId(game.puzzleId)) {
     const puzzle = getPuzzleById(resolveCatalogPuzzleId(game.puzzleId));
 
@@ -71,6 +82,14 @@ export function getPuzzleDisplayInfo(game: GameState): PuzzleDisplayInfo {
 export function getPuzzleTargetMoves(game: GameState): number {
   if (game.targetMoves !== undefined) {
     return game.targetMoves;
+  }
+
+  if (game.puzzleId && isCustomPuzzleId(game.puzzleId)) {
+    const record = useCustomPuzzleStore.getState().getPuzzle(game.puzzleId);
+
+    if (record?.puzzle.targetMoves !== undefined) {
+      return record.puzzle.targetMoves;
+    }
   }
 
   if (game.puzzleId && isCatalogPuzzleId(game.puzzleId)) {

@@ -15,6 +15,8 @@ export interface PuzzleDefinition {
   size?: number;
   spawn?: Position;
   goal?: Position;
+  /** Optional second goal for multi-orb puzzles (player2). */
+  goal2?: Position;
   targetMoves?: number;
   moveLimit?: number;
   shortestPathLength?: number;

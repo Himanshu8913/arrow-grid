@@ -8,9 +8,11 @@ import {
 } from "@/engine/daily-challenge";
 import { createGameFromPuzzle } from "@/engine/puzzle";
 import { createPuzzleGameForSelection } from "@/engine/random-puzzle";
+import { resolvePuzzleDefinition } from "@/engine/puzzle-resolver";
+import { isCustomPuzzleId } from "@/engine/custom-puzzle";
+import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
 import type { GameState } from "@/engine/game-state";
 import { normalizeGameState } from "@/engine/game-state";
-import { getPuzzleById } from "@/data/puzzles";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import { useProgressStore } from "@/state/progress-store";
 import {
@@ -76,8 +78,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const puzzleId = usePuzzleSessionStore.getState().selectedPuzzleId;
       usePuzzleSessionStore.getState().resetPuzzleSession();
       const nextGame = createPuzzleGameForSelection(puzzleId, (id) =>
-        createGameFromPuzzle(getPuzzleById(id)),
+        createGameFromPuzzle(resolvePuzzleDefinition(id)),
       );
+      if (isCustomPuzzleId(puzzleId)) {
+        useCustomPuzzleStore.getState().recordPlay(puzzleId);
+      }
       set({ game: nextGame, matchSessionActive: true });
       useProgressStore.getState().syncActiveMatch(nextGame);
       return;
