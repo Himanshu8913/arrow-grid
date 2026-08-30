@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { MenuBackground } from "@/components/menu/menu-background";
+import { DEFAULT_PUZZLE_ID } from "@/data/puzzles";
 import {
   decodePuzzleShareCode,
   encodePuzzleShareCode,
@@ -14,6 +15,7 @@ import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import type { CommunityPuzzleSort } from "@/types/custom-puzzle";
 import { createGameFromPuzzle } from "@/engine/puzzle";
 import { Button } from "@/ui/button";
+import { Dialog } from "@/ui/dialog";
 import { Dropdown } from "@/ui/dropdown";
 import { Input } from "@/ui/input";
 import { Badge } from "@/ui/badge";
@@ -50,11 +52,16 @@ export function CommunityScreen({
 
   const [sort, setSort] = useState<CommunityPuzzleSort>("newest");
   const [importCode, setImportCode] = useState("");
+  const [puzzleIdToDelete, setPuzzleIdToDelete] = useState<string | null>(null);
 
   const records = useMemo(
     () => useCustomPuzzleStore.getState().listPuzzles(sort),
     [puzzles, sort],
   );
+
+  const deletingRecord = puzzleIdToDelete
+    ? records.find((record) => record.meta.id === puzzleIdToDelete)
+    : undefined;
 
   const handleImport = () => {
     try {
@@ -116,6 +123,27 @@ export function CommunityScreen({
         variant: "warning",
       });
     }
+  };
+
+  const handleDelete = () => {
+    if (!puzzleIdToDelete) {
+      return;
+    }
+
+    deletePuzzle(puzzleIdToDelete);
+
+    if (
+      usePuzzleSessionStore.getState().selectedPuzzleId === puzzleIdToDelete
+    ) {
+      usePuzzleSessionStore.getState().setSelectedPuzzleId(DEFAULT_PUZZLE_ID);
+    }
+
+    setPuzzleIdToDelete(null);
+    toast({
+      title: "Puzzle deleted",
+      description: "The puzzle was removed from your library.",
+      variant: "success",
+    });
   };
 
   return (
@@ -239,7 +267,7 @@ export function CommunityScreen({
                         type="button"
                         size="sm"
                         variant="danger"
-                        onClick={() => deletePuzzle(record.meta.id)}
+                        onClick={() => setPuzzleIdToDelete(record.meta.id)}
                       >
                         Delete
                       </Button>
@@ -251,6 +279,33 @@ export function CommunityScreen({
           )}
         </div>
       </div>
+
+      <Dialog
+        open={puzzleIdToDelete !== null}
+        onClose={() => setPuzzleIdToDelete(null)}
+        title="Delete this puzzle?"
+        description="This removes it from your library and the puzzle dropdown."
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setPuzzleIdToDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button type="button" variant="danger" onClick={handleDelete}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-text-muted">
+          {deletingRecord
+            ? `"${deletingRecord.puzzle.title}" will be permanently removed from this device.`
+            : "This puzzle will be permanently removed from this device."}
+        </p>
+      </Dialog>
     </div>
   );
 }

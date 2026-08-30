@@ -5,6 +5,7 @@ import {
   resizeEditorBoard,
 } from "@/components/editor/puzzle-editor-board";
 import { MenuBackground } from "@/components/menu/menu-background";
+import { DEFAULT_PUZZLE_ID } from "@/data/puzzles";
 import {
   boardToPlacements,
   createEmptyEditorBoard,
@@ -25,6 +26,7 @@ import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import type { CustomPuzzleDraft } from "@/types/custom-puzzle";
 import type { Direction } from "@/types/game";
 import { Button } from "@/ui/button";
+import { Dialog } from "@/ui/dialog";
 import { Dropdown } from "@/ui/dropdown";
 import { Input } from "@/ui/input";
 
@@ -87,12 +89,17 @@ export function PuzzleEditorScreen({
     editingPuzzleId ? state.getPuzzle(editingPuzzleId) : undefined,
   );
   const saveDraft = useCustomPuzzleStore((state) => state.saveDraft);
+  const deletePuzzle = useCustomPuzzleStore((state) => state.deletePuzzle);
   const authorName = useProfileStore((state) => state.displayName);
   const { toast } = useToast();
 
   const [draft, setDraft] = useState<CustomPuzzleDraft>(() =>
     existing ? puzzleDefinitionToDraft(existing.puzzle) : createDefaultDraft(),
   );
+  const [savedPuzzleId, setSavedPuzzleId] = useState<string | undefined>(
+    editingPuzzleId,
+  );
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedTool, setSelectedTool] = useState<EditorTool>("arrow");
   const [arrowDirection, setArrowDirection] = useState<Direction>("right");
 
@@ -119,7 +126,8 @@ export function PuzzleEditorScreen({
 
   const handleSave = () => {
     try {
-      const puzzleId = saveDraft(draft, authorName, editingPuzzleId);
+      const puzzleId = saveDraft(draft, authorName, savedPuzzleId);
+      setSavedPuzzleId(puzzleId);
       toast({
         title: "Puzzle saved",
         description: "Your puzzle is available in Community Puzzles.",
@@ -157,8 +165,8 @@ export function PuzzleEditorScreen({
 
     try {
       const puzzleId =
-        editingPuzzleId ??
-        saveDraft(draft, authorName, editingPuzzleId);
+        savedPuzzleId ?? saveDraft(draft, authorName, savedPuzzleId);
+      setSavedPuzzleId(puzzleId);
       const puzzle = draftToPuzzleDefinition(draft, puzzleId);
       const game = createGameFromPuzzle(puzzle);
 
@@ -175,6 +183,28 @@ export function PuzzleEditorScreen({
         variant: "danger",
       });
     }
+  };
+
+  const handleDelete = () => {
+    if (!savedPuzzleId) {
+      return;
+    }
+
+    deletePuzzle(savedPuzzleId);
+
+    if (
+      usePuzzleSessionStore.getState().selectedPuzzleId === savedPuzzleId
+    ) {
+      usePuzzleSessionStore.getState().setSelectedPuzzleId(DEFAULT_PUZZLE_ID);
+    }
+
+    setIsDeleteConfirmOpen(false);
+    toast({
+      title: "Puzzle deleted",
+      description: "The puzzle was removed from your library.",
+      variant: "success",
+    });
+    onBack();
   };
 
   return (
@@ -290,9 +320,44 @@ export function PuzzleEditorScreen({
             <Button type="button" variant="secondary" onClick={handleSave}>
               Save & Copy Share Code
             </Button>
+            {savedPuzzleId ? (
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => setIsDeleteConfirmOpen(true)}
+              >
+                Delete Puzzle
+              </Button>
+            ) : null}
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        title="Delete this puzzle?"
+        description="This removes it from your library and the puzzle dropdown."
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsDeleteConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="button" variant="danger" onClick={handleDelete}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-text-muted">
+          &quot;{draft.title}&quot; will be permanently removed from this
+          device. You cannot undo this action.
+        </p>
+      </Dialog>
     </div>
   );
 }

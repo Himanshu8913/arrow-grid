@@ -63,4 +63,29 @@ describe("custom puzzle store", () => {
     expect(record?.meta.ratingCount).toBe(1);
     expect(record?.meta.bookmarked).toBe(true);
   });
+
+  it("deletes saved puzzles", () => {
+    let board = createEmptyEditorBoard(5);
+    board = setTile(board, { row: 0, col: 0 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 4, col: 4 }, { kind: "goal", owner: "player1" });
+
+    const puzzleId = useCustomPuzzleStore.getState().saveDraft(
+      {
+        title: "Delete Me",
+        description: "",
+        size: 5,
+        spawn: { row: 0, col: 0 },
+        goal: { row: 4, col: 4 },
+        goal2: null,
+        moveLimit: 8,
+        targetMoves: 2,
+        placements: boardToPlacements(board),
+      },
+      "Tester",
+    );
+
+    useCustomPuzzleStore.getState().deletePuzzle(puzzleId);
+
+    expect(useCustomPuzzleStore.getState().getPuzzle(puzzleId)).toBeUndefined();
+  });
 });
