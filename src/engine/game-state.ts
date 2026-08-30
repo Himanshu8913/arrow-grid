@@ -8,7 +8,7 @@ import {
   createInitialPlayerScores,
   getOpponent,
 } from "@/engine/scoring";
-import type { GeneratedBoard, PlayerId, Position } from "@/types/game";
+import type { GeneratedBoard, OrbState, PlayerId, Position } from "@/types/game";
 import type {
   MatchStatus,
   PlayerScoreState,
@@ -33,6 +33,7 @@ export interface GameState {
   goals: GeneratedBoard["goals"];
   seed: number;
   orbPosition: Position;
+  orbs: OrbState[];
   players: Record<PlayerId, PlayerScoreState>;
   currentPlayer: PlayerId;
   turnNumber: number;
@@ -49,6 +50,21 @@ export interface GameState {
   lastOutcome?: TurnOutcome;
   lastScore?: TurnScoreBreakdown;
   lastOrbPath?: Position[];
+  lastOrbPaths?: Record<string, Position[]>;
+}
+
+/**
+ * Ensures legacy saves without `orbs` still render a single orb.
+ */
+export function normalizeGameState(state: GameState): GameState {
+  if (state.orbs?.length) {
+    return state;
+  }
+
+  return {
+    ...state,
+    orbs: [{ id: "0", position: { ...state.orbPosition } }],
+  };
 }
 
 /**
@@ -65,6 +81,7 @@ export function createGameState(
     goals: generated.goals,
     seed: generated.seed,
     orbPosition: { ...generated.spawn },
+    orbs: [{ id: "0", position: { ...generated.spawn } }],
     players: createInitialPlayerScores(),
     currentPlayer: "player1",
     turnNumber: 1,
@@ -89,9 +106,11 @@ export function resetBoard(state: GameState): GameState {
     ...state,
     board: cloneBoard(state.initialBoard),
     orbPosition: { ...state.spawn },
+    orbs: [{ id: "0", position: { ...state.spawn } }],
     lastOutcome: undefined,
     lastScore: undefined,
     lastOrbPath: undefined,
+    lastOrbPaths: undefined,
   };
 }
 
@@ -105,6 +124,8 @@ export function resolvePlayerTurn(
     board: GameState["board"];
     orbPath: Position[];
     orbPosition: Position;
+    orbs: OrbState[];
+    orbPaths: Record<string, Position[]>;
     movement: Parameters<typeof evaluateTurnOutcome>[0];
   },
 ): GameState {
@@ -143,7 +164,11 @@ export function resolvePlayerTurn(
   let nextState: GameState = {
     ...state,
     board: turnResult.board,
-    orbPosition: turnResult.orbPosition,
+    orbPosition: turnResult.orbs[0]?.position ?? turnResult.orbPosition,
+    orbs: turnResult.orbs.map((orb) => ({
+      id: orb.id,
+      position: { ...orb.position },
+    })),
     players,
     movesPlayed,
     turnNumber: state.turnNumber + 1,
@@ -153,6 +178,12 @@ export function resolvePlayerTurn(
     lastOutcome: outcome,
     lastScore,
     lastOrbPath: turnResult.orbPath,
+    lastOrbPaths: Object.fromEntries(
+      Object.entries(turnResult.orbPaths).map(([orbId, path]) => [
+        orbId,
+        path.map((position) => ({ ...position })),
+      ]),
+    ),
   };
 
   if (outcome.scored && matchOutcome.status === "in-progress") {

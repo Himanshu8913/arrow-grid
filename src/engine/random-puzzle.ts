@@ -7,6 +7,7 @@ import {
   createMagnetPullPuzzleGame,
   createPortalHopPuzzleGame,
   createSpinCyclePuzzleGame,
+  createTwinSplitPuzzleGame,
   GUST_ALLEY_PUZZLE_ID,
   getMechanicPuzzleSeed,
   ICE_SLIDE_PUZZLE_ID,
@@ -17,10 +18,12 @@ import {
   isMagnetPullPuzzleId,
   isPortalHopPuzzleId,
   isSpinCyclePuzzleId,
+  isTwinSplitPuzzleId,
   LOCK_AND_KEY_PUZZLE_ID,
   MAGNET_PULL_PUZZLE_ID,
   PORTAL_HOP_PUZZLE_ID,
   SPIN_CYCLE_PUZZLE_ID,
+  TWIN_SPLIT_PUZZLE_ID,
 } from "@/engine/mechanic-puzzle-generator";
 import { generateBoard } from "@/engine/board-generator";
 import { createGameState } from "@/engine/game-state";
@@ -65,6 +68,11 @@ const MECHANIC_PUZZLE_ROUTES = [
     id: MAGNET_PULL_PUZZLE_ID,
     matches: isMagnetPullPuzzleId,
     create: createMagnetPullPuzzleGame,
+  },
+  {
+    id: TWIN_SPLIT_PUZZLE_ID,
+    matches: isTwinSplitPuzzleId,
+    create: createTwinSplitPuzzleGame,
   },
 ] as const;
 
@@ -173,6 +181,7 @@ export {
   createMagnetPullPuzzleGame,
   createPortalHopPuzzleGame,
   createSpinCyclePuzzleGame,
+  createTwinSplitPuzzleGame,
   GUST_ALLEY_PUZZLE_ID,
   ICE_SLIDE_PUZZLE_ID,
   isBlastZonePuzzleId,
@@ -182,8 +191,10 @@ export {
   isMagnetPullPuzzleId,
   isPortalHopPuzzleId,
   isSpinCyclePuzzleId,
+  isTwinSplitPuzzleId,
   LOCK_AND_KEY_PUZZLE_ID,
   MAGNET_PULL_PUZZLE_ID,
   PORTAL_HOP_PUZZLE_ID,
   SPIN_CYCLE_PUZZLE_ID,
+  TWIN_SPLIT_PUZZLE_ID,
 } from "@/engine/mechanic-puzzle-generator";

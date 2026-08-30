@@ -114,6 +114,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   const [frozenOrbPosition, setFrozenOrbPosition] = useState<Position | null>(
     null,
   );
+  const [frozenOrbs, setFrozenOrbs] = useState<GameState["orbs"] | null>(null);
   const [goalCelebration, setGoalCelebration] =
     useState<GoalCelebrationState | null>(null);
   const [isOrbSpawning, setIsOrbSpawning] = useState(false);
@@ -155,6 +156,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     start: startOrbAnimation,
     reset: resetOrbAnimation,
     orbPosition: animatedOrbPosition,
+    animatedOrbs,
     trailPositions,
     isAnimating,
   } = useOrbAnimation();
@@ -250,6 +252,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         });
 
         setFrozenOrbPosition(turnResult.orbPosition);
+        setFrozenOrbs(turnResult.orbs);
         setGoalCelebration({
           position: turnResult.orbPosition,
           score: scoreBreakdown?.total ?? 0,
@@ -266,6 +269,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       if (turnResult.movement.stoppedReason === "loop") {
         matchSessionRef.current.loops += 1;
         setFrozenOrbPosition(turnResult.orbPosition);
+        setFrozenOrbs(turnResult.orbs);
         startLoopAnimation(turnResult.movement.loopSegment ?? [], () => {
           finishTurnRef.current(snapshot, turnResult);
         });
@@ -321,7 +325,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         setRotatingPosition(null);
         setPendingBoard(turnResult.board);
 
-        startOrbAnimation(turnResult.orbPath, () => {
+        startOrbAnimation(turnResult.orbPaths, () => {
           handleOrbAnimationComplete(snapshot, turnResult);
         });
       }, ARROW_ROTATION_MS);
@@ -400,6 +404,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
       setGame(nextGame);
       setPendingBoard(null);
       setFrozenOrbPosition(null);
+      setFrozenOrbs(null);
       setGoalCelebration(null);
       setSelectedPosition(null);
       showTurnToasts(nextGame, gameMode, toast);
@@ -490,6 +495,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     resetOrbAnimation();
     setPendingBoard(null);
     setFrozenOrbPosition(null);
+    setFrozenOrbs(null);
     setGoalCelebration(null);
     setRotatingPosition(null);
     setSelectedPosition(null);
@@ -656,6 +662,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
   const displayOrbPosition =
     frozenOrbPosition ??
     (isAnimating ? animatedOrbPosition : game.orbPosition);
+  const displayOrbs =
+    frozenOrbs ?? (isAnimating ? animatedOrbs : game.orbs);
 
   return {
     game,
@@ -672,6 +680,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
     earnedStars,
     displayBoard,
     displayOrbPosition,
+    displayOrbs,
     selectedPosition,
     rotatingPosition,
     goalCelebration,

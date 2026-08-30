@@ -108,12 +108,24 @@ export function cloneGameState(state: GameState): GameState {
     initialBoard: cloneBoard(state.initialBoard),
     spawn: { ...state.spawn },
     orbPosition: { ...state.orbPosition },
+    orbs: state.orbs.map((orb) => ({
+      id: orb.id,
+      position: { ...orb.position },
+    })),
     goals: { ...state.goals },
     players: {
       player1: { ...state.players.player1 },
       player2: { ...state.players.player2 },
     },
     lastOrbPath: state.lastOrbPath?.map((position) => ({ ...position })),
+    lastOrbPaths: state.lastOrbPaths
+      ? Object.fromEntries(
+          Object.entries(state.lastOrbPaths).map(([orbId, path]) => [
+            orbId,
+            path.map((position) => ({ ...position })),
+          ]),
+        )
+      : undefined,
   };
 }
 

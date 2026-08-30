@@ -10,12 +10,13 @@ import {
 import { buildTeleporterTargetMap } from "@/engine/teleporter";
 import {
   cloneBoardForSimulation,
+  consumeSplitterAt,
   detonateBombAt,
   isDirectionalArrowTile,
   rotateRotatingArrowAt,
   unlockAllLockedArrows,
 } from "@/engine/tile-effects";
-import type { Board, Direction, PlayerId, Position } from "@/types/game";
+import type { Board, Direction, OrbState, PlayerId, Position } from "@/types/game";
 
 export type MovementStopReason =
   | "goal"
@@ -24,7 +25,8 @@ export type MovementStopReason =
   | "out-of-bounds"
   | "loop"
   | "no-direction"
-  | "max-steps";
+  | "max-steps"
+  | "split";
 
 export interface OrbSimulationResult {
   path: Position[];
@@ -32,6 +34,19 @@ export interface OrbSimulationResult {
   goalOwner?: PlayerId;
   loopSegment?: Position[];
   board: Board;
+  splitDirection?: Direction;
+}
+
+export interface FleetSimulationResult extends OrbSimulationResult {
+  orbs: OrbState[];
+  orbPaths: Record<string, Position[]>;
+  allGoalsReached: boolean;
+}
+
+export interface OrbMovementOptions {
+  emptyTilesEnabled?: boolean;
+  /** Forces the first movement step from `start` (used after a splitter fork). */
+  initialDirection?: Direction;
 }
 
 const ADJACENT_DELTAS = [
@@ -164,6 +179,16 @@ function resolveLanding(
     return { path, stoppedReason: "no-direction", board: workingBoard };
   }
 
+  if (landedTile?.kind === "splitter") {
+    workingBoard = consumeSplitterAt(workingBoard, position);
+    return {
+      path,
+      stoppedReason: "split",
+      board: workingBoard,
+      splitDirection: travelDirection,
+    };
+  }
+
   if (landedTile?.kind === "teleporter" && !arrivedViaTeleport) {
     const partner = teleporterTargets.get(positionKey(position));
 
@@ -264,7 +289,7 @@ function resolveLanding(
 export function simulateOrbMovement(
   board: Board,
   start: Position,
-  options: { emptyTilesEnabled?: boolean } = {},
+  options: OrbMovementOptions = {},
 ): OrbSimulationResult {
   const emptyTilesEnabled = options.emptyTilesEnabled ?? false;
   let workingBoard = cloneBoardForSimulation(board);
@@ -273,6 +298,7 @@ export function simulateOrbMovement(
   const visited = new Set<string>([positionKey(start)]);
   let position = start;
   let momentum: Direction | null = null;
+  let forcedDirection: Direction | null = options.initialDirection ?? null;
 
   for (let step = 0; step < MAX_ORB_PATH_STEPS; step += 1) {
     const currentTile = getTile(workingBoard, position);
@@ -296,7 +322,10 @@ export function simulateOrbMovement(
 
     let direction: Direction | null;
 
-    if (momentum !== null && isIceTileAt(workingBoard, position)) {
+    if (forcedDirection !== null) {
+      direction = forcedDirection;
+      forcedDirection = null;
+    } else if (momentum !== null && isIceTileAt(workingBoard, position)) {
       direction = momentum;
     } else {
       momentum = null;

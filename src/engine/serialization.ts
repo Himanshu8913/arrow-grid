@@ -78,6 +78,8 @@ function serializeTile(tile: Tile): SerializedTile {
       return { kind: "wind" };
     case "magnet":
       return { kind: "magnet" };
+    case "splitter":
+      return { kind: "splitter" };
   }
 }
 
@@ -115,6 +117,8 @@ function deserializeTile(tile: SerializedTile): Tile {
       return { kind: "wind" };
     case "magnet":
       return { kind: "magnet" };
+    case "splitter":
+      return { kind: "splitter" };
   }
 }
 
@@ -153,6 +157,10 @@ export function serializeGameState(state: GameState): SerializedGameState {
       ]),
     ) as SerializedGameState["goals"],
     orbPosition: serializePosition(state.orbPosition),
+    orbs: state.orbs.map((orb) => ({
+      id: orb.id,
+      position: serializePosition(orb.position),
+    })),
     players: {
       player1: { ...state.players.player1 },
       player2: { ...state.players.player2 },
@@ -188,6 +196,16 @@ export function deserializeGameState(serialized: SerializedGameState): GameState
       ]),
     ) as GameState["goals"],
     orbPosition: deserializePosition(serialized.orbPosition),
+    orbs:
+      serialized.orbs?.map((orb) => ({
+        id: orb.id,
+        position: deserializePosition(orb.position),
+      })) ?? [
+        {
+          id: "0",
+          position: deserializePosition(serialized.orbPosition),
+        },
+      ],
     players: {
       player1: { ...serialized.players.player1 },
       player2: { ...serialized.players.player2 },

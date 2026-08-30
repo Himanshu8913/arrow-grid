@@ -9,6 +9,7 @@ import {
   createMagnetPullPuzzleGame,
   createPortalHopPuzzleGame,
   createSpinCyclePuzzleGame,
+  createTwinSplitPuzzleGame,
   GUST_ALLEY_PUZZLE_ID,
   getMechanicPuzzleSeed,
   ICE_SLIDE_PUZZLE_ID,
@@ -19,10 +20,12 @@ import {
   isMagnetPullPuzzleId,
   isPortalHopPuzzleId,
   isSpinCyclePuzzleId,
+  isTwinSplitPuzzleId,
   LOCK_AND_KEY_PUZZLE_ID,
   MAGNET_PULL_PUZZLE_ID,
   PORTAL_HOP_PUZZLE_ID,
   SPIN_CYCLE_PUZZLE_ID,
+  TWIN_SPLIT_PUZZLE_ID,
 } from "@/engine/mechanic-puzzle-generator";
 import { playTurn } from "@/engine/game-controller";
 import { getTile } from "@/engine/board";
@@ -118,6 +121,15 @@ describe("mechanic puzzle generation", () => {
       tileKind: "magnet" as const,
       seed: 10101,
       winSeed: 10102,
+    },
+    {
+      title: "twin split",
+      id: TWIN_SPLIT_PUZZLE_ID,
+      create: createTwinSplitPuzzleGame,
+      matches: isTwinSplitPuzzleId,
+      tileKind: "splitter" as const,
+      seed: 11101,
+      winSeed: 11102,
     },
   ] as const;
 

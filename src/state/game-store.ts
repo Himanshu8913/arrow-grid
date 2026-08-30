@@ -9,6 +9,7 @@ import {
 import { createGameFromPuzzle } from "@/engine/puzzle";
 import { createPuzzleGameForSelection } from "@/engine/random-puzzle";
 import type { GameState } from "@/engine/game-state";
+import { normalizeGameState } from "@/engine/game-state";
 import { getPuzzleById } from "@/data/puzzles";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import { useProgressStore } from "@/state/progress-store";
@@ -43,10 +44,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   aiDifficulty: "medium",
   matchSessionActive: false,
   setGame: (game, options) => {
-    set({ game });
+    const normalizedGame = normalizeGameState(game);
+    set({ game: normalizedGame });
 
     if (options?.persist !== false) {
-      useProgressStore.getState().syncActiveMatch(game);
+      useProgressStore.getState().syncActiveMatch(normalizedGame);
     }
   },
   setGameMode: (gameMode) => {

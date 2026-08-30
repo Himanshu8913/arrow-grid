@@ -608,6 +608,11 @@ html.animations-disabled .thinking-indicator-enter {
   transform: translateZ(0);
 }
 
+.orb-layer-secondary {
+  background-color: var(--color-accent-secondary);
+  box-shadow: 0 0 16px rgb(168 85 247 / 0.9);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

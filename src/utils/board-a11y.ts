@@ -79,6 +79,9 @@ export function getTileAriaLabel(
     case "magnet":
       details.push("Magnet tile");
       break;
+    case "splitter":
+      details.push("Splitter tile");
+      break;
   }
 
   if (state.isSpawn) {

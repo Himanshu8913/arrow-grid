@@ -4,22 +4,30 @@ import {
   ORB_STEP_MS,
   ORB_TRAIL_MAX_LENGTH,
 } from "@/constants/animation";
-import type { Position } from "@/types/game";
+import type { OrbState, Position } from "@/types/game";
 
-interface OrbAnimationState {
+interface OrbAnimationTrack {
+  id: string;
   path: Position[];
   index: number;
+}
+
+interface OrbAnimationState {
+  tracks: OrbAnimationTrack[];
   isAnimating: boolean;
 }
 
 const idleState: OrbAnimationState = {
-  path: [],
-  index: 0,
+  tracks: [],
   isAnimating: false,
 };
 
+function getTrackPosition(track: OrbAnimationTrack): Position | undefined {
+  return track.path[track.index];
+}
+
 /**
- * Steps an orb along a path one tile at a time for board playback.
+ * Steps one or more orbs along their paths in sync for board playback.
  */
 export function useOrbAnimation(
   stepMs: number = ORB_STEP_MS,
@@ -36,19 +44,33 @@ export function useOrbAnimation(
   }, []);
 
   const start = useCallback(
-    (path: Position[], onComplete?: () => void) => {
+    (
+      paths: Position[] | Record<string, Position[]>,
+      onComplete?: () => void,
+    ) => {
       window.clearTimeout(timerRef.current);
       onCompleteRef.current = onComplete ?? null;
 
-      if (path.length <= 1) {
+      const entries = Array.isArray(paths)
+        ? [{ id: "0", path: paths }]
+        : Object.entries(paths).map(([id, path]) => ({ id, path }));
+
+      const tracks = entries
+        .filter((entry) => entry.path.length > 1)
+        .map((entry) => ({
+          id: entry.id,
+          path: entry.path,
+          index: 0,
+        }));
+
+      if (tracks.length === 0) {
         setState(idleState);
         onComplete?.();
         return;
       }
 
       setState({
-        path,
-        index: 0,
+        tracks,
         isAnimating: true,
       });
     },
@@ -61,7 +83,11 @@ export function useOrbAnimation(
     }
 
     timerRef.current = window.setTimeout(() => {
-      if (state.index >= state.path.length - 1) {
+      const allComplete = state.tracks.every(
+        (track) => track.index >= track.path.length - 1,
+      );
+
+      if (allComplete) {
         const complete = onCompleteRef.current;
         onCompleteRef.current = null;
         setState(idleState);
@@ -71,26 +97,51 @@ export function useOrbAnimation(
 
       setState((current) => ({
         ...current,
-        index: current.index + 1,
+        tracks: current.tracks.map((track) => ({
+          ...track,
+          index:
+            track.index >= track.path.length - 1
+              ? track.index
+              : track.index + 1,
+        })),
       }));
     }, stepMs);
 
     return () => {
       window.clearTimeout(timerRef.current);
     };
-  }, [state.isAnimating, state.index, state.path.length, stepMs]);
+  }, [state.isAnimating, state.tracks, stepMs]);
 
-  const orbPosition = state.isAnimating ? state.path[state.index] : undefined;
-  const trailStart = Math.max(0, state.index - maxTrailLength);
-  const trailPositions = state.isAnimating
-    ? state.path.slice(trailStart, state.index)
+  const animatedOrbs: OrbState[] = state.isAnimating
+    ? state.tracks
+        .map((track) => {
+          const position = getTrackPosition(track);
+          return position ? { id: track.id, position } : null;
+        })
+        .filter((orb): orb is OrbState => orb !== null)
     : [];
+
+  const trailPositionsByOrb = Object.fromEntries(
+    state.tracks.map((track) => {
+      const trailStart = Math.max(0, track.index - maxTrailLength);
+      return [track.id, track.path.slice(trailStart, track.index)];
+    }),
+  );
+
+  const trailPositions = state.tracks.flatMap((track) => {
+    const trailStart = Math.max(0, track.index - maxTrailLength);
+    return track.path.slice(trailStart, track.index);
+  });
+
+  const orbPosition = animatedOrbs[0]?.position;
 
   return {
     start,
     reset,
     orbPosition,
+    animatedOrbs,
     trailPositions,
+    trailPositionsByOrb,
     isAnimating: state.isAnimating,
   };
 }

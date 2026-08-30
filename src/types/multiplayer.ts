@@ -1,7 +1,7 @@
 import type { Direction, PlayerId, RotateMove } from "@/types/game";
 
 /** Wire format version for multiplayer payloads. */
-export const MULTIPLAYER_WIRE_VERSION = 4;
+export const MULTIPLAYER_WIRE_VERSION = 5;
 
 export type MoveSource = "local" | "remote" | "ai" | "replay";
 
@@ -38,11 +38,17 @@ export interface SerializedTile {
     | "locked-arrow"
     | "key"
     | "wind"
-    | "magnet";
+    | "magnet"
+    | "splitter";
   direction?: Direction;
   owner?: PlayerId;
   portalId?: string;
   target?: SerializedPosition;
+}
+
+export interface SerializedOrbState {
+  id: string;
+  position: SerializedPosition;
 }
 
 export interface SerializedBoard {
@@ -64,6 +70,7 @@ export interface SerializedGameState {
   spawn: SerializedPosition;
   goals: Partial<Record<PlayerId, SerializedPosition>>;
   orbPosition: SerializedPosition;
+  orbs?: SerializedOrbState[];
   players: SerializedPlayerScores;
   currentPlayer: PlayerId;
   turnNumber: number;

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createEmptyBoard, setTile } from "@/engine/board";
 import { simulateOrbMovement } from "@/engine/orb-movement";
+import { simulateOrbFleet } from "@/engine/orb-fleet";
 import {
   buildTeleporterTargetMap,
   validateTeleporterTargets,
@@ -226,5 +227,24 @@ describe("magnet tiles", () => {
       { row: 0, col: 3 },
       { row: 1, col: 3 },
     ]);
+  });
+});
+
+describe("splitter tiles", () => {
+  it("splits into two orbs that follow independent paths", () => {
+    let board = createEmptyBoard(5, { kind: "wall" });
+    board = setTile(board, { row: 2, col: 0 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 2, col: 1 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 2, col: 2 }, { kind: "splitter" });
+    board = setTile(board, { row: 2, col: 3 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 2, col: 4 }, { kind: "goal", owner: "player1" });
+    board = setTile(board, { row: 3, col: 2 }, { kind: "arrow", direction: "down" });
+    board = setTile(board, { row: 4, col: 2 }, { kind: "goal", owner: "player2" });
+
+    const result = simulateOrbFleet(board, { row: 2, col: 0 });
+
+    expect(result.orbs).toHaveLength(2);
+    expect(result.allGoalsReached).toBe(true);
+    expect(result.board[2][2]).toEqual({ kind: "empty" });
   });
 });

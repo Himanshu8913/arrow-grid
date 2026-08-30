@@ -59,6 +59,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
       earnedStars,
       displayBoard,
       displayOrbPosition,
+      displayOrbs,
       selectedPosition,
       rotatingPosition,
       goalCelebration,
@@ -180,6 +181,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           board={displayBoard}
           spawn={game.spawn}
           orbPosition={displayOrbPosition}
+          orbs={displayOrbs}
           pathPositions={isAnimating || isLoopAnimating ? [] : game.lastOrbPath}
           trailPositions={trailPositions}
           selectedPosition={selectedPosition}

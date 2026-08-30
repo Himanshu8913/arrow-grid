@@ -17,7 +17,8 @@ export type TileKind =
   | "locked-arrow"
   | "key"
   | "wind"
-  | "magnet";
+  | "magnet"
+  | "splitter";
 
 export interface Position {
   row: number;
@@ -86,6 +87,10 @@ export interface MagnetTile {
   kind: "magnet";
 }
 
+export interface SplitterTile {
+  kind: "splitter";
+}
+
 export type Tile =
   | ArrowTile
   | WallTile
@@ -99,12 +104,14 @@ export type Tile =
   | LockedArrowTile
   | KeyTile
   | WindTile
-  | MagnetTile;
+  | MagnetTile
+  | SplitterTile;
 
 /** Row-major 2D board. Each cell holds exactly one tile object. */
 export type Board = Tile[][];
 
 export interface OrbState {
+  id: string;
   position: Position;
 }
 

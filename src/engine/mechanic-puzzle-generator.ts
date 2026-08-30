@@ -9,6 +9,7 @@ import {
 import { createGameState } from "@/engine/game-state";
 import type { GameState } from "@/engine/game-state";
 import { simulateOrbMovement } from "@/engine/orb-movement";
+import { simulateOrbFleet } from "@/engine/orb-fleet";
 import { rotateDirectionClockwise, getDirectionDelta } from "@/engine/direction";
 import { positionsEqual, translatePosition } from "@/engine/position";
 import { createRandomSeed, SeededRandom } from "@/engine/random";
@@ -21,6 +22,7 @@ export const BLAST_ZONE_PUZZLE_ID = "blast-zone";
 export const LOCK_AND_KEY_PUZZLE_ID = "lock-and-key";
 export const GUST_ALLEY_PUZZLE_ID = "gust-alley";
 export const MAGNET_PULL_PUZZLE_ID = "magnet-pull";
+export const TWIN_SPLIT_PUZZLE_ID = "twin-split";
 
 export const PROCEDURAL_MECHANIC_PUZZLE_IDS = [
   PORTAL_HOP_PUZZLE_ID,
@@ -30,6 +32,7 @@ export const PROCEDURAL_MECHANIC_PUZZLE_IDS = [
   LOCK_AND_KEY_PUZZLE_ID,
   GUST_ALLEY_PUZZLE_ID,
   MAGNET_PULL_PUZZLE_ID,
+  TWIN_SPLIT_PUZZLE_ID,
 ] as const;
 
 type MechanicKind =
@@ -628,6 +631,198 @@ function getMechanicKindForPuzzleId(basePuzzleId: string): MechanicKind {
   }
 }
 
+function applyPathArrows(
+  path: Position[],
+  overrides: Map<string, Tile>,
+): void {
+  for (let index = 0; index < path.length - 1; index += 1) {
+    const from = path[index];
+    const to = path[index + 1];
+    const key = positionKey(from);
+
+    if (!overrides.has(key)) {
+      overrides.set(key, {
+        kind: "arrow",
+        direction: getStepDirection(from, to),
+      });
+    }
+  }
+}
+
+function canWinTwinSplitWithSingleRotation(
+  board: Board,
+  spawn: Position,
+  criticalPosition: Position,
+): boolean {
+  if (simulateOrbFleet(board, spawn).allGoalsReached) {
+    return false;
+  }
+
+  const tile = getTile(board, criticalPosition);
+
+  if (!tile || tile.kind !== "arrow") {
+    return false;
+  }
+
+  const testBoard = setTile(board, criticalPosition, {
+    kind: "arrow",
+    direction: rotateDirectionClockwise(tile.direction),
+  });
+  const result = simulateOrbFleet(testBoard, spawn);
+
+  return result.allGoalsReached && result.orbs.length >= 2;
+}
+
+function finalizeTwinSplitPuzzle(
+  basePuzzleId: string,
+  attemptSeed: number,
+  size: number,
+  spawn: Position,
+  goals: { player1: Position; player2: Position },
+  board: Board,
+  criticalPosition: Position,
+): GameState | null {
+  if (!canWinTwinSplitWithSingleRotation(board, spawn, criticalPosition)) {
+    return null;
+  }
+
+  const criticalTile = getTile(board, criticalPosition);
+
+  if (!criticalTile || criticalTile.kind !== "arrow") {
+    return null;
+  }
+
+  const winningDirection = rotateDirectionClockwise(criticalTile.direction);
+  const solved = setTile(board, criticalPosition, {
+    kind: "arrow",
+    direction: winningDirection,
+  });
+  const shortestPathLength = simulateOrbFleet(solved, spawn).path.length;
+  const limits = getRandomPuzzleLimits(size, shortestPathLength);
+
+  return createGameState(
+    {
+      board,
+      size,
+      spawn,
+      goals,
+      seed: attemptSeed,
+    },
+    {
+      playerCount: 1,
+      ...limits,
+      puzzleId: `${basePuzzleId}-${attemptSeed}`,
+    },
+  );
+}
+
+function generateTwinSplitBoard(
+  rng: SeededRandom,
+  size: number,
+): {
+  board: Board;
+  spawn: Position;
+  goals: { player1: Position; player2: Position };
+  criticalPosition: Position;
+} | null {
+  if (size < 6) {
+    return null;
+  }
+
+  const splitterRow = rng.nextInt(2, size - 3);
+  const splitterCol = rng.nextInt(2, size - 3);
+  const splitter = { row: splitterRow, col: splitterCol };
+  const spawn = { row: splitterRow, col: 0 };
+  const goalA = { row: splitterRow, col: size - 1 };
+  const goalB = { row: size - 1, col: splitterCol };
+
+  const pathToSplitter = buildPath(spawn, splitter);
+  const branchA = buildPath(splitter, goalA).slice(1);
+  const branchB = buildPath(splitter, goalB).slice(1);
+
+  if (pathToSplitter.length < 4 || branchA.length < 2 || branchB.length < 2) {
+    return null;
+  }
+
+  const criticalIndex = rng.nextInt(1, Math.min(2, pathToSplitter.length - 2));
+  const criticalPosition = pathToSplitter[criticalIndex];
+  const overrides = new Map<string, Tile>([
+    [positionKey(splitter), { kind: "splitter" }],
+  ]);
+
+  applyPathArrows(pathToSplitter, overrides);
+  applyPathArrows([splitter, ...branchA], overrides);
+  applyPathArrows([splitter, ...branchB], overrides);
+
+  let board = createEmptyBoard(size, { kind: "wall" });
+
+  for (const [key, tile] of overrides) {
+    const [row, col] = key.split(",").map(Number);
+    board = setTile(board, { row, col }, tile);
+  }
+
+  board = setTile(board, goalA, { kind: "goal", owner: "player1" });
+  board = setTile(board, goalB, { kind: "goal", owner: "player2" });
+
+  const reserved = new Set(
+    [
+      ...pathToSplitter,
+      ...branchA,
+      ...branchB,
+      splitter,
+      goalA,
+      goalB,
+    ].map((position) => positionKey(position)),
+  );
+  board = fillNoiseTiles(rng, board, reserved);
+
+  const correctDirection = getStepDirection(
+    criticalPosition,
+    pathToSplitter[criticalIndex + 1],
+  );
+  board = setTile(board, criticalPosition, {
+    kind: "arrow",
+    direction: createPreCorrectDirection(correctDirection),
+  });
+
+  return {
+    board,
+    spawn,
+    goals: { player1: goalA, player2: goalB },
+    criticalPosition,
+  };
+}
+
+function buildTwinSplitPuzzleGame(seed = createRandomSeed()): GameState {
+  const size = 6;
+
+  for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt += 1) {
+    const attemptSeed = seed + attempt;
+    const rng = new SeededRandom(attemptSeed);
+    const layout = generateTwinSplitBoard(rng, size);
+
+    if (!layout) {
+      continue;
+    }
+
+    const puzzle = finalizeTwinSplitPuzzle(
+      TWIN_SPLIT_PUZZLE_ID,
+      attemptSeed,
+      size,
+      layout.spawn,
+      layout.goals,
+      layout.board,
+      layout.criticalPosition,
+    );
+
+    if (puzzle) {
+      return puzzle;
+    }
+  }
+
+  throw new Error(`Failed to generate a ${TWIN_SPLIT_PUZZLE_ID} puzzle.`);
+}
+
 function createMechanicPuzzleGame(
   basePuzzleId: (typeof PROCEDURAL_MECHANIC_PUZZLE_IDS)[number],
   seed = createRandomSeed(),
@@ -707,6 +902,10 @@ export function isMagnetPullPuzzleId(puzzleId: string | undefined): boolean {
   return matchesMechanicPuzzleId(puzzleId, MAGNET_PULL_PUZZLE_ID);
 }
 
+export function isTwinSplitPuzzleId(puzzleId: string | undefined): boolean {
+  return matchesMechanicPuzzleId(puzzleId, TWIN_SPLIT_PUZZLE_ID);
+}
+
 function matchesMechanicPuzzleId(
   puzzleId: string | undefined,
   baseId: string,
@@ -775,4 +974,8 @@ export function createGustAlleyPuzzleGame(seed = createRandomSeed()): GameState 
 
 export function createMagnetPullPuzzleGame(seed = createRandomSeed()): GameState {
   return createMechanicPuzzleGame(MAGNET_PULL_PUZZLE_ID, seed);
+}
+
+export function createTwinSplitPuzzleGame(seed = createRandomSeed()): GameState {
+  return buildTwinSplitPuzzleGame(seed);
 }

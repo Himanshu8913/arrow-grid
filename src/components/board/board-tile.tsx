@@ -167,6 +167,8 @@ export const BoardTile = memo(function BoardTile({
           "border-teal-300/50 bg-teal-400/15 text-teal-200",
         tile.kind === "magnet" &&
           "border-indigo-300/50 bg-indigo-400/15 text-indigo-200",
+        tile.kind === "splitter" &&
+          "border-fuchsia-300/50 bg-fuchsia-400/15 text-fuchsia-200",
         isGoalCelebrating && "goal-tile-celebrate z-10",
         isLoopTile && "loop-tile-highlight",
         isLoopPulsing && "loop-tile-pulse z-10",
@@ -267,6 +269,9 @@ export const BoardTile = memo(function BoardTile({
         <span className="text-lg font-bold" aria-hidden="true">
           ⊕
         </span>
+      ) : null}
+      {tile.kind === "splitter" ? (
+        <span className="text-xs font-semibold uppercase tracking-wide">SPLIT</span>
       ) : null}
 
       {isSpawn ? (

@@ -97,6 +97,14 @@ const magnetPull: PuzzleDefinition = {
   procedural: true,
 };
 
+const twinSplit: PuzzleDefinition = {
+  id: "twin-split",
+  title: "Twin Split",
+  description:
+    "Split the orb in two and guide both to their goals. Every run is a new layout.",
+  procedural: true,
+};
+
 export const PUZZLE_CATALOG: PuzzleDefinition[] = [
   firstSteps,
   cornerRoute,
@@ -107,6 +115,7 @@ export const PUZZLE_CATALOG: PuzzleDefinition[] = [
   lockAndKey,
   gustAlley,
   magnetPull,
+  twinSplit,
 ];
 
 export const RANDOM_PUZZLE_ID = "random";

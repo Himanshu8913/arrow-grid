@@ -24,6 +24,7 @@ export interface BoardGridProps {
   board: Board;
   spawn: Position;
   orbPosition?: Position;
+  orbs?: Array<{ id: string; position: Position }>;
   pathPositions?: Position[];
   trailPositions?: Position[];
   selectedPosition?: Position | null;
@@ -51,6 +52,7 @@ export const BoardGrid = memo(function BoardGrid({
   board,
   spawn,
   orbPosition,
+  orbs = [],
   pathPositions = [],
   trailPositions = [],
   selectedPosition = null,
@@ -179,7 +181,21 @@ export const BoardGrid = memo(function BoardGrid({
         />
       ) : null}
 
-      {orbPosition ? (
+      {orbs.length > 0
+        ? orbs.map((orb, index) => (
+            <OrbLayer
+              key={`${orbSpawnKey}-${orb.id}`}
+              position={orb.position}
+              gridSize={size}
+              isSpawning={isOrbSpawning}
+              isFading={isOrbFading}
+              isFailure={isOrbFailure}
+              className={index > 0 ? "orb-layer-secondary" : undefined}
+            />
+          ))
+        : null}
+
+      {orbs.length === 0 && orbPosition ? (
         <OrbLayer
           key={orbSpawnKey}
           position={orbPosition}

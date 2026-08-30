@@ -39,6 +39,8 @@ export function cloneBoard(board: Board): Board {
           return { kind: "wind" };
         case "magnet":
           return { kind: "magnet" };
+        case "splitter":
+          return { kind: "splitter" };
       }
     }),
   );

@@ -53,6 +53,8 @@ export function validateRotateMove(
     case "wind":
     case "magnet":
       return { valid: false, reason: "not-arrow" };
+    case "splitter":
+      return { valid: false, reason: "not-arrow" };
     default:
       return { valid: false, reason: "not-arrow" };
   }

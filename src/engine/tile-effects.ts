@@ -55,6 +55,19 @@ export function detonateBombAt(board: Board, position: Position): Board {
   return setTile(board, position, { kind: "empty" });
 }
 
+/**
+ * Consumes a splitter tile after the orb passes through it.
+ */
+export function consumeSplitterAt(board: Board, position: Position): Board {
+  const tile = getTile(board, position);
+
+  if (!tile || tile.kind !== "splitter") {
+    return board;
+  }
+
+  return setTile(board, position, { kind: "empty" });
+}
+
 export function isDirectionalArrowTile(
   tile: Tile | undefined,
 ): tile is { kind: "arrow" | "rotating-arrow" | "locked-arrow"; direction: Direction } {
