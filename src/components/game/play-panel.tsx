@@ -9,16 +9,15 @@ import { PuzzleControls } from "@/components/game/puzzle-controls";
 import { PuzzleHud } from "@/components/game/puzzle-hud";
 import { ScoreHud } from "@/components/game/score-hud";
 import { TurnIndicator } from "@/components/game/turn-indicator";
-import { AI_DIFFICULTY_OPTIONS } from "@/constants/ai";
+import { AiDifficultyPicker } from "@/components/game/ai-difficulty-picker";
+import { GameModePicker } from "@/components/game/game-mode-picker";
+import { PuzzlePicker } from "@/components/game/puzzle-picker";
 import { useGameplay } from "@/hooks/use-gameplay";
 import { refreshLobbyPreview } from "@/save";
 import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
 import { useGameStore } from "@/state/game-store";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
-import { PuzzlePicker } from "@/components/game/puzzle-picker";
-import { isPracticeMode, isPuzzleMode } from "@/utils/game-messages";
-import { Badge } from "@/ui/badge";
-import { Dropdown } from "@/ui/dropdown";
+import { isPracticeMode } from "@/utils/game-messages";
 import { LoaderOverlay } from "@/ui/loader";
 
 export interface PlayPanelProps {
@@ -245,62 +244,41 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
           </p>
         )}
 
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <Badge variant="primary">Strategy</Badge>
-          <Badge variant={isDaily ? "warning" : isPracticeMode(gameMode) ? "success" : "secondary"}>
-            {isDaily
-              ? "Daily"
-              : isPuzzleMode(gameMode)
-                ? "Puzzle"
-                : isPracticeMode(gameMode)
-                  ? "Vs AI"
-                  : "PvP"}
-          </Badge>
+        <div className="space-y-4">
+          {!isDaily ? (
+            <GameModePicker
+              value={gameMode}
+              disabled={isModeLocked}
+              onValueChange={(nextValue) => {
+                setGameMode(nextValue);
+                if (!matchSessionActive) {
+                  refreshLobbyPreview();
+                }
+              }}
+            />
+          ) : null}
+
+          {isPuzzle && !isDaily ? (
+            <PuzzlePicker
+              value={selectedPuzzleId}
+              disabled={isModeLocked}
+              onValueChange={(nextValue) => {
+                setSelectedPuzzleId(nextValue);
+                if (!matchSessionActive) {
+                  refreshLobbyPreview();
+                }
+              }}
+            />
+          ) : null}
+
+          {isPracticeMode(gameMode) ? (
+            <AiDifficultyPicker
+              value={aiDifficulty}
+              disabled={isModeLocked}
+              onValueChange={setAiDifficulty}
+            />
+          ) : null}
         </div>
-
-        {!isDaily ? (
-          <Dropdown
-            className="mx-auto max-w-xs"
-            label="Game Mode"
-            value={gameMode}
-            disabled={isModeLocked}
-            onValueChange={(value) => {
-              setGameMode(value);
-              if (!matchSessionActive) {
-                refreshLobbyPreview();
-              }
-            }}
-            options={[
-              { value: "pvp", label: "Player vs Player" },
-              { value: "practice", label: "Practice vs AI" },
-              { value: "puzzle", label: "Puzzle Mode" },
-            ]}
-          />
-        ) : null}
-
-        {isPuzzle && !isDaily ? (
-          <PuzzlePicker
-            value={selectedPuzzleId}
-            disabled={isModeLocked}
-            onValueChange={(nextValue) => {
-              setSelectedPuzzleId(nextValue);
-              if (!matchSessionActive) {
-                refreshLobbyPreview();
-              }
-            }}
-          />
-        ) : null}
-
-        {isPracticeMode(gameMode) ? (
-          <Dropdown
-            className="mx-auto max-w-xs"
-            label="AI Difficulty"
-            value={aiDifficulty}
-            disabled={isModeLocked}
-            onValueChange={(value) => setAiDifficulty(value as typeof aiDifficulty)}
-            options={AI_DIFFICULTY_OPTIONS}
-          />
-        ) : null}
       </div>
     );
   },
