@@ -31,6 +31,15 @@ function IconBase({
   );
 }
 
+export function HomeIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="m4 10.5 8-6.5 8 6.5" />
+      <path d="M6 9.5V20h12V9.5" />
+    </IconBase>
+  );
+}
+
 export function SettingsIcon(props: IconProps) {
   return (
     <IconBase {...props}>

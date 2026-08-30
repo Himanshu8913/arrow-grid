@@ -1,6 +1,7 @@
 @import "./theme.css";
 @import "./cosmetics.css";
 @import "./seasonal.css";
+@import "./menu-dashboard.css";
 @import "tailwindcss";
 
 @theme {
@@ -1053,15 +1054,18 @@ html.animations-disabled .menu-bg-orb {
 .menu-gameplay-preview__halo {
   position: absolute;
   inset: 2% 0;
+  z-index: 0;
   border-radius: 40px;
   background:
     radial-gradient(circle at 72% 50%, rgb(59 130 246 / 0.24), transparent 55%),
     radial-gradient(circle at 20% 70%, rgb(168 85 247 / 0.12), transparent 48%);
   filter: blur(22px);
+  pointer-events: none;
 }
 
 .menu-gameplay-preview__panel {
   position: relative;
+  z-index: 1;
   display: flex;
   width: 100%;
   min-height: 0;
@@ -1196,6 +1200,7 @@ html.animations-disabled .menu-bg-orb {
 .menu-gameplay-preview__stage-glow {
   position: absolute;
   inset: 2% 0;
+  z-index: 0;
   border-radius: 28px;
   background: radial-gradient(circle at 55% 50%, rgb(59 130 246 / 0.16), transparent 72%);
   pointer-events: none;
@@ -1203,6 +1208,7 @@ html.animations-disabled .menu-bg-orb {
 
 .menu-gameplay-preview__board-wrap {
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1231,6 +1237,30 @@ html.animations-disabled .menu-bg-orb {
 .menu-gameplay-preview__board .board-grid-contain {
   max-width: none;
   height: 100%;
+}
+
+.menu-gameplay-preview__board-wrap--hero {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.menu-dashboard__preview-hero .menu-gameplay-preview__board-wrap {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .menu-dashboard__preview-hero .menu-gameplay-preview__board-wrap,
+  .menu-gameplay-preview__board-wrap--hero {
+    max-height: none;
+    aspect-ratio: auto;
+  }
 }
 
 .menu-gameplay-preview__caption {

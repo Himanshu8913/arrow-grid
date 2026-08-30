@@ -3,31 +3,27 @@ import { useEffect, useState } from "react";
 import { playSfx } from "@/audio";
 import { getDailyDateKey } from "@/engine/daily-challenge";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
-import { useStatisticsStore } from "@/state/statistics-store";
-import { CalendarIcon, ChevronRightIcon } from "@/ui/icons";
+import { CalendarIcon } from "@/ui/icons";
 import {
   formatDailyChallengeStars,
   formatDailyTimeRemaining,
   getDailyTimeRemainingMs,
 } from "@/utils/daily-challenge-display";
-import { formatDailyDateLabel } from "@/utils/daily-challenge";
 
 export interface MenuDailyChallengeCardProps {
   onPlay: () => void;
   onViewResults: () => void;
+  variant?: "default" | "compact";
 }
 
-/**
- * Rich daily challenge card for the home screen.
- */
 export function MenuDailyChallengeCard({
   onPlay,
   onViewResults,
+  variant = "default",
 }: MenuDailyChallengeCardProps) {
   const todayResult = useDailyChallengeStore(
     (state) => state.history[getDailyDateKey()] ?? null,
   );
-  const bestScore = useStatisticsStore((state) => state.stats.bestScore);
   const [timeRemaining, setTimeRemaining] = useState(() =>
     formatDailyTimeRemaining(getDailyTimeRemainingMs()),
   );
@@ -51,6 +47,31 @@ export function MenuDailyChallengeCard({
 
     onPlay();
   };
+
+  if (variant === "compact") {
+    return (
+      <button
+        type="button"
+        className="menu-dashboard__card menu-dashboard__mini-card h-full"
+        onClick={handleClick}
+        onMouseEnter={() => playSfx("hover")}
+      >
+        <CalendarIcon size={18} className="text-accent-primary" />
+        <p className="mt-2 text-sm font-semibold text-text-primary">Daily Challenge</p>
+        <p className="mt-1 text-lg tracking-wide text-warning">
+          {completed
+            ? formatDailyChallengeStars(todayResult?.stars ?? null)
+            : "☆☆☆"}
+        </p>
+        <p className="mt-2 text-xs font-semibold text-accent-primary">
+          {completed ? "View results" : "Play now"}
+        </p>
+        {!completed ? (
+          <p className="mt-1 text-[11px] text-text-muted">{timeRemaining}</p>
+        ) : null}
+      </button>
+    );
+  }
 
   return (
     <button
@@ -77,20 +98,11 @@ export function MenuDailyChallengeCard({
           </>
         ) : (
           <>
-            <span className="mt-1 block text-xs text-text-muted">
-              {formatDailyDateLabel(getDailyDateKey())}
-            </span>
-            <span className="mt-2 block text-sm tracking-wide text-warning">
-              ☆☆☆
-            </span>
+            <span className="mt-2 block text-sm tracking-wide text-warning">☆☆☆</span>
             <span className="mt-1 block text-xs text-text-muted">{timeRemaining}</span>
-            <span className="mt-1 block text-xs text-text-muted">
-              Best score · {bestScore}
-            </span>
           </>
         )}
       </span>
-      <ChevronRightIcon size={16} className="text-text-muted" />
     </button>
   );
 }
