@@ -24,6 +24,26 @@ export function formatDailyTimeRemaining(ms: number): string {
 }
 
 /**
+ * Countdown until the next daily challenge unlocks (after today's attempt).
+ */
+export function formatDailyAvailabilityCountdown(ms: number): string {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `Available in ${hours}h ${String(minutes).padStart(2, "0")}m`;
+  }
+
+  if (minutes > 0) {
+    return `Available in ${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  }
+
+  return `Available in ${seconds}s`;
+}
+
+/**
  * Counts consecutive days with a daily attempt ending at today (UTC).
  */
 export function getDailyChallengeStreak(

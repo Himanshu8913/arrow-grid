@@ -138,6 +138,19 @@ export function FlameIcon(props: IconProps) {
   );
 }
 
+export function BotIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 8V4H8" />
+      <rect x="4" y="8" width="16" height="12" rx="2" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="M9 14v2" />
+      <path d="M15 14v2" />
+    </IconBase>
+  );
+}
+
 export function ChevronRightIcon(props: IconProps) {
   return (
     <IconBase {...props}>

@@ -1,8 +1,5 @@
-import { useMemo } from "react";
-
-import { BoardGrid } from "@/components/board";
 import { playSfx } from "@/audio";
-import { createPreviewBaseGame, CORNER_ROUTE_PREVIEW_DEMO } from "@/utils/menu-preview-demo";
+import { MenuContinueBoardThumb } from "@/components/menu/menu-continue-board-thumb";
 import type { ContinueMatchSummary } from "@/utils/home-continue";
 import type { SavedMatch } from "@/types/progress";
 import { PlayIcon } from "@/ui/icons";
@@ -36,11 +33,6 @@ export function MenuContinueCard({
   onContinue,
   onPlay,
 }: MenuContinueCardProps) {
-  const fallbackGame = useMemo(() => createPreviewBaseGame(CORNER_ROUTE_PREVIEW_DEMO), []);
-  const previewBoard = activeMatch?.game.board ?? fallbackGame.board;
-  const previewSpawn = activeMatch?.game.spawn ?? fallbackGame.spawn;
-  const previewOrb = activeMatch?.game.orbPosition ?? fallbackGame.orbPosition;
-
   const handleClick = () => {
     playSfx("click");
 
@@ -52,6 +44,11 @@ export function MenuContinueCard({
     onPlay();
   };
 
+  const detailLine = canContinue
+    ? continueSummary?.detail ?? formatMoveLine(activeMatch)
+    : "VS AI, puzzle mode, or quick match";
+  const footerLine = canContinue ? null : formatMoveLine(activeMatch);
+
   return (
     <button
       type="button"
@@ -60,13 +57,7 @@ export function MenuContinueCard({
       onMouseEnter={() => playSfx("hover")}
     >
       <div className="menu-dashboard__continue-board" aria-hidden="true">
-        <BoardGrid
-          className="h-full w-full max-w-none scale-[0.92]"
-          board={previewBoard}
-          spawn={previewSpawn}
-          orbPosition={previewOrb}
-          disabled
-        />
+        <MenuContinueBoardThumb activeMatch={canContinue ? activeMatch : null} />
       </div>
 
       <div className="min-w-0 flex-1">
@@ -76,12 +67,10 @@ export function MenuContinueCard({
         <p className="mt-1 truncate text-lg font-bold text-white">
           {canContinue ? continueSummary?.subtitle ?? "Saved match" : "Start a new run"}
         </p>
-        <p className="mt-1 text-sm text-white/85">
-          {canContinue
-            ? continueSummary?.detail ?? formatMoveLine(activeMatch)
-            : "VS AI, puzzle mode, or quick match"}
-        </p>
-        <p className="mt-1 text-xs text-white/70">{formatMoveLine(activeMatch)}</p>
+        <p className="mt-1 text-sm text-white/85">{detailLine}</p>
+        {footerLine ? (
+          <p className="mt-1 text-xs text-white/70">{footerLine}</p>
+        ) : null}
       </div>
 
       <span className="menu-dashboard__continue-play" aria-hidden="true">

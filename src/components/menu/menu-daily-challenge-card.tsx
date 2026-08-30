@@ -4,7 +4,9 @@ import { playSfx } from "@/audio";
 import { getDailyDateKey } from "@/engine/daily-challenge";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { CalendarIcon } from "@/ui/icons";
+import { cn } from "@/utils/cn";
 import {
+  formatDailyAvailabilityCountdown,
   formatDailyChallengeStars,
   formatDailyTimeRemaining,
   getDailyTimeRemainingMs,
@@ -15,27 +17,44 @@ export interface MenuDailyChallengeCardProps {
   variant?: "default" | "compact";
 }
 
+function useDailyChallengeAvailability() {
+  const todayResult = useDailyChallengeStore(
+    (state) => state.history[getDailyDateKey()] ?? null,
+  );
+  const completed = Boolean(todayResult);
+  const [remainingMs, setRemainingMs] = useState(() => getDailyTimeRemainingMs());
+
+  useEffect(() => {
+    const tick = () => setRemainingMs(getDailyTimeRemainingMs());
+    tick();
+
+    const interval = window.setInterval(tick, completed ? 1000 : 60_000);
+
+    return () => window.clearInterval(interval);
+  }, [completed]);
+
+  return {
+    todayResult,
+    completed,
+    isPlayable: !completed,
+    timeLabel: completed
+      ? formatDailyAvailabilityCountdown(remainingMs)
+      : formatDailyTimeRemaining(remainingMs),
+  };
+}
+
 export function MenuDailyChallengeCard({
   onPlay,
   variant = "default",
 }: MenuDailyChallengeCardProps) {
-  const todayResult = useDailyChallengeStore(
-    (state) => state.history[getDailyDateKey()] ?? null,
-  );
-  const [timeRemaining, setTimeRemaining] = useState(() =>
-    formatDailyTimeRemaining(getDailyTimeRemainingMs()),
-  );
-  const completed = Boolean(todayResult);
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      setTimeRemaining(formatDailyTimeRemaining(getDailyTimeRemainingMs()));
-    }, 60_000);
-
-    return () => window.clearInterval(interval);
-  }, []);
+  const { todayResult, completed, isPlayable, timeLabel } =
+    useDailyChallengeAvailability();
 
   const handleClick = () => {
+    if (!isPlayable) {
+      return;
+    }
+
     playSfx("click");
     onPlay();
   };
@@ -44,23 +63,39 @@ export function MenuDailyChallengeCard({
     return (
       <button
         type="button"
-        className="menu-dashboard__card menu-dashboard__mini-card menu-interactive-card h-full"
+        className={cn(
+          "menu-dashboard__card menu-dashboard__mini-card h-full",
+          isPlayable && "menu-interactive-card",
+          !isPlayable && "menu-dashboard__mini-card--disabled",
+        )}
+        disabled={!isPlayable}
+        aria-disabled={!isPlayable}
         onClick={handleClick}
-        onMouseEnter={() => playSfx("hover")}
+        onMouseEnter={() => {
+          if (isPlayable) {
+            playSfx("hover");
+          }
+        }}
       >
-        <CalendarIcon size={18} className="text-accent-primary" />
+        <CalendarIcon
+          size={18}
+          className={isPlayable ? "text-accent-primary" : "text-text-muted"}
+        />
         <p className="mt-2 text-sm font-semibold text-text-primary">Daily Challenge</p>
         <p className="mt-1 text-lg tracking-wide text-warning">
           {completed
             ? formatDailyChallengeStars(todayResult?.stars ?? null)
             : "☆☆☆"}
         </p>
-        <p className="mt-2 text-xs font-semibold text-accent-primary">
-          {completed ? "Played today" : "Play now"}
+        <p
+          className={cn(
+            "mt-2 text-xs font-semibold",
+            isPlayable ? "text-accent-primary" : "text-text-muted",
+          )}
+        >
+          {isPlayable ? "Play now" : "Completed today"}
         </p>
-        {!completed ? (
-          <p className="mt-1 text-[11px] text-text-muted">{timeRemaining}</p>
-        ) : null}
+        <p className="mt-1 text-[11px] tabular-nums text-text-muted">{timeLabel}</p>
       </button>
     );
   }
@@ -68,9 +103,19 @@ export function MenuDailyChallengeCard({
   return (
     <button
       type="button"
-      className="menu-feature-row menu-interactive-card w-full text-left"
+      className={cn(
+        "menu-feature-row w-full text-left",
+        isPlayable && "menu-interactive-card",
+        !isPlayable && "menu-dashboard__mini-card--disabled cursor-not-allowed opacity-75",
+      )}
+      disabled={!isPlayable}
+      aria-disabled={!isPlayable}
       onClick={handleClick}
-      onMouseEnter={() => playSfx("hover")}
+      onMouseEnter={() => {
+        if (isPlayable) {
+          playSfx("hover");
+        }
+      }}
     >
       <span className="menu-feature-icon" aria-hidden="true">
         <CalendarIcon size={18} />
@@ -84,14 +129,16 @@ export function MenuDailyChallengeCard({
             <span className="mt-1 block text-xs text-success">
               Completed · {formatDailyChallengeStars(todayResult?.stars ?? null)}
             </span>
-            <span className="mt-1 block text-xs font-medium text-accent-primary">
-              {completed ? "Played today" : "Play now"}
+            <span className="mt-1 block text-xs tabular-nums text-text-muted">
+              {timeLabel}
             </span>
           </>
         ) : (
           <>
             <span className="mt-2 block text-sm tracking-wide text-warning">☆☆☆</span>
-            <span className="mt-1 block text-xs text-text-muted">{timeRemaining}</span>
+            <span className="mt-1 block text-xs tabular-nums text-text-muted">
+              {timeLabel}
+            </span>
           </>
         )}
       </span>
