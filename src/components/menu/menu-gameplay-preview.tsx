@@ -1,23 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { BoardGrid } from "@/components/board";
-import { getPuzzleById } from "@/data/puzzles";
-import { cloneBoard } from "@/engine/board-utils";
-import { createGameFromPuzzle } from "@/engine/puzzle";
-import type { Position } from "@/types/game";
+import {
+  buildPreviewBoard,
+  CORNER_ROUTE_PREVIEW_DEMO,
+  createPreviewBaseGame,
+  type PreviewRotation,
+} from "@/utils/menu-preview-demo";
 import { cn } from "@/utils/cn";
 
-const DEMO_PUZZLE = getPuzzleById("first-steps");
-const ROTATE_AT: Position = { row: 2, col: 2 };
-const ORB_PATH: Position[] = [
-  { row: 0, col: 2 },
-  { row: 1, col: 2 },
-  { row: 2, col: 2 },
-  { row: 3, col: 2 },
-  { row: 4, col: 2 },
-];
-
-type DemoStep = "ready" | "rotate" | "travel" | "score" | "reset";
+type DemoPhase = "ready" | "rotate" | "travel" | "score" | "reset";
 
 const STEPS = [
   { id: "rotate", label: "Rotate" },
@@ -25,154 +17,171 @@ const STEPS = [
   { id: "goal", label: "Goal" },
 ] as const;
 
-function buildDisplayBoard(
-  sourceBoard: ReturnType<typeof createGameFromPuzzle>["board"],
-  arrowRotated: boolean,
-) {
-  const board = cloneBoard(sourceBoard);
+const DEMO = CORNER_ROUTE_PREVIEW_DEMO;
 
-  if (arrowRotated) {
-    board[ROTATE_AT.row][ROTATE_AT.col] = {
-      kind: "arrow",
-      direction: "down",
-    };
-  }
+function getTravelBounds(rotationIndex: number) {
+  const start = DEMO.travelSegments[rotationIndex] ?? 0;
+  const end =
+    DEMO.travelSegments[rotationIndex + 1] ?? DEMO.orbPath.length - 1;
 
-  return board;
+  return { start, end };
 }
 
 /**
- * Looping miniature board that demonstrates core gameplay on the home screen.
+ * Looping miniature board that demonstrates a multi-step puzzle solve.
  */
 export function MenuGameplayPreview({ className }: { className?: string }) {
-  const baseGame = useMemo(() => createGameFromPuzzle(DEMO_PUZZLE), []);
-  const [step, setStep] = useState<DemoStep>("ready");
-  const [arrowRotated, setArrowRotated] = useState(false);
+  const baseGame = useMemo(() => createPreviewBaseGame(DEMO), []);
+  const [phase, setPhase] = useState<DemoPhase>("ready");
+  const [rotationIndex, setRotationIndex] = useState(0);
   const [orbIndex, setOrbIndex] = useState(0);
   const [trailCount, setTrailCount] = useState(1);
+  const [appliedRotations, setAppliedRotations] = useState<PreviewRotation[]>([]);
 
-  const orbPosition = ORB_PATH[orbIndex];
+  const activeRotation =
+    phase === "rotate" ? (DEMO.rotations[rotationIndex] ?? null) : null;
+  const orbPosition = DEMO.orbPath[orbIndex];
   const displayBoard = useMemo(
-    () => buildDisplayBoard(baseGame.board, arrowRotated),
-    [arrowRotated, baseGame.board],
+    () => buildPreviewBoard(baseGame.board, appliedRotations),
+    [appliedRotations, baseGame.board],
   );
-  const trailPositions = ORB_PATH.slice(0, Math.max(0, trailCount));
+  const trailPositions = DEMO.orbPath.slice(0, Math.max(0, trailCount));
+
   const activeStepIndex =
-    step === "ready" || step === "rotate"
+    phase === "ready" || phase === "rotate"
       ? 0
-      : step === "travel"
+      : phase === "travel"
         ? 1
         : 2;
 
   useEffect(() => {
-    let timeout = 0;
-    let interval = 0;
-
-    if (step === "ready") {
-      timeout = window.setTimeout(() => setStep("rotate"), 1400);
+    if (phase === "ready") {
+      const timeout = window.setTimeout(() => setPhase("rotate"), 1200);
+      return () => window.clearTimeout(timeout);
     }
 
-    if (step === "rotate") {
-      timeout = window.setTimeout(() => {
-        setArrowRotated(true);
-        setStep("travel");
-      }, 750);
+    if (phase === "rotate") {
+      const timeout = window.setTimeout(() => {
+        const rotation = DEMO.rotations[rotationIndex];
+        const { start } = getTravelBounds(rotationIndex);
+
+        if (rotation) {
+          setAppliedRotations((current) => [...current, rotation]);
+        }
+
+        setOrbIndex((current) => (current < start ? start : current));
+        setTrailCount((current) => Math.max(current, start + 1));
+        setPhase("travel");
+      }, 800);
+
+      return () => window.clearTimeout(timeout);
     }
 
-    if (step === "travel") {
-      interval = window.setInterval(() => {
+    if (phase === "travel") {
+      const { end } = getTravelBounds(rotationIndex);
+
+      const interval = window.setInterval(() => {
         setOrbIndex((current) => {
-          const next = current + 1;
-
-          if (next >= ORB_PATH.length) {
+          if (current >= end) {
             window.clearInterval(interval);
-            setTrailCount(ORB_PATH.length);
-            setStep("score");
+
+            if (rotationIndex < DEMO.rotations.length - 1) {
+              setRotationIndex((value) => value + 1);
+              setPhase("rotate");
+              return current;
+            }
+
+            setTrailCount(DEMO.orbPath.length);
+            setPhase("score");
             return current;
           }
 
-          setTrailCount(next);
+          const next = current + 1;
+          setTrailCount(next + 1);
           return next;
         });
-      }, 420);
+      }, 380);
+
+      return () => window.clearInterval(interval);
     }
 
-    if (step === "score") {
-      timeout = window.setTimeout(() => setStep("reset"), 1600);
+    if (phase === "score") {
+      const timeout = window.setTimeout(() => setPhase("reset"), 1800);
+      return () => window.clearTimeout(timeout);
     }
 
-    if (step === "reset") {
-      timeout = window.setTimeout(() => {
-        setArrowRotated(false);
+    if (phase === "reset") {
+      const timeout = window.setTimeout(() => {
+        setRotationIndex(0);
         setOrbIndex(0);
         setTrailCount(1);
-        setStep("ready");
+        setAppliedRotations([]);
+        setPhase("ready");
       }, 500);
+
+      return () => window.clearTimeout(timeout);
     }
 
-    return () => {
-      window.clearTimeout(timeout);
-      window.clearInterval(interval);
-    };
-  }, [step]);
+    return undefined;
+  }, [phase, rotationIndex]);
 
   return (
     <div className={cn("menu-gameplay-preview", className)}>
       <div className="menu-gameplay-preview__halo" aria-hidden="true" />
       <div className="menu-gameplay-preview__panel">
-        <div className="menu-gameplay-preview__header">
-          <div>
-            <p className="menu-gameplay-preview__label">Live preview</p>
-            <p className="menu-gameplay-preview__title">First Steps</p>
+        <div className="menu-gameplay-preview__meta">
+          <div className="menu-gameplay-preview__header">
+            <div>
+              <p className="menu-gameplay-preview__label">Live preview</p>
+              <p className="menu-gameplay-preview__title">{DEMO.title}</p>
+            </div>
+            <span className="menu-gameplay-preview__badge">Demo</span>
           </div>
-          <span className="menu-gameplay-preview__badge">Demo</span>
-        </div>
 
-        <div className="menu-gameplay-preview__steps" aria-hidden="true">
-          {STEPS.map((entry, index) => (
-            <span
-              key={entry.id}
-              className={cn(
-                "menu-gameplay-preview__step",
-                index === activeStepIndex && "menu-gameplay-preview__step--active",
-                index < activeStepIndex && "menu-gameplay-preview__step--done",
-              )}
-            >
-              {entry.label}
-            </span>
-          ))}
+          <div className="menu-gameplay-preview__steps" aria-hidden="true">
+            {STEPS.map((entry, index) => (
+              <span
+                key={entry.id}
+                className={cn(
+                  "menu-gameplay-preview__step",
+                  index === activeStepIndex && "menu-gameplay-preview__step--active",
+                  index < activeStepIndex && "menu-gameplay-preview__step--done",
+                )}
+              >
+                {entry.label}
+              </span>
+            ))}
+          </div>
+
+          <p className="menu-gameplay-preview__caption">{DEMO.caption}</p>
         </div>
 
         <div className="menu-gameplay-preview__stage">
           <div className="menu-gameplay-preview__stage-glow" aria-hidden="true" />
           <div className="menu-gameplay-preview__board-wrap">
             <BoardGrid
-              className="menu-gameplay-preview__board w-full max-w-none"
+              className="menu-gameplay-preview__board h-full w-full max-w-none"
               board={displayBoard}
               spawn={baseGame.spawn}
               orbPosition={orbPosition}
               pathPositions={[]}
               trailPositions={trailPositions}
-              rotatingPosition={step === "rotate" ? ROTATE_AT : null}
+              rotatingPosition={activeRotation?.position ?? null}
               goalCelebration={
-                step === "score"
+                phase === "score"
                   ? {
-                      position: ORB_PATH[ORB_PATH.length - 1],
+                      position: DEMO.orbPath[DEMO.orbPath.length - 1],
                       score: 1,
                       owner: "player1",
                     }
                   : null
               }
-              isBoardCelebrating={step === "score"}
-              isOrbSpawning={step === "ready"}
+              isBoardCelebrating={phase === "score"}
+              isOrbSpawning={phase === "ready"}
               disabled
             />
           </div>
         </div>
-
-        <p className="menu-gameplay-preview__caption">
-          Tap a tile to rotate · the orb follows the arrows · reach the goal
-        </p>
       </div>
     </div>
   );

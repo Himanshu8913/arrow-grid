@@ -82,12 +82,12 @@ export function MainMenu({
   } as const;
 
   return (
-    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-6 sm:px-6">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-6 sm:px-6 md:items-start md:py-8 lg:px-10">
       <MenuBackground />
 
-      <div className="menu-home relative z-10 w-full max-w-5xl">
-        <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:gap-8">
-          <div className="min-w-0">
+      <div className="menu-home relative z-10 w-full max-w-[90rem]">
+        <div className="menu-home-layout grid w-full items-start gap-5 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-6 xl:gap-8">
+          <div className="menu-home-main min-w-0">
             <MenuProfileHeader streak={dailyStreak} onOpenProfile={onOpenProfile} />
 
             <div className="menu-home-panel menu-stagger rounded-[28px] border border-white/10 bg-bg-surface/75 p-4 shadow-[var(--shadow-strong)] backdrop-blur-md sm:p-5">
@@ -224,12 +224,12 @@ export function MainMenu({
             </button>
           </div>
 
-          <div className="menu-stagger-item hidden min-w-0 lg:block">
-            <MenuGameplayPreview className="sticky top-6" />
+          <div className="menu-stagger-item hidden w-full min-w-0 md:block">
+            <MenuGameplayPreview />
           </div>
         </div>
 
-        <div className="menu-stagger-item mt-4 lg:hidden">
+        <div className="menu-stagger-item mt-4 md:hidden">
           <MenuGameplayPreview />
         </div>
       </div>

@@ -792,6 +792,35 @@ html.animations-disabled .menu-bg-orb {
     inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 
+.menu-home-main .menu-home-panel {
+  border-color: rgb(96 165 250 / 0.14);
+  box-shadow:
+    0 24px 48px rgb(15 23 42 / 0.28),
+    0 0 0 1px rgb(96 165 250 / 0.08),
+    inset 0 1px 0 rgb(255 255 255 / 0.07);
+}
+
+.menu-home-layout {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .menu-home-main {
+    min-width: 0;
+  }
+
+  .menu-gameplay-preview__panel {
+    min-height: 0;
+  }
+
+  .menu-gameplay-preview__board-wrap {
+    max-height: min(72vh, 100%);
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+}
+
 .menu-home-divider {
   height: 1px;
   background: linear-gradient(
@@ -1017,35 +1046,67 @@ html.animations-disabled .menu-bg-orb {
 
 .menu-gameplay-preview {
   position: relative;
-  height: 100%;
-  min-height: 28rem;
+  width: 100%;
+  min-height: 0;
 }
 
 .menu-gameplay-preview__halo {
   position: absolute;
-  inset: 8% 4% 12%;
+  inset: 2% 0;
   border-radius: 40px;
   background:
-    radial-gradient(circle at 50% 42%, rgb(59 130 246 / 0.22), transparent 58%),
-    radial-gradient(circle at 50% 100%, rgb(168 85 247 / 0.12), transparent 50%);
-  filter: blur(20px);
+    radial-gradient(circle at 72% 50%, rgb(59 130 246 / 0.24), transparent 55%),
+    radial-gradient(circle at 20% 70%, rgb(168 85 247 / 0.12), transparent 48%);
+  filter: blur(22px);
 }
 
 .menu-gameplay-preview__panel {
   position: relative;
   display: flex;
-  height: 100%;
-  min-height: 28rem;
+  width: 100%;
+  min-height: 0;
   flex-direction: column;
+  gap: 0.85rem;
   border-radius: 28px;
   border: 1px solid rgb(96 165 250 / 0.18);
   background:
     linear-gradient(180deg, rgb(15 23 42 / 0.82), rgb(15 23 42 / 0.58)),
-    radial-gradient(circle at 50% 0%, rgb(59 130 246 / 0.08), transparent 42%);
-  padding: 1.15rem;
+    radial-gradient(circle at 85% 25%, rgb(59 130 246 / 0.1), transparent 45%);
+  padding: 1rem;
   box-shadow:
     0 24px 48px rgb(15 23 42 / 0.34),
     inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+@media (min-width: 768px) {
+  .menu-gameplay-preview__panel {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.15rem;
+    padding: 1rem 1.15rem;
+  }
+}
+
+.menu-gameplay-preview__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .menu-gameplay-preview__meta {
+    width: 9.5rem;
+    flex-shrink: 0;
+    align-self: stretch;
+    justify-content: space-between;
+    padding-block: 0.15rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .menu-gameplay-preview__meta {
+    width: 11rem;
+  }
 }
 
 .menu-gameplay-preview__header {
@@ -1086,7 +1147,12 @@ html.animations-disabled .menu-bg-orb {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
-  margin-top: 0.9rem;
+}
+
+@media (min-width: 768px) {
+  .menu-gameplay-preview__steps {
+    grid-template-columns: 1fr;
+  }
 }
 
 .menu-gameplay-preview__step {
@@ -1122,29 +1188,33 @@ html.animations-disabled .menu-bg-orb {
   position: relative;
   display: flex;
   flex: 1;
-  align-items: center;
-  justify-content: center;
-  margin-top: 0.85rem;
-  min-height: 0;
+  align-items: stretch;
+  justify-content: stretch;
+  min-width: 0;
 }
 
 .menu-gameplay-preview__stage-glow {
   position: absolute;
-  inset: 8%;
+  inset: 2% 0;
   border-radius: 28px;
-  background: radial-gradient(circle, rgb(59 130 246 / 0.14), transparent 70%);
+  background: radial-gradient(circle at 55% 50%, rgb(59 130 246 / 0.16), transparent 72%);
   pointer-events: none;
 }
 
 .menu-gameplay-preview__board-wrap {
   position: relative;
-  width: min(100%, 22rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1;
   border-radius: 24px;
   border: 1px solid rgb(96 165 250 / 0.22);
   background:
     linear-gradient(180deg, rgb(30 41 59 / 0.55), rgb(15 23 42 / 0.72)),
     rgb(15 23 42 / 0.4);
-  padding: 0.85rem;
+  padding: clamp(0.65rem, 1.2vw, 1.1rem);
   box-shadow:
     0 16px 36px rgb(15 23 42 / 0.35),
     inset 0 0 0 1px rgb(255 255 255 / 0.04),
@@ -1153,20 +1223,26 @@ html.animations-disabled .menu-bg-orb {
 
 .menu-gameplay-preview__board {
   width: 100%;
+  height: 100%;
   margin: 0 auto;
 }
 
 .menu-gameplay-preview__board.board-grid,
 .menu-gameplay-preview__board .board-grid-contain {
   max-width: none;
+  height: 100%;
 }
 
 .menu-gameplay-preview__caption {
-  margin-top: 0.9rem;
-  text-align: center;
   font-size: 0.78rem;
   line-height: 1.5;
   color: var(--theme-text-muted);
+}
+
+@media (min-width: 768px) {
+  .menu-gameplay-preview__caption {
+    margin-top: auto;
+  }
 }
 
 .menu-gameplay-preview__glow {

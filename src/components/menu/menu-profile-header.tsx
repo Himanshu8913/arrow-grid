@@ -39,14 +39,11 @@ export function MenuProfileHeader({
 
   return (
     <header className="menu-hero-enter mb-5">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-primary">
-            {greeting.title}
-          </p>
-          <p className="mt-1 text-sm text-text-muted">{greeting.subtitle}</p>
-        </div>
-        <span className="menu-coins-badge shrink-0 tabular-nums">{totalCoins} coins</span>
+      <div className="mb-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-primary">
+          {greeting.title}
+        </p>
+        <p className="mt-1 text-sm text-text-muted">{greeting.subtitle}</p>
       </div>
 
       <button
@@ -63,9 +60,14 @@ export function MenuProfileHeader({
             className={frameClassName}
           />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-lg font-bold text-text-primary">
-              {displayName || "Guest Player"}
-            </p>
+            <div className="flex items-start justify-between gap-2">
+              <p className="truncate text-lg font-bold text-text-primary">
+                {displayName || "Guest Player"}
+              </p>
+              <span className="menu-coins-badge shrink-0 tabular-nums">
+                {totalCoins} coins
+              </span>
+            </div>
             <p className="truncate text-xs text-text-muted">
               Level {playerLevel}
               {playerTitle ? ` · ${playerTitle}` : ""}
