@@ -11,6 +11,7 @@ import {
 } from "@/components/app/lazy-screens";
 import { ScreenTransition } from "@/components/app/screen-transition";
 import { CommunityScreen } from "@/components/community/community-screen";
+import { SeasonalScreen } from "@/components/seasonal/seasonal-screen";
 import { PuzzleEditorScreen } from "@/components/editor/puzzle-editor-screen";
 import { MainMenu } from "@/components/menu";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +23,7 @@ import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { formatDailyStars } from "@/utils/daily-challenge";
 
-type AppScreen = "menu" | "game" | "editor" | "community";
+type AppScreen = "menu" | "game" | "editor" | "community" | "seasonal";
 
 export function App() {
   const [screen, setScreen] = useState<AppScreen>("menu");
@@ -106,6 +107,13 @@ export function App() {
             onPlay={() => setScreen("game")}
           />
         </ScreenTransition>
+      ) : screen === "seasonal" ? (
+        <ScreenTransition screenKey="seasonal">
+          <SeasonalScreen
+            onBack={() => setScreen("menu")}
+            onPlay={() => setScreen("game")}
+          />
+        </ScreenTransition>
       ) : (
         <ScreenTransition screenKey="menu">
           <MainMenu
@@ -117,6 +125,7 @@ export function App() {
               setScreen("editor");
             }}
             onOpenCommunity={() => setScreen("community")}
+            onOpenSeasonal={() => setScreen("seasonal")}
             onOpenSettings={() => setIsSettingsOpen(true)}
             onOpenStatistics={() => setIsStatisticsOpen(true)}
             onOpenAchievements={() => setIsAchievementsOpen(true)}

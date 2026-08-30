@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "@/app/app";
 import { CosmeticsProvider } from "@/providers/cosmetics-provider";
+import { SeasonalProvider } from "@/providers/seasonal-provider";
 import { SettingsProvider } from "@/providers/settings-provider";
 import { SaveProvider } from "@/providers/save-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -20,9 +21,11 @@ createRoot(rootElement).render(
       <ToastProvider>
         <SettingsProvider>
           <CosmeticsProvider>
-            <SaveProvider>
-              <App />
-            </SaveProvider>
+            <SeasonalProvider>
+              <SaveProvider>
+                <App />
+              </SaveProvider>
+            </SeasonalProvider>
           </CosmeticsProvider>
         </SettingsProvider>
       </ToastProvider>

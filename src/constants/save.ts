@@ -12,6 +12,7 @@ export const SAVE_KEYS = {
   dailyChallenge: "arrow-grid-daily-challenge",
   cosmetics: "arrow-grid-cosmetics",
   customPuzzles: "arrow-grid-custom-puzzles",
+  seasonal: "arrow-grid-seasonal",
 } as const;
 
 export type SaveKey = (typeof SAVE_KEYS)[keyof typeof SAVE_KEYS];

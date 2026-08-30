@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 
 import { ACHIEVEMENTS } from "@/data/achievements";
 import { useEscapeKey } from "@/hooks/use-escape-key";
+import { useSeasonalVictoryVariant } from "@/hooks/use-seasonal";
+import { VictoryFireworks } from "@/components/seasonal/victory-fireworks";
 import type { MatchResultSummary } from "@/types/match-result";
 import {
   getPlayerLabel,
@@ -39,6 +41,8 @@ export function ResultScreen({
   const isPuzzle = isSoloChallengeMode(gameMode);
   const isWin = rewards.isWin;
   const showPlayAgain = !isDailyChallengeMode(gameMode);
+  const victoryVariant = useSeasonalVictoryVariant();
+  const showFireworks = isWin && victoryVariant === "fireworks";
 
   useEscapeKey(onMainMenu);
 
@@ -62,6 +66,7 @@ export function ResultScreen({
       aria-labelledby="result-screen-title"
       className="result-backdrop-enter fixed inset-0 z-30 flex items-center justify-center bg-bg-primary/85 p-4 backdrop-blur-sm"
     >
+      {showFireworks ? <VictoryFireworks /> : null}
       <div
         ref={panelRef}
         tabIndex={-1}

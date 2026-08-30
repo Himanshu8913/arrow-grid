@@ -141,6 +141,9 @@ export function CosmeticsPanel({ embedded = false }: CosmeticsPanelProps) {
           const achievementUnlocked =
             cosmetic.unlockAchievementId &&
             unlockedAchievements.includes(cosmetic.unlockAchievementId);
+          const isSeasonalLocked = Boolean(
+            cosmetic.unlockEventId && !isOwned && !achievementUnlocked,
+          );
 
           return (
             <div
@@ -162,7 +165,9 @@ export function CosmeticsPanel({ embedded = false }: CosmeticsPanelProps) {
               <div className="mt-3 flex items-center justify-between gap-2">
                 <span className="text-xs text-text-muted">
                   {cosmetic.price === 0
-                    ? "Free"
+                    ? isSeasonalLocked
+                      ? "Seasonal challenge reward"
+                      : "Free"
                     : achievementUnlocked && !isOwned
                       ? "Achievement unlock"
                       : `${cosmetic.price} coins`}
@@ -171,16 +176,18 @@ export function CosmeticsPanel({ embedded = false }: CosmeticsPanelProps) {
                   type="button"
                   size="sm"
                   variant={isEquipped ? "secondary" : "primary"}
-                  disabled={isEquipped}
+                  disabled={isEquipped || isSeasonalLocked}
                   onClick={() => handleAction(cosmetic.id)}
                 >
                   {isEquipped
                     ? "Equipped"
                     : isOwned
                       ? "Equip"
-                      : cosmetic.price === 0 || achievementUnlocked
-                        ? "Unlock"
-                        : "Buy"}
+                      : isSeasonalLocked
+                        ? "Locked"
+                        : cosmetic.price === 0 || achievementUnlocked
+                          ? "Unlock"
+                          : "Buy"}
                 </Button>
               </div>
             </div>

@@ -3,6 +3,7 @@ import { MAX_CONCURRENT_SFX_VOICES } from "@/constants/performance";
 import { useSettingsStore } from "@/state/settings-store";
 import type { SfxId } from "@/types/audio";
 import type { Settings } from "@/types/settings";
+import type { SeasonalMusicProfile } from "@/types/seasonal";
 
 interface ActiveVoice {
   priority: number;
@@ -23,6 +24,7 @@ class AudioManager {
   private musicStep = 0;
   private lastHoverAt = 0;
   private isMusicPlaying = false;
+  private musicProfile: SeasonalMusicProfile = "default";
 
   unlock(): void {
     const context = this.getContext();
@@ -155,6 +157,19 @@ class AudioManager {
     this.musicVoices = [];
   }
 
+  setMusicProfile(profile: SeasonalMusicProfile): void {
+    if (this.musicProfile === profile) {
+      return;
+    }
+
+    this.musicProfile = profile;
+
+    if (this.isMusicPlaying) {
+      this.stopMusic();
+      this.startMusic();
+    }
+  }
+
   private scheduleMusicChord(): void {
     const settings = useSettingsStore.getState();
     if (settings.muted || !settings.musicEnabled) {
@@ -162,7 +177,8 @@ class AudioManager {
       return;
     }
 
-    const chord = MUSIC_CHORDS[this.musicStep % MUSIC_CHORDS.length];
+    const chords = MUSIC_CHORDS_BY_PROFILE[this.musicProfile];
+    const chord = chords[this.musicStep % chords.length];
     this.musicStep += 1;
 
     const context = this.getContext();
@@ -293,12 +309,40 @@ class AudioManager {
   }
 }
 
-const MUSIC_CHORDS = [
+const DEFAULT_MUSIC_CHORDS = [
   [196, 247, 294],
   [220, 277, 330],
   [175, 220, 262],
   [185, 233, 277],
 ];
+
+const MUSIC_CHORDS_BY_PROFILE: Record<SeasonalMusicProfile, number[][]> = {
+  default: DEFAULT_MUSIC_CHORDS,
+  haunted: [
+    [147, 175, 220],
+    [165, 196, 247],
+    [131, 165, 196],
+    [140, 175, 208],
+  ],
+  winter: [
+    [262, 330, 392],
+    [294, 349, 440],
+    [247, 311, 370],
+    [277, 349, 415],
+  ],
+  diwali: [
+    [220, 277, 330],
+    [247, 311, 370],
+    [196, 247, 294],
+    [233, 294, 349],
+  ],
+  anniversary: [
+    [196, 247, 311],
+    [220, 277, 349],
+    [247, 311, 392],
+    [175, 220, 294],
+  ],
+};
 
 export const audioManager = new AudioManager();
 

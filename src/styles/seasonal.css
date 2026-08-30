@@ -1,0 +1,219 @@
+/* Seasonal menu backgrounds */
+
+html[data-seasonal="halloween"] .menu-bg-gradient {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(249, 115, 22, 0.22), transparent 42%),
+    radial-gradient(circle at 82% 72%, rgba(126, 34, 206, 0.2), transparent 40%),
+    linear-gradient(180deg, rgba(30, 10, 40, 0.35), rgba(15, 8, 20, 0.8));
+}
+
+html[data-seasonal="winter"] .menu-bg-gradient {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(191, 219, 254, 0.2), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(147, 197, 253, 0.16), transparent 40%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.15), rgba(30, 58, 95, 0.7));
+}
+
+html[data-seasonal="diwali"] .menu-bg-gradient {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(251, 191, 36, 0.24), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(249, 115, 22, 0.18), transparent 40%),
+    linear-gradient(180deg, rgba(67, 20, 7, 0.2), rgba(30, 15, 5, 0.72));
+}
+
+html[data-seasonal="anniversary"] .menu-bg-gradient {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.22), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.18), transparent 40%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.2), rgba(30, 20, 60, 0.68));
+}
+
+/* Seasonal board themes */
+
+html[data-cosmetic-board="board-pumpkin"] .board-tile-button {
+  border-color: rgb(234 88 12 / 0.45);
+  background: linear-gradient(145deg, rgb(67 20 7), rgb(124 45 18));
+}
+
+html[data-cosmetic-board="board-snow"] .board-tile-button {
+  border-color: rgb(191 219 254 / 0.45);
+  background: linear-gradient(145deg, rgb(30 58 95), rgb(51 65 85));
+}
+
+html[data-cosmetic-board="board-lantern"] .board-tile-button {
+  border-color: rgb(251 191 36 / 0.45);
+  background: linear-gradient(145deg, rgb(69 26 3), rgb(120 53 15));
+}
+
+html[data-cosmetic-board="board-anniversary"] .board-tile-button {
+  border-color: rgb(236 72 153 / 0.4);
+  background: linear-gradient(
+    145deg,
+    rgb(30 27 75 / 0.95),
+    rgb(76 29 149 / 0.85)
+  );
+}
+
+/* Seasonal orb skins */
+
+.cosmetic-orb-ghost {
+  background-color: rgb(226 232 240) !important;
+  box-shadow:
+    0 0 18px rgb(168 85 247 / 0.85),
+    0 0 28px rgb(226 232 240 / 0.55) !important;
+}
+
+.cosmetic-orb-frost {
+  background-color: rgb(186 230 253) !important;
+  box-shadow: 0 0 18px rgb(125 211 252 / 0.95) !important;
+}
+
+.cosmetic-orb-lantern {
+  background-color: rgb(251 191 36) !important;
+  box-shadow: 0 0 20px rgb(249 115 22 / 0.95) !important;
+}
+
+.cosmetic-orb-anniversary {
+  background-color: rgb(244 114 182) !important;
+  box-shadow:
+    0 0 18px rgb(236 72 153 / 0.95),
+    0 0 24px rgb(59 130 246 / 0.55) !important;
+}
+
+.cosmetic-frame-anniversary {
+  box-shadow:
+    0 0 0 3px rgb(251 191 36),
+    0 0 14px rgb(236 72 153 / 0.65);
+}
+
+/* Menu seasonal particles */
+
+.seasonal-menu-particle {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  opacity: 0.7;
+}
+
+html[data-seasonal="winter"] .seasonal-menu-particle {
+  width: 6px;
+  height: 6px;
+  background: rgb(255 255 255 / 0.85);
+  animation: seasonal-snow-fall linear infinite;
+}
+
+html[data-seasonal="diwali"] .seasonal-menu-particle,
+html[data-seasonal="anniversary"] .seasonal-menu-particle {
+  width: 5px;
+  height: 5px;
+  background: rgb(251 191 36 / 0.9);
+  animation: seasonal-gold-drift linear infinite;
+}
+
+html[data-seasonal="halloween"] .seasonal-menu-particle {
+  width: 8px;
+  height: 8px;
+  background: rgb(168 85 247 / 0.55);
+  animation: seasonal-ghost-float ease-in-out infinite;
+}
+
+@keyframes seasonal-snow-fall {
+  from {
+    transform: translate3d(0, -10vh, 0);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.85;
+  }
+
+  to {
+    transform: translate3d(12px, 110vh, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes seasonal-gold-drift {
+  from {
+    transform: translate3d(0, -8vh, 0) scale(0.6);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.9;
+  }
+
+  to {
+    transform: translate3d(-10px, 108vh, 0) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes seasonal-ghost-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: translate3d(8px, -18px, 0);
+    opacity: 0.75;
+  }
+}
+
+/* Goal celebration seasonal particles */
+
+html[data-seasonal="winter"] .goal-particle.seasonal-particle {
+  width: 6px;
+  height: 10px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.95) !important;
+}
+
+html[data-seasonal="diwali"] .goal-particle.seasonal-particle,
+html[data-seasonal="anniversary"] .goal-particle.seasonal-particle {
+  background: rgb(251 191 36) !important;
+  box-shadow: 0 0 8px rgb(249 115 22 / 0.8);
+}
+
+html[data-seasonal="halloween"] .goal-particle.seasonal-particle {
+  background: rgb(168 85 247) !important;
+  box-shadow: 0 0 8px rgb(226 232 240 / 0.6);
+}
+
+/* Victory fireworks */
+
+.victory-firework {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  animation: victory-firework-burst 1.2s ease-out forwards;
+}
+
+@keyframes victory-firework-burst {
+  from {
+    transform: translate3d(0, 0, 0) scale(0.4);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate3d(var(--firework-tx), var(--firework-ty), 0) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seasonal-menu-particle,
+  .victory-firework {
+    animation: none !important;
+  }
+}
+
+html.reduce-motion .seasonal-menu-particle,
+html.reduce-motion .victory-firework,
+html.animations-disabled .seasonal-menu-particle,
+html.animations-disabled .victory-firework {
+  animation: none !important;
+}

@@ -6,6 +6,7 @@ import {
   GOAL_CELEBRATION_MS,
   GOAL_PARTICLE_COUNT,
 } from "@/constants/animation";
+import { useSeasonalParticleVariant } from "@/hooks/use-seasonal";
 import type { PlayerId, Position } from "@/types/game";
 import { cn } from "@/utils/cn";
 
@@ -57,6 +58,9 @@ export function GoalCelebration({
   owner,
   gap = BOARD_TILE_GAP_PX,
 }: GoalCelebrationProps) {
+  const particleVariant = useSeasonalParticleVariant();
+  const useSeasonalParticles = particleVariant !== "default";
+
   const centerStyle = useMemo(
     () => getTileCenterStyle(position.row, position.col, gridSize, gap),
     [gap, gridSize, position.col, position.row],
@@ -97,7 +101,7 @@ export function GoalCelebration({
           key={particle.id}
           className={cn(
             "goal-particle absolute size-2 rounded-full",
-            ownerParticle[owner],
+            useSeasonalParticles ? "seasonal-particle" : ownerParticle[owner],
           )}
           style={{ ...centerStyle, ...particle.style }}
         />

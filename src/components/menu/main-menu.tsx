@@ -1,5 +1,6 @@
 import { getAppName } from "@/constants/app";
 import { MenuBackground } from "@/components/menu/menu-background";
+import { SeasonalEventBanner } from "@/components/seasonal/seasonal-event-banner";
 import { getDailyDateKey } from "@/engine/daily-challenge";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { useProfileStore } from "@/state/profile-store";
@@ -14,6 +15,7 @@ export interface MainMenuProps {
   onContinue: () => void;
   onOpenEditor: () => void;
   onOpenCommunity: () => void;
+  onOpenSeasonal: () => void;
   onOpenSettings: () => void;
   onOpenStatistics: () => void;
   onOpenAchievements: () => void;
@@ -31,6 +33,7 @@ export function MainMenu({
   onContinue,
   onOpenEditor,
   onOpenCommunity,
+  onOpenSeasonal,
   onOpenSettings,
   onOpenStatistics,
   onOpenAchievements,
@@ -65,6 +68,8 @@ export function MainMenu({
             Welcome back, {displayName || "Guest Player"}
           </p>
         </div>
+
+        <SeasonalEventBanner onOpenSeasonal={onOpenSeasonal} />
 
         <nav
           aria-label="Main menu"

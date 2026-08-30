@@ -4,9 +4,11 @@ import type { GoalCelebrationState } from "@/components/board";
 import { playSfx } from "@/audio";
 import { recordPuzzleCompletion } from "@/save";
 import { isCustomPuzzleId } from "@/engine/custom-puzzle";
+import { isSeasonalPuzzleId } from "@/data/seasonal-puzzles";
 import { isCatalogPuzzleId } from "@/data/puzzles";
 import { resolvePuzzleDefinition } from "@/engine/puzzle-resolver";
 import { getPuzzleTargetMoves } from "@/utils/puzzle-display";
+import { recordSeasonalWinIfActive } from "@/utils/record-seasonal-win";
 import {
   applyPuzzleMoveLimit,
   calculatePuzzleStars,
@@ -386,7 +388,8 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         nextGame.puzzleId &&
         starsForAchievements &&
         (isCatalogPuzzleId(nextGame.puzzleId) ||
-          isCustomPuzzleId(nextGame.puzzleId))
+          isCustomPuzzleId(nextGame.puzzleId) ||
+          isSeasonalPuzzleId(nextGame.puzzleId))
       ) {
         recordPuzzleCompletion(nextGame.puzzleId, starsForAchievements);
       }
@@ -415,6 +418,16 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
 
       if (nextGame.status === "won") {
         playSfx("victory");
+
+        const seasonalReward = recordSeasonalWinIfActive();
+
+        if (seasonalReward) {
+          toast({
+            title: "Seasonal challenge complete!",
+            description: `Unlocked ${seasonalReward.cosmeticIds.length} cosmetics and earned ${seasonalReward.coins} coins.`,
+            variant: "success",
+          });
+        }
       } else if (nextGame.status === "lost") {
         playSfx("defeat");
       }

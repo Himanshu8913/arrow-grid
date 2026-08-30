@@ -1,10 +1,15 @@
 import { getPuzzleById, resolveCatalogPuzzleId } from "@/data/puzzles";
 import { isCustomPuzzleId } from "@/engine/custom-puzzle";
+import {
+  getSeasonalPuzzleById,
+  isSeasonalPuzzleId,
+  resolveSeasonalPuzzleId,
+} from "@/data/seasonal-puzzles";
 import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
 import type { PuzzleDefinition } from "@/types/puzzle";
 
 /**
- * Resolves a puzzle id from the catalog or the local community library.
+ * Resolves a puzzle id from the catalog, seasonal set, or community library.
  */
 export function resolvePuzzleDefinition(puzzleId: string): PuzzleDefinition {
   if (isCustomPuzzleId(puzzleId)) {
@@ -17,15 +22,23 @@ export function resolvePuzzleDefinition(puzzleId: string): PuzzleDefinition {
     return record.puzzle;
   }
 
+  if (isSeasonalPuzzleId(puzzleId)) {
+    return getSeasonalPuzzleById(resolveSeasonalPuzzleId(puzzleId));
+  }
+
   return getPuzzleById(resolveCatalogPuzzleId(puzzleId));
 }
 
 /**
- * Returns true for catalog and locally saved community puzzles.
+ * Returns true for catalog, seasonal, and locally saved community puzzles.
  */
 export function isPlayablePuzzleId(puzzleId: string): boolean {
   if (isCustomPuzzleId(puzzleId)) {
     return useCustomPuzzleStore.getState().getPuzzle(puzzleId) !== undefined;
+  }
+
+  if (isSeasonalPuzzleId(puzzleId)) {
+    return true;
   }
 
   return true;

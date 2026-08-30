@@ -73,6 +73,10 @@ export const useCosmeticsStore = create<CosmeticsStore>()(
           }
         }
 
+        if (cosmetic.unlockEventId) {
+          return false;
+        }
+
         if (cosmetic.price <= 0) {
           get().unlock(cosmeticId);
           return get().equip(cosmeticId);

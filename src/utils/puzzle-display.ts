@@ -9,6 +9,12 @@ import {
   isRandomPuzzleId,
 } from "@/engine/random-puzzle";
 import { getPuzzleById, isCatalogPuzzleId, resolveCatalogPuzzleId } from "@/data/puzzles";
+import {
+  getSeasonalPuzzleById,
+  getSeasonalPuzzleSeed,
+  isSeasonalPuzzleId,
+  resolveSeasonalPuzzleId,
+} from "@/data/seasonal-puzzles";
 import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
 
 export interface PuzzleDisplayInfo {
@@ -58,6 +64,18 @@ export function getPuzzleDisplayInfo(game: GameState): PuzzleDisplayInfo {
     return {
       title: record?.puzzle.title ?? "Community Puzzle",
       description: record?.puzzle.description ?? "A player-created puzzle.",
+    };
+  }
+
+  if (game.puzzleId && isSeasonalPuzzleId(game.puzzleId)) {
+    const puzzle = getSeasonalPuzzleById(resolveSeasonalPuzzleId(game.puzzleId));
+
+    return {
+      title: puzzle.title,
+      description: formatSeedDescription(
+        puzzle.description,
+        getSeasonalPuzzleSeed(game.puzzleId),
+      ),
     };
   }
 

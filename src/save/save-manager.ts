@@ -11,6 +11,7 @@ import { resolvePuzzleDefinition } from "@/engine/puzzle-resolver";
 import { createPuzzleGameForSelection } from "@/engine/random-puzzle";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
+import { useSeasonalStore } from "@/state/seasonal-store";
 import { useCosmeticsStore } from "@/state/cosmetics-store";
 import { useAchievementStore } from "@/state/achievement-store";
 import { useGameStore } from "@/state/game-store";
@@ -162,6 +163,7 @@ export function clearGameplayProgress(): void {
 export function clearAllSaves(): void {
   clearGameplayProgress();
   useCustomPuzzleStore.getState().resetLibrary();
+  useSeasonalStore.getState().resetSeasonal();
   useSettingsStore.getState().resetSettings();
   useProfileStore.getState().resetProfile();
   useCosmeticsStore.getState().resetCosmetics();

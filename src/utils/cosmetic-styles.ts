@@ -10,6 +10,10 @@ export function getEquippedFrameClassName(frameId: string): string | undefined {
     return "cosmetic-frame-neon";
   }
 
+  if (frameId === "frame-anniversary") {
+    return "cosmetic-frame-anniversary";
+  }
+
   return undefined;
 }
 
@@ -30,6 +34,22 @@ export function getEquippedOrbClassName(
 
   if (orbId === "orb-neon") {
     return "cosmetic-orb-neon";
+  }
+
+  if (orbId === "orb-ghost") {
+    return "cosmetic-orb-ghost";
+  }
+
+  if (orbId === "orb-frost") {
+    return "cosmetic-orb-frost";
+  }
+
+  if (orbId === "orb-lantern") {
+    return "cosmetic-orb-lantern";
+  }
+
+  if (orbId === "orb-anniversary") {
+    return "cosmetic-orb-anniversary";
   }
 
   return undefined;

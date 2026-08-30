@@ -32,6 +32,14 @@ import { createRandomSeed } from "@/engine/random";
 import { isCustomPuzzleId } from "@/engine/custom-puzzle";
 import { createGameFromPuzzle } from "@/engine/puzzle";
 import { resolvePuzzleDefinition } from "@/engine/puzzle-resolver";
+import {
+  createSeasonalPuzzleGame,
+} from "@/engine/seasonal-puzzle-generator";
+import {
+  getSeasonalPuzzleSeed,
+  isSeasonalPuzzleId,
+  resolveSeasonalPuzzleId,
+} from "@/data/seasonal-puzzles";
 import type { Position } from "@/types/game";
 
 export const RANDOM_PUZZLE_ID = "random";
@@ -174,6 +182,25 @@ export function createPuzzleGameForSelection(
 
   if (isCustomPuzzleId(puzzleId)) {
     return createGameFromPuzzle(resolvePuzzleDefinition(puzzleId));
+  }
+
+  if (isSeasonalPuzzleId(puzzleId)) {
+    const baseId = resolveSeasonalPuzzleId(puzzleId);
+    const encodedSeed = getSeasonalPuzzleSeed(puzzleId);
+
+    if (encodedSeed !== null) {
+      return createSeasonalPuzzleGame(baseId, encodedSeed);
+    }
+
+    for (let retry = 0; retry < 12; retry += 1) {
+      try {
+        return createSeasonalPuzzleGame(baseId, createRandomSeed());
+      } catch {
+        // Retry with another seed when procedural generation fails.
+      }
+    }
+
+    throw new Error(`Failed to generate a ${baseId} puzzle.`);
   }
 
   return createCatalogGame(puzzleId);

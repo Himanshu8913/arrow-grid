@@ -16,6 +16,8 @@ export interface CosmeticDefinition {
   price: number;
   /** Unlocked automatically when this achievement is earned. */
   unlockAchievementId?: AchievementId;
+  /** Unlocked during an active seasonal event or by completing its challenge. */
+  unlockEventId?: string;
 }
 
 export type EquippedCosmetics = Record<CosmeticCategory, string>;
