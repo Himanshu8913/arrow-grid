@@ -13,7 +13,7 @@ export function MenuCommunityMiniCard({ onOpenCommunity }: MenuCommunityMiniCard
   return (
     <button
       type="button"
-      className="menu-dashboard__card menu-dashboard__mini-card h-full"
+      className="menu-dashboard__card menu-dashboard__mini-card menu-interactive-card h-full"
       onClick={() => {
         playSfx("click");
         onOpenCommunity();

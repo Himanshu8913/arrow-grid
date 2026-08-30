@@ -59,25 +59,31 @@ export function MainMenu({
     <div className="menu-dashboard relative min-h-dvh overflow-hidden px-4 py-4 sm:px-6 lg:px-8">
       <MenuBackground />
 
-      <div className="menu-dashboard__shell relative z-10 mx-auto w-full max-w-[90rem]">
+      <div className="menu-dashboard__shell menu-hero-enter relative z-10 mx-auto w-full max-w-[90rem]">
         <MenuTopBar onOpenSettings={onOpenSettings} />
 
         <div className="menu-dashboard__layout">
-          <aside className="menu-dashboard__sidebar">
-            <MenuProfileCard streak={dailyStreak} onOpenProfile={onOpenProfile} />
-            <MenuSeasonalCard onOpenSeasonal={onOpenSeasonal} />
-            <MenuContinueCard
-              canContinue={canContinue}
-              continueSummary={continueSummary}
-              activeMatch={activeMatch}
-              onContinue={onContinue}
-              onPlay={onPlay}
-            />
+          <aside className="menu-dashboard__sidebar menu-stagger">
+            <div className="menu-stagger-item">
+              <MenuProfileCard streak={dailyStreak} onOpenProfile={onOpenProfile} />
+            </div>
+            <div className="menu-stagger-item">
+              <MenuSeasonalCard onOpenSeasonal={onOpenSeasonal} />
+            </div>
+            <div className="menu-stagger-item">
+              <MenuContinueCard
+                canContinue={canContinue}
+                continueSummary={continueSummary}
+                activeMatch={activeMatch}
+                onContinue={onContinue}
+                onPlay={onPlay}
+              />
+            </div>
 
             {canContinue ? (
               <button
                 type="button"
-                className="w-full text-center text-xs font-medium text-text-muted transition hover:text-accent-primary"
+                className="menu-stagger-item w-full text-center text-xs font-medium text-text-muted transition hover:text-accent-primary"
                 onClick={() => {
                   playSfx("click");
                   onPlay();
@@ -88,19 +94,20 @@ export function MainMenu({
               </button>
             ) : null}
 
-            <div className="menu-dashboard__mini-grid">
+            <div className="menu-dashboard__mini-grid menu-stagger-item">
               <MenuDailyChallengeCard
                 variant="compact"
                 onPlay={onDailyChallenge}
-                onViewResults={onOpenStatistics}
               />
               <MenuCommunityMiniCard onOpenCommunity={onOpenCommunity} />
             </div>
 
-            <MenuHomeInsights layout="sidebar" />
+            <div className="menu-stagger-item">
+              <MenuHomeInsights layout="sidebar" />
+            </div>
           </aside>
 
-          <section className="menu-dashboard__hero">
+          <section className="menu-dashboard__hero menu-stagger-item">
             <MenuGameplayPreview variant="hero" />
           </section>
         </div>

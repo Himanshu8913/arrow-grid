@@ -55,7 +55,7 @@ export function MenuContinueCard({
   return (
     <button
       type="button"
-      className="menu-dashboard__card menu-dashboard__continue w-full"
+      className="menu-dashboard__card menu-dashboard__continue menu-interactive-card w-full"
       onClick={handleClick}
       onMouseEnter={() => playSfx("hover")}
     >

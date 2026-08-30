@@ -12,13 +12,11 @@ import {
 
 export interface MenuDailyChallengeCardProps {
   onPlay: () => void;
-  onViewResults: () => void;
   variant?: "default" | "compact";
 }
 
 export function MenuDailyChallengeCard({
   onPlay,
-  onViewResults,
   variant = "default",
 }: MenuDailyChallengeCardProps) {
   const todayResult = useDailyChallengeStore(
@@ -39,12 +37,6 @@ export function MenuDailyChallengeCard({
 
   const handleClick = () => {
     playSfx("click");
-
-    if (completed) {
-      onViewResults();
-      return;
-    }
-
     onPlay();
   };
 
@@ -52,7 +44,7 @@ export function MenuDailyChallengeCard({
     return (
       <button
         type="button"
-        className="menu-dashboard__card menu-dashboard__mini-card h-full"
+        className="menu-dashboard__card menu-dashboard__mini-card menu-interactive-card h-full"
         onClick={handleClick}
         onMouseEnter={() => playSfx("hover")}
       >
@@ -64,7 +56,7 @@ export function MenuDailyChallengeCard({
             : "☆☆☆"}
         </p>
         <p className="mt-2 text-xs font-semibold text-accent-primary">
-          {completed ? "View results" : "Play now"}
+          {completed ? "Played today" : "Play now"}
         </p>
         {!completed ? (
           <p className="mt-1 text-[11px] text-text-muted">{timeRemaining}</p>
@@ -93,7 +85,7 @@ export function MenuDailyChallengeCard({
               Completed · {formatDailyChallengeStars(todayResult?.stars ?? null)}
             </span>
             <span className="mt-1 block text-xs font-medium text-accent-primary">
-              View results
+              {completed ? "Played today" : "Play now"}
             </span>
           </>
         ) : (

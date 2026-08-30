@@ -30,7 +30,7 @@ export function MenuProfileCard({ streak, onOpenProfile }: MenuProfileCardProps)
   return (
     <button
       type="button"
-      className="menu-dashboard__card menu-dashboard__profile w-full text-left"
+      className="menu-dashboard__card menu-dashboard__profile menu-interactive-card w-full text-left"
       onClick={() => {
         playSfx("click");
         onOpenProfile();
