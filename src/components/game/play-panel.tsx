@@ -157,7 +157,7 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
         ) : isPuzzle ? (
           <PuzzleHud game={game} hintsUsed={hintsUsed} earnedStars={earnedStars} />
         ) : (
-          <ScoreHud game={game} />
+          <ScoreHud game={game} gameMode={gameMode} />
         )}
 
         {!isPuzzle && !isDaily ? (

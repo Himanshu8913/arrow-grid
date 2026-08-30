@@ -146,8 +146,8 @@ export function resolvePlayerTurn(
         orbPathLength: turnResult.orbPath.length,
       }) ?? undefined;
 
-    if (lastScore) {
-      players = applyScoringTurn(players, state.currentPlayer, lastScore);
+    if (lastScore && outcome.scoringPlayer) {
+      players = applyScoringTurn(players, outcome.scoringPlayer, lastScore);
     }
   }
 

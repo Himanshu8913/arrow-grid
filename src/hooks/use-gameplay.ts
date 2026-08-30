@@ -260,7 +260,7 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
         setGoalCelebration({
           position: turnResult.orbPosition,
           score: scoreBreakdown?.total ?? 0,
-          owner: turnResult.movement.goalOwner ?? snapshot.currentPlayer,
+          owner: outcome.scoringPlayer ?? snapshot.currentPlayer,
         });
         playSfx("goal");
 

@@ -11,12 +11,13 @@ export function evaluateTurnOutcome(
 ): TurnOutcome {
   const isLoop = movement.stoppedReason === "loop";
   const scored =
-    movement.allGoalsReached ||
-    (movement.stoppedReason === "goal" && movement.goalOwner === actingPlayer);
+    movement.stoppedReason === "goal" &&
+    movement.goalOwner !== undefined &&
+    movement.goalOwner === actingPlayer;
 
   return {
     scored,
-    scoringPlayer: scored ? actingPlayer : undefined,
+    scoringPlayer: scored ? movement.goalOwner : undefined,
     isLoop,
     stoppedReason: movement.stoppedReason,
   };

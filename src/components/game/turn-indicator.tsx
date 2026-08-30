@@ -32,7 +32,9 @@ export function TurnIndicator({
         aria-atomic="true"
       >
         <Badge variant={game.currentPlayer === "player1" ? "primary" : "secondary"}>
-          {game.currentPlayer === "player1" ? "Your turn" : `${getPlayerLabel("player2")}'s turn`}
+          {game.currentPlayer === "player1"
+            ? "Your turn"
+            : `${getPlayerLabel("player2", gameMode)}'s turn`}
         </Badge>
         <span className="text-xs text-text-muted">Turn {game.turnNumber}</span>
       </div>
@@ -52,7 +54,7 @@ export function TurnIndicator({
       <Badge
         variant={game.currentPlayer === "player1" ? "primary" : "secondary"}
       >
-        {getPlayerLabel(game.currentPlayer)}&apos;s turn
+        {getPlayerLabel(game.currentPlayer, gameMode)}&apos;s turn
       </Badge>
       <span className="text-xs text-text-muted">Turn {game.turnNumber}</span>
     </div>

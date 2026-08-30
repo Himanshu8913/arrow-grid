@@ -38,6 +38,9 @@ describe("game mode helpers", () => {
 describe("player labels and move errors", () => {
   it("returns readable labels and error messages", () => {
     expect(getPlayerLabel("player1")).toBe("Player 1");
+    expect(getPlayerLabel("player2")).toBe("Player 2");
+    expect(getPlayerLabel("player1", "practice")).toBe("You");
+    expect(getPlayerLabel("player2", "practice")).toBe("AI");
     expect(getMoveErrorMessage("spawn")).toContain("spawn");
     expect(getMoveErrorMessage("game-over")).toContain("ended");
   });

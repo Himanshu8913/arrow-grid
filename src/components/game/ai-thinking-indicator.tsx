@@ -1,4 +1,3 @@
-import { getPlayerLabel } from "@/utils/game-messages";
 import { Loader } from "@/ui/loader";
 
 export interface AiThinkingIndicatorProps {
@@ -21,7 +20,7 @@ export function AiThinkingIndicator({ visible }: AiThinkingIndicatorProps) {
       aria-atomic="true"
     >
       <Loader size="sm" />
-      <span>{getPlayerLabel("player2")} is thinking...</span>
+      <span>AI is thinking...</span>
     </div>
   );
 }

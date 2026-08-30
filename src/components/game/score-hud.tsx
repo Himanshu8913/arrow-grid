@@ -1,16 +1,18 @@
 import type { GameState } from "@/engine/game-state";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
-import { getPlayerLabel } from "@/utils/game-messages";
+import { getPlayerLabel, isPracticeMode } from "@/utils/game-messages";
 import { cn } from "@/utils/cn";
 
 export interface ScoreHudProps {
   game: GameState;
+  gameMode: string;
 }
 
 /**
  * Match score header with animated counters and active-player highlight in PvP.
  */
-export function ScoreHud({ game }: ScoreHudProps) {
+export function ScoreHud({ game, gameMode }: ScoreHudProps) {
+  const practiceMode = isPracticeMode(gameMode);
   const playerOneScore = useAnimatedNumber(game.players.player1.totalScore);
   const playerOnePoints = useAnimatedNumber(game.players.player1.matchPoints);
   const playerTwoScore = useAnimatedNumber(game.players.player2.totalScore);
@@ -33,17 +35,19 @@ export function ScoreHud({ game }: ScoreHudProps) {
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       <PlayerScoreCard
-        label={getPlayerLabel("player1")}
+        label={getPlayerLabel("player1", gameMode)}
         score={playerOneScore}
         points={playerOnePoints}
         isActive={game.currentPlayer === "player1" && game.status === "in-progress"}
+        activeTurnLabel="Your turn"
         tone="primary"
       />
       <PlayerScoreCard
-        label={getPlayerLabel("player2")}
+        label={getPlayerLabel("player2", gameMode)}
         score={playerTwoScore}
         points={playerTwoPoints}
         isActive={game.currentPlayer === "player2" && game.status === "in-progress"}
+        activeTurnLabel={practiceMode ? "AI turn" : "Your turn"}
         tone="secondary"
       />
     </div>
@@ -55,6 +59,7 @@ interface PlayerScoreCardProps {
   score: number;
   points: number;
   isActive: boolean;
+  activeTurnLabel: string;
   tone: "primary" | "secondary";
 }
 
@@ -63,6 +68,7 @@ function PlayerScoreCard({
   score,
   points,
   isActive,
+  activeTurnLabel,
   tone,
 }: PlayerScoreCardProps) {
   const toneStyles = {
@@ -98,7 +104,7 @@ function PlayerScoreCard({
         </span>
         {isActive ? (
           <span className="text-xs font-medium uppercase tracking-wide text-text-muted">
-            Your turn
+            {activeTurnLabel}
           </span>
         ) : null}
       </div>

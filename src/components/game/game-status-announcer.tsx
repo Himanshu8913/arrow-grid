@@ -21,7 +21,7 @@ export function GameStatusAnnouncer({
 }: GameStatusAnnouncerProps) {
   const message = useMemo(() => {
     if (game.status === "won" && game.winner) {
-      return `${getPlayerLabel(game.winner)} won the match.`;
+      return `${getPlayerLabel(game.winner, gameMode)} won the match.`;
     }
 
     if (game.status === "lost") {
@@ -33,7 +33,9 @@ export function GameStatusAnnouncer({
     }
 
     if (isAiThinking) {
-      return `${getPlayerLabel("player2")} is thinking.`;
+      return isPracticeMode(gameMode)
+        ? "AI is thinking."
+        : `${getPlayerLabel("player2", gameMode)} is thinking.`;
     }
 
     if (isInputLocked) {
@@ -43,10 +45,10 @@ export function GameStatusAnnouncer({
     if (isPracticeMode(gameMode)) {
       return game.currentPlayer === "player1"
         ? "Your turn. Use arrow keys to move between tiles."
-        : `${getPlayerLabel("player2")}'s turn.`;
+        : `${getPlayerLabel("player2", gameMode)}'s turn.`;
     }
 
-    return `${getPlayerLabel(game.currentPlayer)}'s turn. Turn ${game.turnNumber}.`;
+    return `${getPlayerLabel(game.currentPlayer, gameMode)}'s turn. Turn ${game.turnNumber}.`;
   }, [game, gameMode, isAiThinking, isInputLocked]);
 
   if (!message) {

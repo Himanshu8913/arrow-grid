@@ -3,17 +3,18 @@ import { getPlayerLabel } from "@/utils/game-messages";
 
 export interface MatchResultBannerProps {
   game: GameState;
+  gameMode?: string;
 }
 
 /**
  * Displays the winner when a match has ended.
  */
-export function MatchResultBanner({ game }: MatchResultBannerProps) {
+export function MatchResultBanner({ game, gameMode }: MatchResultBannerProps) {
   if (game.status !== "won" || !game.winner) {
     return null;
   }
 
-  const winnerLabel = getPlayerLabel(game.winner);
+  const winnerLabel = getPlayerLabel(game.winner, gameMode);
   const winnerPoints = game.players[game.winner].matchPoints;
   const winnerScore = game.players[game.winner].totalScore;
 

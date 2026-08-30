@@ -74,6 +74,10 @@ const playerLabels: Record<PlayerId, string> = {
 /**
  * Returns display label for a player id.
  */
-export function getPlayerLabel(playerId: PlayerId): string {
+export function getPlayerLabel(playerId: PlayerId, gameMode?: string): string {
+  if (gameMode && isPracticeMode(gameMode)) {
+    return playerId === "player1" ? "You" : "AI";
+  }
+
   return playerLabels[playerId];
 }

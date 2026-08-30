@@ -8,7 +8,6 @@ import type { MatchResultSummary } from "@/types/match-result";
 import {
   getPlayerLabel,
   isDailyChallengeMode,
-  isPracticeMode,
   isSoloChallengeMode,
 } from "@/utils/game-messages";
 import {
@@ -52,9 +51,7 @@ export function ResultScreen({
 
   const winnerLabel =
     game.status === "won" && game.winner
-      ? isPracticeMode(gameMode) && game.winner === "player2"
-        ? "AI"
-        : getPlayerLabel(game.winner)
+      ? getPlayerLabel(game.winner, gameMode)
       : isPuzzle && game.status === "won"
         ? "You"
         : "—";

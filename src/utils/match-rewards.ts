@@ -8,6 +8,7 @@ import {
 import type { GameState } from "@/engine/game-state";
 import type { PuzzleStarRating } from "@/types/puzzle";
 import {
+  getPlayerLabel,
   isPracticeMode,
   isPuzzleMode,
   isDailyChallengeMode,
@@ -107,11 +108,11 @@ export function getResultHeadline(
   }
 
   if (game.status === "won" && game.winner) {
-    if (isPracticeMode(gameMode) && game.winner === "player2") {
-      return "AI wins the match";
+    if (isPracticeMode(gameMode)) {
+      return game.winner === "player1" ? "You win!" : "AI wins the match";
     }
 
-    return `${game.winner === "player1" ? "Player 1" : "Player 2"} wins!`;
+    return `${getPlayerLabel(game.winner, gameMode)} wins!`;
   }
 
   return "Match over";

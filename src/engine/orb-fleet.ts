@@ -7,7 +7,7 @@ import {
   type OrbSimulationResult,
 } from "@/engine/orb-movement";
 import { positionKey } from "@/engine/position";
-import type { Board, Direction, OrbState, Position } from "@/types/game";
+import type { Board, Direction, OrbState, PlayerId, Position } from "@/types/game";
 
 interface PendingOrbSegment {
   id: string;
@@ -58,6 +58,22 @@ function mergePaths(paths: Position[][]): Position[] {
   return merged;
 }
 
+function resolveGoalOwner(
+  orbs: OrbState[],
+  board: Board,
+  fallback?: PlayerId,
+): PlayerId | undefined {
+  for (const orb of orbs) {
+    const tile = getTile(board, orb.position);
+
+    if (tile?.kind === "goal") {
+      return tile.owner;
+    }
+  }
+
+  return fallback;
+}
+
 function buildFleetResult(
   board: Board,
   orbs: OrbState[],
@@ -66,11 +82,14 @@ function buildFleetResult(
 ): FleetSimulationResult {
   const allGoalsReached = areAllOrbsOnGoals(orbs, board);
   const mergedPath = mergePaths(Object.values(orbPaths));
+  const goalOwner = allGoalsReached
+    ? resolveGoalOwner(orbs, board, lastSegment.goalOwner)
+    : lastSegment.goalOwner;
 
   return {
     path: mergedPath,
     stoppedReason: allGoalsReached ? "goal" : lastSegment.stoppedReason,
-    goalOwner: allGoalsReached ? "player1" : lastSegment.goalOwner,
+    goalOwner,
     loopSegment: lastSegment.loopSegment,
     board,
     orbs,

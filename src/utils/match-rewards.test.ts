@@ -77,5 +77,16 @@ describe("getResultHeadline", () => {
         null,
       ),
     ).toBe("AI wins the match");
+    expect(
+      getResultHeadline(
+        {
+          ...createNewGame({ seed: 1, playerCount: 2 }),
+          status: "won",
+          winner: "player1",
+        },
+        "practice",
+        null,
+      ),
+    ).toBe("You win!");
   });
 });
