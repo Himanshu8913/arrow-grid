@@ -1,11 +1,16 @@
 import { getAppName } from "@/constants/app";
 import { MenuBackground } from "@/components/menu/menu-background";
 import { SeasonalEventBanner } from "@/components/seasonal/seasonal-event-banner";
+import { getCosmeticById } from "@/data/cosmetics";
 import { getDailyDateKey } from "@/engine/daily-challenge";
+import { useCosmeticsStore } from "@/state/cosmetics-store";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { useProfileStore } from "@/state/profile-store";
 import { useProgressStore } from "@/state/progress-store";
 import { formatDailyDateLabel, formatDailyStars } from "@/utils/daily-challenge";
+import { getEquippedFrameClassName } from "@/utils/cosmetic-styles";
+import { getPlayerLevel } from "@/utils/player-level";
+import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { cn } from "@/utils/cn";
 
@@ -20,6 +25,7 @@ export interface MainMenuProps {
   onOpenStatistics: () => void;
   onOpenAchievements: () => void;
   onOpenCosmetics: () => void;
+  onOpenProfile: () => void;
   onOpenCredits: () => void;
   onExit: () => void;
 }
@@ -46,11 +52,21 @@ export function MainMenu({
   onOpenStatistics,
   onOpenAchievements,
   onOpenCosmetics,
+  onOpenProfile,
   onOpenCredits,
   onExit,
 }: MainMenuProps) {
   const displayName = useProfileStore((state) => state.displayName);
   const totalCoins = useProfileStore((state) => state.totalCoins);
+  const totalXp = useProfileStore((state) => state.totalXp);
+  const equippedFrameId = useCosmeticsStore((state) => state.equipped.frame);
+  const equippedTitleId = useCosmeticsStore((state) => state.equipped.title);
+  const playerLevel = getPlayerLevel(totalXp);
+  const frameClassName = getEquippedFrameClassName(equippedFrameId);
+  const playerTitle =
+    equippedTitleId === "title-default"
+      ? null
+      : (getCosmeticById(equippedTitleId)?.name ?? null);
   const activeMatch = useProgressStore((state) => state.activeMatch);
   const todayResult = useDailyChallengeStore(
     (state) => state.history[getDailyDateKey()] ?? null,
@@ -73,17 +89,30 @@ export function MainMenu({
 
       <div className="menu-home relative z-10 w-full max-w-[420px]">
         <header className="menu-hero-enter mb-5 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-accent-primary">
-              Strategy Puzzle
-            </p>
-            <h1 className="mt-1 truncate text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
-              {appName}
-            </h1>
-            <p className="mt-1 truncate text-sm text-text-muted">
-              {displayName || "Guest Player"}
-            </p>
-          </div>
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-transparent p-1 text-left transition hover:border-bg-card/60 hover:bg-bg-surface/40"
+            onClick={onOpenProfile}
+          >
+            <Avatar
+              alt={displayName || "Guest Player"}
+              name={displayName || "Guest Player"}
+              size="md"
+              className={frameClassName}
+            />
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-accent-primary">
+                {appName}
+              </p>
+              <p className="truncate text-lg font-bold text-text-primary">
+                {displayName || "Guest Player"}
+              </p>
+              <p className="truncate text-xs text-text-muted">
+                Level {playerLevel}
+                {playerTitle ? ` · ${playerTitle}` : ""}
+              </p>
+            </div>
+          </button>
           <Badge variant="warning" className="shrink-0 tabular-nums">
             {totalCoins} coins
           </Badge>

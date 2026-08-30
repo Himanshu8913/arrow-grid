@@ -6,5 +6,5 @@ export function getAppName(): string {
 }
 
 export function getAppVersion(): string {
-  return import.meta.env.VITE_APP_VERSION ?? "1.0.0";
+  return import.meta.env.VITE_APP_VERSION ?? "1.1.0";
 }

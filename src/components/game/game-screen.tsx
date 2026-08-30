@@ -1,16 +1,9 @@
 import { useRef, useState } from "react";
 
-import { CosmeticsPanel } from "@/components/cosmetics/cosmetics-panel";
 import { PlayPanel, type PlayPanelHandle } from "@/components/game";
-import { AchievementsPanel, StatisticsPanel } from "@/components/profile";
 import { useToast } from "@/hooks/use-toast";
 import { useGameStore } from "@/state/game-store";
-import { useCosmeticsStore } from "@/state/cosmetics-store";
-import { useProfileStore } from "@/state/profile-store";
-import { getCosmeticById } from "@/data/cosmetics";
 import { getAppName } from "@/constants/app";
-import { getXpProgressInLevel, getPlayerLevel } from "@/utils/player-level";
-import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import {
   Card,
@@ -20,21 +13,15 @@ import {
   CardTitle,
 } from "@/ui/card";
 import { Dialog } from "@/ui/dialog";
-import { Input } from "@/ui/input";
-import { ProgressBar } from "@/ui/progress-bar";
-import { Tabs } from "@/ui/tabs";
-import { Tooltip } from "@/ui/tooltip";
-import { getEquippedFrameClassName } from "@/utils/cosmetic-styles";
 
 export interface GameScreenProps {
   onBackToMenu: () => void;
 }
 
 /**
- * In-game shell with play surface, profile tab, and match controls.
+ * In-game shell focused on play — profile lives on the main menu.
  */
 export function GameScreen({ onBackToMenu }: GameScreenProps) {
-  const [activeTab, setActiveTab] = useState("play");
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [isNewGameConfirmOpen, setIsNewGameConfirmOpen] = useState(false);
   const [isStartingGame, setIsStartingGame] = useState(false);
@@ -42,26 +29,6 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
   const { toast } = useToast();
   const game = useGameStore((state) => state.game);
   const matchSessionActive = useGameStore((state) => state.matchSessionActive);
-  const playerName = useProfileStore((state) => state.displayName);
-  const setPlayerName = useProfileStore((state) => state.setDisplayName);
-  const totalXp = useProfileStore((state) => state.totalXp);
-  const playerLevel = getPlayerLevel(totalXp);
-  const xpProgress = getXpProgressInLevel(totalXp);
-  const totalCoins = useProfileStore((state) => state.totalCoins);
-  const equippedTitleId = useCosmeticsStore((state) => state.equipped.title);
-  const equippedFrameId = useCosmeticsStore((state) => state.equipped.frame);
-  const playerTitle =
-    equippedTitleId === "title-default"
-      ? null
-      : (getCosmeticById(equippedTitleId)?.name ?? null);
-  const frameClassName = getEquippedFrameClassName(equippedFrameId);
-
-  const trimmedPlayerName = playerName.trim();
-  const displayName = trimmedPlayerName || "Guest Player";
-  const nameError =
-    trimmedPlayerName.length > 0 && trimmedPlayerName.length < 2
-      ? "Name must be at least 2 characters"
-      : undefined;
 
   const handleStartGame = () => {
     if (
@@ -83,9 +50,9 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
 
   return (
     <>
-      <div className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
+      <div className="flex min-h-dvh items-center justify-center overflow-visible p-4 sm:p-6">
         <Card
-          className="relative w-full max-w-xl text-center"
+          className="relative w-full max-w-xl overflow-visible text-center"
           padding="lg"
           variant="surface"
         >
@@ -98,97 +65,29 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
             <CardTitle>{getAppName()}</CardTitle>
             <CardDescription>Rotate arrows. Guide the orb. Score goals.</CardDescription>
 
-            <Tabs
-              className="mt-6"
-              value={activeTab}
-              onValueChange={setActiveTab}
-              items={[
-                {
-                  value: "play",
-                  label: "Play",
-                  content: (
-                    <PlayPanel
-                      ref={playPanelRef}
-                      onStartingChange={setIsStartingGame}
-                      onReturnToMenu={onBackToMenu}
-                    />
-                  ),
-                },
-                {
-                  value: "profile",
-                  label: "Profile",
-                  content: (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          alt={displayName}
-                          name={displayName}
-                          size="lg"
-                          className={frameClassName}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-text-primary">
-                            {displayName}
-                          </p>
-                          {playerTitle ? (
-                            <p className="text-xs font-medium text-accent-primary">
-                              {playerTitle}
-                            </p>
-                          ) : null}
-                          <p className="text-sm text-text-muted">
-                            Level {playerLevel} · {totalCoins} coins
-                          </p>
-                        </div>
-                      </div>
-                      <Input
-                        label="Display Name"
-                        value={playerName}
-                        onChange={(event) => setPlayerName(event.target.value)}
-                        placeholder="Enter your name"
-                        hint="Shown on leaderboards and match results."
-                        error={nameError}
-                        maxLength={24}
-                      />
-                      <ProgressBar
-                        value={xpProgress.current}
-                        max={xpProgress.max}
-                        label="XP to next level"
-                        showValue
-                        size="sm"
-                      />
-                      <StatisticsPanel />
-                      <CosmeticsPanel embedded />
-                      <AchievementsPanel />
-                    </div>
-                  ),
-                },
-              ]}
-            />
+            <div className="mt-6">
+              <PlayPanel
+                ref={playPanelRef}
+                onStartingChange={setIsStartingGame}
+                onReturnToMenu={onBackToMenu}
+              />
+            </div>
           </CardHeader>
 
-          <CardFooter className="flex-wrap">
-            <Tooltip content="Start a new game">
-              <Button disabled={isStartingGame} onClick={handleStartGame}>
-                {matchSessionActive &&
-                game.status === "in-progress" &&
-                game.movesPlayed > 0
-                  ? "New game"
-                  : "Play"}
-              </Button>
-            </Tooltip>
-            <Tooltip content="Learn the basics" side="bottom">
-              <Button
-                variant="secondary"
-                onClick={() => setIsHowToPlayOpen(true)}
-              >
-                How to Play
-              </Button>
-            </Tooltip>
-            <Tooltip content="Return to main menu" side="bottom">
-              <Button variant="ghost" onClick={onBackToMenu}>
-                Menu
-              </Button>
-            </Tooltip>
+          <CardFooter className="relative z-10 overflow-visible">
+            <Button disabled={isStartingGame} onClick={handleStartGame}>
+              {matchSessionActive &&
+              game.status === "in-progress" &&
+              game.movesPlayed > 0
+                ? "New game"
+                : "Play"}
+            </Button>
+            <Button variant="secondary" onClick={() => setIsHowToPlayOpen(true)}>
+              How to Play
+            </Button>
+            <Button variant="ghost" onClick={onBackToMenu}>
+              Menu
+            </Button>
           </CardFooter>
         </Card>
       </div>
@@ -222,7 +121,8 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
         open={isHowToPlayOpen}
         onClose={() => setIsHowToPlayOpen(false)}
         title="How to Play"
-        description="Rotate arrows on the grid to guide the energy orb to your goal."
+        description="Rotate arrows to route the energy orb before each turn resolves."
+        size="large"
         footer={
           <>
             <Button variant="ghost" onClick={() => setIsHowToPlayOpen(false)}>
@@ -233,7 +133,7 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
                 setIsHowToPlayOpen(false);
                 toast({
                   title: "You're ready to play",
-                  description: "Good luck guiding the energy orb.",
+                  description: "Good luck on the grid.",
                   variant: "success",
                 });
               }}
@@ -243,12 +143,44 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
           </>
         }
       >
-        <ol className="list-decimal space-y-2 pl-5 text-text-muted">
-          <li>Click or focus a tile and press Enter to rotate it clockwise.</li>
-          <li>Use arrow keys on the board to move between tiles.</li>
-          <li>After your move, the orb follows the arrows automatically.</li>
-          <li>Plan ahead — every rotation changes the orb&apos;s path.</li>
-        </ol>
+        <div className="space-y-4 text-sm text-text-muted">
+          <section>
+            <h3 className="font-semibold text-text-primary">Goal</h3>
+            <p className="mt-1">
+              Guide your orb into a goal tile. In VS AI and PvP, score more goals
+              than your opponent. In puzzle mode, reach the goal within the move
+              limit.
+            </p>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-text-primary">Controls</h3>
+            <ul className="mt-1 list-disc space-y-1 pl-5">
+              <li>Click a tile or focus it with arrow keys, then press Enter or Space to rotate clockwise.</li>
+              <li>After you rotate, the orb moves automatically along arrow paths.</li>
+              <li>In puzzle mode: R restart, U undo, H hint.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-text-primary">Game modes</h3>
+            <ul className="mt-1 list-disc space-y-1 pl-5">
+              <li><strong>Practice vs AI</strong> — solo match against the computer.</li>
+              <li><strong>Puzzle Mode</strong> — curated, random, mechanic, seasonal, and community puzzles.</li>
+              <li><strong>Player vs Player</strong> — local two-player on one device.</li>
+              <li><strong>Daily Challenge</strong> — one shared puzzle per day from the main menu.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-text-primary">Puzzle tips</h3>
+            <ul className="mt-1 list-disc space-y-1 pl-5">
+              <li>Plan rotations before the orb moves — paths can loop or overshoot.</li>
+              <li>Some puzzles add special tiles like ice, portals, bombs, keys, wind, magnets, and splitters.</li>
+              <li>Earn up to 3 stars by finishing under the target move count without hints.</li>
+            </ul>
+          </section>
+        </div>
       </Dialog>
     </>
   );

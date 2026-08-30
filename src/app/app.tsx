@@ -6,6 +6,7 @@ import {
   LazyCreditsDialog,
   LazyGameScreen,
   LazyMount,
+  LazyProfileDialog,
   LazySettingsDialog,
   LazyStatisticsDialog,
 } from "@/components/app/lazy-screens";
@@ -31,6 +32,7 @@ export function App() {
   const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
   const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [isExitOpen, setIsExitOpen] = useState(false);
   const [editingPuzzleId, setEditingPuzzleId] = useState<string | undefined>();
@@ -130,6 +132,7 @@ export function App() {
             onOpenStatistics={() => setIsStatisticsOpen(true)}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenCosmetics={() => setIsCosmeticsOpen(true)}
+            onOpenProfile={() => setIsProfileOpen(true)}
             onOpenCredits={() => setIsCreditsOpen(true)}
             onExit={() => setIsExitOpen(true)}
           />
@@ -165,6 +168,14 @@ export function App() {
           <LazyCosmeticsDialog
             open={isCosmeticsOpen}
             onClose={() => setIsCosmeticsOpen(false)}
+          />
+        </LazyMount>
+      ) : null}
+      {isProfileOpen ? (
+        <LazyMount label="Loading profile...">
+          <LazyProfileDialog
+            open={isProfileOpen}
+            onClose={() => setIsProfileOpen(false)}
           />
         </LazyMount>
       ) : null}

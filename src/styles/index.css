@@ -172,6 +172,16 @@
   }
 }
 
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 @layer utilities {
   .modal-backdrop-enter {
     animation: modal-fade-in var(--duration-normal) var(--ease-standard);
@@ -187,6 +197,10 @@
 
   .tooltip-enter {
     animation: tooltip-slide-in var(--duration-fast) var(--ease-standard);
+  }
+
+  .tooltip-fade-in {
+    animation: tooltip-fade-in 120ms var(--ease-standard);
   }
 
   .screen-enter {

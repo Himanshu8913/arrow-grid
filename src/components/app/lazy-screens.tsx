@@ -32,6 +32,12 @@ export const LazyCosmeticsDialog = lazy(() =>
   })),
 );
 
+export const LazyProfileDialog = lazy(() =>
+  import("@/components/menu/profile-dialog").then((module) => ({
+    default: module.ProfileDialog,
+  })),
+);
+
 export const LazyCreditsDialog = lazy(() =>
   import("@/components/menu/credits-dialog").then((module) => ({
     default: module.CreditsDialog,

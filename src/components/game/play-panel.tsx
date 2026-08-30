@@ -1,9 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle } from "react";
 
 import { BoardGrid } from "@/components/board";
-import { getAppVersion } from "@/constants/app";
-import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
-import { getPuzzleModeOptions } from "@/utils/puzzle-options";
 import { GameStatusAnnouncer } from "@/components/game/game-status-announcer";
 import { AiThinkingIndicator } from "@/components/game/ai-thinking-indicator";
 import { DailyChallengeHud } from "@/components/game/daily-challenge-hud";
@@ -15,8 +12,10 @@ import { TurnIndicator } from "@/components/game/turn-indicator";
 import { AI_DIFFICULTY_OPTIONS } from "@/constants/ai";
 import { useGameplay } from "@/hooks/use-gameplay";
 import { refreshLobbyPreview } from "@/save";
+import { useCustomPuzzleStore } from "@/state/custom-puzzle-store";
 import { useGameStore } from "@/state/game-store";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
+import { getPuzzleModeOptions } from "@/utils/puzzle-options";
 import { isPracticeMode, isPuzzleMode } from "@/utils/game-messages";
 import { Badge } from "@/ui/badge";
 import { Dropdown } from "@/ui/dropdown";
@@ -258,7 +257,6 @@ export const PlayPanel = forwardRef<PlayPanelHandle, PlayPanelProps>(
                   ? "Vs AI"
                   : "PvP"}
           </Badge>
-          <Badge variant="secondary">v{getAppVersion()}</Badge>
         </div>
 
         {!isDaily ? (

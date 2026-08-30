@@ -1,42 +1,65 @@
 import { type ReactNode, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { cn } from "@/utils/cn";
 
-const sideStyles = {
-  top: "bottom-full left-1/2 mb-2 -translate-x-1/2",
-  bottom: "top-full left-1/2 mt-2 -translate-x-1/2",
-  left: "right-full top-1/2 mr-2 -translate-y-1/2",
-  right: "left-full top-1/2 ml-2 -translate-y-1/2",
-} as const;
-
-export type TooltipSide = keyof typeof sideStyles;
+export type TooltipSide = "top" | "bottom" | "left" | "right";
 
 export interface TooltipProps {
-  /** Tooltip text shown on hover or keyboard focus. */
   content: string;
   side?: TooltipSide;
-  /** Delay before showing the tooltip, in milliseconds. */
   delayMs?: number;
   children: ReactNode;
 }
 
 /**
- * Lightweight tooltip for supplementary control hints.
- * Opens on hover and when a focusable child receives keyboard focus.
+ * Tooltip anchored to its trigger, portaled to avoid clipping.
  */
 export function Tooltip({
   content,
   side = "top",
-  delayMs = 180,
+  delayMs = 200,
   children,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const showTimeoutRef = useRef<number | undefined>(undefined);
+  const triggerRef = useRef<HTMLSpanElement>(null);
   const tooltipId = useId();
+
+  const updatePosition = () => {
+    const trigger = triggerRef.current;
+
+    if (!trigger) {
+      return;
+    }
+
+    const rect = trigger.getBoundingClientRect();
+
+    let top = rect.top;
+    let left = rect.left;
+
+    if (side === "top") {
+      top = rect.top - 8;
+      left = rect.left + rect.width / 2;
+    } else if (side === "bottom") {
+      top = rect.bottom + 8;
+      left = rect.left + rect.width / 2;
+    } else if (side === "left") {
+      top = rect.top + rect.height / 2;
+      left = rect.left - 8;
+    } else {
+      top = rect.top + rect.height / 2;
+      left = rect.right + 8;
+    }
+
+    setPosition({ top, left });
+  };
 
   const showTooltip = () => {
     window.clearTimeout(showTimeoutRef.current);
     showTimeoutRef.current = window.setTimeout(() => {
+      updatePosition();
       setIsVisible(true);
     }, delayMs);
   };
@@ -46,9 +69,19 @@ export function Tooltip({
     setIsVisible(false);
   };
 
+  const transform =
+    side === "top"
+      ? "translate(-50%, -100%)"
+      : side === "bottom"
+        ? "translate(-50%, 0)"
+        : side === "left"
+          ? "translate(-100%, -50%)"
+          : "translate(0, -50%)";
+
   return (
     <span
-      className="relative inline-flex"
+      ref={triggerRef}
+      className="inline-flex"
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
       onFocusCapture={showTooltip}
@@ -56,20 +89,28 @@ export function Tooltip({
     >
       {children}
 
-      {isVisible ? (
-        <span
-          id={tooltipId}
-          role="tooltip"
-          className={cn(
-            "tooltip-enter pointer-events-none absolute z-50",
-            "max-w-xs rounded-lg bg-bg-card px-2.5 py-1.5 text-xs font-medium text-text-primary",
-            "shadow-[0_8px_24px_rgba(0,0,0,0.25)]",
-            sideStyles[side],
-          )}
-        >
-          {content}
-        </span>
-      ) : null}
+      {isVisible
+        ? createPortal(
+            <span
+              id={tooltipId}
+              role="tooltip"
+              style={{
+                position: "fixed",
+                top: position.top,
+                left: position.left,
+                transform,
+              }}
+              className={cn(
+                "tooltip-fade-in pointer-events-none z-[200]",
+                "whitespace-nowrap rounded-lg border border-bg-card/80 bg-bg-surface px-3 py-1.5",
+                "text-xs font-medium text-text-primary shadow-[0_8px_24px_rgba(0,0,0,0.28)]",
+              )}
+            >
+              {content}
+            </span>,
+            document.body,
+          )
+        : null}
     </span>
   );
 }
