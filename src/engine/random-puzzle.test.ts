@@ -2,10 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import {
   createRandomPuzzleGame,
+  createPuzzleGameForSelection,
   getRandomPuzzleSeed,
   isRandomPuzzleId,
   RANDOM_PUZZLE_ID,
 } from "@/engine/random-puzzle";
+import {
+  ICE_SLIDE_PUZZLE_ID,
+  PORTAL_HOP_PUZZLE_ID,
+} from "@/engine/mechanic-puzzle-generator";
 
 describe("createRandomPuzzleGame", () => {
   it("creates a playable puzzle with random id and limits", () => {
@@ -40,5 +45,27 @@ describe("createRandomPuzzleGame", () => {
     expect(isRandomPuzzleId(RANDOM_PUZZLE_ID)).toBe(true);
     expect(isRandomPuzzleId("random-99")).toBe(true);
     expect(isRandomPuzzleId("first-steps")).toBe(false);
+  });
+
+  it("generates procedural portal hop puzzles from catalog selection", () => {
+    const game = createPuzzleGameForSelection(PORTAL_HOP_PUZZLE_ID, () => {
+      throw new Error("catalog fallback should not run");
+    });
+
+    expect(game.puzzleId?.startsWith(`${PORTAL_HOP_PUZZLE_ID}-`)).toBe(true);
+    expect(
+      game.board.some((row) => row.some((tile) => tile.kind === "teleporter")),
+    ).toBe(true);
+  });
+
+  it("generates procedural ice slide puzzles from catalog selection", () => {
+    const game = createPuzzleGameForSelection(ICE_SLIDE_PUZZLE_ID, () => {
+      throw new Error("catalog fallback should not run");
+    });
+
+    expect(game.puzzleId?.startsWith(`${ICE_SLIDE_PUZZLE_ID}-`)).toBe(true);
+    expect(game.board.some((row) => row.some((tile) => tile.kind === "ice"))).toBe(
+      true,
+    );
   });
 });

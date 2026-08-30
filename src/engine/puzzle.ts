@@ -10,6 +10,10 @@ import type { PuzzleDefinition, PuzzleStarRating } from "@/types/puzzle";
  * Builds a wall-filled board and applies handcrafted puzzle tile placements.
  */
 export function buildPuzzleBoard(puzzle: PuzzleDefinition) {
+  if (!puzzle.size || !puzzle.placements) {
+    throw new Error(`Puzzle ${puzzle.id} has no handcrafted board layout.`);
+  }
+
   const board = createEmptyBoard(puzzle.size, { kind: "wall" });
 
   for (const placement of puzzle.placements) {
@@ -25,6 +29,16 @@ export function buildPuzzleBoard(puzzle: PuzzleDefinition) {
  * Creates a single-player game state from a puzzle definition.
  */
 export function createGameFromPuzzle(puzzle: PuzzleDefinition): GameState {
+  if (
+    puzzle.procedural ||
+    !puzzle.size ||
+    !puzzle.spawn ||
+    !puzzle.goal ||
+    !puzzle.placements
+  ) {
+    throw new Error(`Puzzle ${puzzle.id} must be generated procedurally.`);
+  }
+
   const board = buildPuzzleBoard(puzzle);
   const generated: GeneratedBoard = {
     board,

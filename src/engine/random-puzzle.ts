@@ -1,3 +1,12 @@
+import {
+  createIceSlidePuzzleGame,
+  createPortalHopPuzzleGame,
+  getMechanicPuzzleSeed,
+  ICE_SLIDE_PUZZLE_ID,
+  isIceSlidePuzzleId,
+  isPortalHopPuzzleId,
+  PORTAL_HOP_PUZZLE_ID,
+} from "@/engine/mechanic-puzzle-generator";
 import { generateBoard } from "@/engine/board-generator";
 import { createGameState } from "@/engine/game-state";
 import type { GameState } from "@/engine/game-state";
@@ -79,5 +88,24 @@ export function createPuzzleGameForSelection(
     return createRandomPuzzleGame();
   }
 
+  if (puzzleId === PORTAL_HOP_PUZZLE_ID || isPortalHopPuzzleId(puzzleId)) {
+    const seed = getMechanicPuzzleSeed(puzzleId) ?? createRandomSeed();
+    return createPortalHopPuzzleGame(seed);
+  }
+
+  if (puzzleId === ICE_SLIDE_PUZZLE_ID || isIceSlidePuzzleId(puzzleId)) {
+    const seed = getMechanicPuzzleSeed(puzzleId) ?? createRandomSeed();
+    return createIceSlidePuzzleGame(seed);
+  }
+
   return createCatalogGame(puzzleId);
 }
+
+export {
+  createIceSlidePuzzleGame,
+  createPortalHopPuzzleGame,
+  ICE_SLIDE_PUZZLE_ID,
+  isIceSlidePuzzleId,
+  isPortalHopPuzzleId,
+  PORTAL_HOP_PUZZLE_ID,
+} from "@/engine/mechanic-puzzle-generator";

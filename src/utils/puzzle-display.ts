@@ -1,13 +1,26 @@
-import { getPuzzleById, isCatalogPuzzleId } from "@/data/puzzles";
 import type { GameState } from "@/engine/game-state";
+import {
+  getMechanicPuzzleSeed,
+  isIceSlidePuzzleId,
+  isPortalHopPuzzleId,
+} from "@/engine/mechanic-puzzle-generator";
 import {
   getRandomPuzzleSeed,
   isRandomPuzzleId,
 } from "@/engine/random-puzzle";
+import { getPuzzleById, isCatalogPuzzleId, resolveCatalogPuzzleId } from "@/data/puzzles";
 
 export interface PuzzleDisplayInfo {
   title: string;
   description: string;
+}
+
+function formatSeedDescription(baseDescription: string, seed: number | null): string {
+  if (seed === null) {
+    return `${baseDescription} Procedurally generated board.`;
+  }
+
+  return `${baseDescription} Procedurally generated board · seed ${seed}`;
 }
 
 /**
@@ -26,8 +39,32 @@ export function getPuzzleDisplayInfo(game: GameState): PuzzleDisplayInfo {
     };
   }
 
-  if (game.puzzleId && isCatalogPuzzleId(game.puzzleId)) {
+  if (game.puzzleId && isPortalHopPuzzleId(game.puzzleId)) {
     const puzzle = getPuzzleById(game.puzzleId);
+
+    return {
+      title: puzzle.title,
+      description: formatSeedDescription(
+        puzzle.description,
+        getMechanicPuzzleSeed(game.puzzleId),
+      ),
+    };
+  }
+
+  if (game.puzzleId && isIceSlidePuzzleId(game.puzzleId)) {
+    const puzzle = getPuzzleById(game.puzzleId);
+
+    return {
+      title: puzzle.title,
+      description: formatSeedDescription(
+        puzzle.description,
+        getMechanicPuzzleSeed(game.puzzleId),
+      ),
+    };
+  }
+
+  if (game.puzzleId && isCatalogPuzzleId(game.puzzleId)) {
+    const puzzle = getPuzzleById(resolveCatalogPuzzleId(game.puzzleId));
 
     return {
       title: puzzle.title,
@@ -50,7 +87,11 @@ export function getPuzzleTargetMoves(game: GameState): number {
   }
 
   if (game.puzzleId && isCatalogPuzzleId(game.puzzleId)) {
-    return getPuzzleById(game.puzzleId).targetMoves;
+    const puzzle = getPuzzleById(game.puzzleId);
+
+    if (puzzle.targetMoves !== undefined) {
+      return puzzle.targetMoves;
+    }
   }
 
   return 3;

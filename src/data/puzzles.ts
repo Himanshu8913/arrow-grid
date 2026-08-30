@@ -45,52 +45,16 @@ const cornerRoute: PuzzleDefinition = {
 const portalHop: PuzzleDefinition = {
   id: "portal-hop",
   title: "Portal Hop",
-  description: "Use the teleporter to reach the far side of the board.",
-  size: 5,
-  spawn: { row: 0, col: 0 },
-  goal: { row: 4, col: 0 },
-  targetMoves: 1,
-  moveLimit: 6,
-  shortestPathLength: 4,
-  placements: [
-    { row: 0, col: 0, tile: { kind: "arrow", direction: "right" } },
-    { row: 0, col: 1, tile: { kind: "arrow", direction: "up" } },
-    {
-      row: 0,
-      col: 2,
-      tile: {
-        kind: "teleporter",
-        portalId: "alpha",
-        target: { row: 4, col: 2 },
-      },
-    },
-    { row: 4, col: 2, tile: { kind: "arrow", direction: "left" } },
-    { row: 4, col: 1, tile: { kind: "arrow", direction: "left" } },
-    { row: 4, col: 0, tile: { kind: "goal", owner: "player1" } },
-  ],
+  description: "Use teleporters to cross the board. Every run is a new layout.",
+  procedural: true,
 };
 
 const iceSlide: PuzzleDefinition = {
   id: "ice-slide",
   title: "Ice Slide",
   description:
-    "Slide across the ice, then turn the orb down before it hits the wall.",
-  size: 5,
-  spawn: { row: 0, col: 0 },
-  goal: { row: 4, col: 3 },
-  targetMoves: 1,
-  moveLimit: 6,
-  shortestPathLength: 6,
-  placements: [
-    { row: 0, col: 0, tile: { kind: "arrow", direction: "right" } },
-    { row: 0, col: 1, tile: { kind: "ice" } },
-    { row: 0, col: 2, tile: { kind: "ice", direction: "down" } },
-    { row: 0, col: 3, tile: { kind: "arrow", direction: "right" } },
-    { row: 1, col: 3, tile: { kind: "arrow", direction: "down" } },
-    { row: 2, col: 3, tile: { kind: "arrow", direction: "down" } },
-    { row: 3, col: 3, tile: { kind: "arrow", direction: "down" } },
-    { row: 4, col: 3, tile: { kind: "goal", owner: "player1" } },
-  ],
+    "Slide across the ice and steer the orb before it overshoots. Every run is new.",
+  procedural: true,
 };
 
 export const PUZZLE_CATALOG: PuzzleDefinition[] = [
@@ -113,17 +77,46 @@ export const PUZZLE_MODE_OPTIONS = [
 ];
 
 /**
- * Returns true for handcrafted catalog puzzle ids.
+ * Maps a runtime puzzle id to its catalog entry id.
+ */
+export function resolveCatalogPuzzleId(puzzleId: string): string {
+  if (puzzleId === "portal-hop" || puzzleId.startsWith("portal-hop-")) {
+    return "portal-hop";
+  }
+
+  if (puzzleId === "ice-slide" || puzzleId.startsWith("ice-slide-")) {
+    return "ice-slide";
+  }
+
+  return puzzleId;
+}
+
+/**
+ * Returns true for catalog puzzle ids, including procedural mechanic runs.
  */
 export function isCatalogPuzzleId(puzzleId: string): boolean {
-  return PUZZLE_CATALOG.some((puzzle) => puzzle.id === puzzleId);
+  return PUZZLE_CATALOG.some(
+    (puzzle) => puzzle.id === resolveCatalogPuzzleId(puzzleId),
+  );
+}
+
+/**
+ * Returns true for handcrafted (fixed-layout) catalog puzzles.
+ */
+export function isHandcraftedPuzzleId(puzzleId: string): boolean {
+  const catalogId = resolveCatalogPuzzleId(puzzleId);
+  const puzzle = PUZZLE_CATALOG.find((entry) => entry.id === catalogId);
+
+  return Boolean(puzzle && !puzzle.procedural);
 }
 
 /**
  * Returns a puzzle definition by id, falling back to the first catalog entry.
  */
 export function getPuzzleById(puzzleId: string): PuzzleDefinition {
+  const catalogId = resolveCatalogPuzzleId(puzzleId);
+
   return (
-    PUZZLE_CATALOG.find((puzzle) => puzzle.id === puzzleId) ?? PUZZLE_CATALOG[0]
+    PUZZLE_CATALOG.find((puzzle) => puzzle.id === catalogId) ?? PUZZLE_CATALOG[0]
   );
 }

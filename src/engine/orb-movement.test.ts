@@ -2,14 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { createEmptyBoard, setTile } from "@/engine/board";
 import { simulateOrbMovement } from "@/engine/orb-movement";
-import { createGameFromPuzzle, buildPuzzleBoard } from "@/engine/puzzle";
-import { playTurn } from "@/engine/game-controller";
-import { rotateArrowAt } from "@/engine/rotation";
 import {
   buildTeleporterTargetMap,
   validateTeleporterTargets,
 } from "@/engine/teleporter";
-import { getPuzzleById } from "@/data/puzzles";
 
 function buildTeleporterBoard() {
   let board = createEmptyBoard(5, { kind: "wall" });
@@ -82,45 +78,6 @@ describe("teleporter tiles", () => {
   });
 });
 
-describe("portal hop puzzle", () => {
-  it("reaches the goal after the entry arrow points into the portal", () => {
-    const board = buildPuzzleBoard(getPuzzleById("portal-hop"));
-    const rotated = rotateArrowAt(board, { row: 0, col: 1 });
-
-    expect(rotated[0][1]).toEqual({ kind: "arrow", direction: "right" });
-    expect(rotated[0][2]).toEqual({
-      kind: "teleporter",
-      portalId: "alpha",
-      target: { row: 4, col: 2 },
-    });
-
-    const movement = simulateOrbMovement(rotated, { row: 0, col: 0 });
-
-    expect(movement.stoppedReason).toBe("goal");
-    expect(movement.path).toEqual([
-      { row: 0, col: 0 },
-      { row: 0, col: 1 },
-      { row: 0, col: 2 },
-      { row: 4, col: 2 },
-      { row: 4, col: 1 },
-      { row: 4, col: 0 },
-    ]);
-  });
-
-  it("wins after rotating the middle arrow toward the teleporter", () => {
-    const game = createGameFromPuzzle(getPuzzleById("portal-hop"));
-
-    expect(game.status).toBe("in-progress");
-
-    const result = playTurn(game, { type: "rotate", position: { row: 0, col: 1 } });
-
-    expect("error" in result).toBe(false);
-    if (!("error" in result)) {
-      expect(result.status).toBe("won");
-    }
-  });
-});
-
 function buildIceSlideBoard() {
   let board = createEmptyBoard(5, { kind: "wall" });
 
@@ -171,17 +128,5 @@ describe("ice tiles", () => {
       { row: 0, col: 3 },
       { row: 0, col: 4 },
     ]);
-  });
-});
-
-describe("ice slide puzzle", () => {
-  it("wins after turning the exit arrow downward", () => {
-    const game = createGameFromPuzzle(getPuzzleById("ice-slide"));
-    const result = playTurn(game, { type: "rotate", position: { row: 0, col: 3 } });
-
-    expect("error" in result).toBe(false);
-    if (!("error" in result)) {
-      expect(result.status).toBe("won");
-    }
   });
 });
