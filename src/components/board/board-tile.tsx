@@ -137,6 +137,7 @@ export const BoardTile = memo(function BoardTile({
         "board-tile-button relative flex aspect-square items-center justify-center rounded-tile",
         useVirtualTile && "board-tile-virtual",
         tile.kind === "arrow" && "board-tile-arrow",
+        tile.kind === "rotating-arrow" && "board-tile-arrow",
         "border border-bg-card/80 bg-bg-card shadow-[var(--shadow-soft)]",
         "transition-all duration-200 ease-out",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface",
@@ -154,13 +155,29 @@ export const BoardTile = memo(function BoardTile({
         tile.kind === "teleporter" && getTeleporterStyle(tile.portalId),
         tile.kind === "ice" &&
           "board-tile-ice border-sky-300/50 bg-sky-400/15 text-sky-200",
+        tile.kind === "rotating-arrow" &&
+          "border-amber-300/50 bg-amber-400/15 text-amber-200",
+        tile.kind === "locked-arrow" &&
+          "border-slate-400/50 bg-slate-500/15 text-slate-200",
+        tile.kind === "bomb" &&
+          "border-rose-400/60 bg-rose-500/20 text-rose-200",
+        tile.kind === "key" &&
+          "border-yellow-300/60 bg-yellow-400/15 text-yellow-200",
+        tile.kind === "wind" &&
+          "border-teal-300/50 bg-teal-400/15 text-teal-200",
+        tile.kind === "magnet" &&
+          "border-indigo-300/50 bg-indigo-400/15 text-indigo-200",
         isGoalCelebrating && "goal-tile-celebrate z-10",
         isLoopTile && "loop-tile-highlight",
         isLoopPulsing && "loop-tile-pulse z-10",
         isHinted && "ring-2 ring-warning ring-offset-2 ring-offset-bg-surface",
       )}
       data-direction={
-        tile.kind === "arrow" ? directionMarkers[tile.direction] : undefined
+        tile.kind === "arrow" ||
+        tile.kind === "rotating-arrow" ||
+        tile.kind === "locked-arrow"
+          ? directionMarkers[tile.direction]
+          : undefined
       }
       style={
         trailOpacity !== undefined
@@ -170,6 +187,28 @@ export const BoardTile = memo(function BoardTile({
     >
       {tile.kind === "arrow" ? (
         <ArrowGlyph direction={tile.direction} isRotating={isArrowRotating} />
+      ) : null}
+      {tile.kind === "rotating-arrow" ? (
+        <>
+          <ArrowGlyph direction={tile.direction} isRotating={isArrowRotating} />
+          <span
+            className="pointer-events-none absolute bottom-1 right-1 text-[10px] font-bold uppercase opacity-70"
+            aria-hidden="true"
+          >
+            spin
+          </span>
+        </>
+      ) : null}
+      {tile.kind === "locked-arrow" ? (
+        <>
+          <ArrowGlyph direction={tile.direction} className="opacity-80" />
+          <span
+            className="pointer-events-none absolute bottom-1 right-1 text-[10px] font-bold uppercase opacity-70"
+            aria-hidden="true"
+          >
+            lock
+          </span>
+        </>
       ) : null}
       {tile.kind === "wall" ? (
         <span className="text-lg font-bold text-text-muted" aria-hidden="true">
@@ -212,6 +251,22 @@ export const BoardTile = memo(function BoardTile({
             </span>
           )}
         </>
+      ) : null}
+      {tile.kind === "bomb" ? (
+        <span className="text-xs font-semibold uppercase tracking-wide">BOMB</span>
+      ) : null}
+      {tile.kind === "key" ? (
+        <span className="text-xs font-semibold uppercase tracking-wide">KEY</span>
+      ) : null}
+      {tile.kind === "wind" ? (
+        <span className="text-lg font-bold" aria-hidden="true">
+          ≋
+        </span>
+      ) : null}
+      {tile.kind === "magnet" ? (
+        <span className="text-lg font-bold" aria-hidden="true">
+          ⊕
+        </span>
       ) : null}
 
       {isSpawn ? (

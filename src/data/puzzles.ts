@@ -57,11 +57,56 @@ const iceSlide: PuzzleDefinition = {
   procedural: true,
 };
 
+const spinCycle: PuzzleDefinition = {
+  id: "spin-cycle",
+  title: "Spin Cycle",
+  description:
+    "Rotating arrows shift after you pass over them. Every run is a new layout.",
+  procedural: true,
+};
+
+const blastZone: PuzzleDefinition = {
+  id: "blast-zone",
+  title: "Blast Zone",
+  description:
+    "Steer clear of bombs or the orb will detonate. Every run is a new layout.",
+  procedural: true,
+};
+
+const lockAndKey: PuzzleDefinition = {
+  id: "lock-and-key",
+  title: "Lock & Key",
+  description:
+    "Collect the key to unlock frozen arrows on the route. Every run is new.",
+  procedural: true,
+};
+
+const gustAlley: PuzzleDefinition = {
+  id: "gust-alley",
+  title: "Gust Alley",
+  description:
+    "Wind tiles push the orb an extra step. Every run is a new layout.",
+  procedural: true,
+};
+
+const magnetPull: PuzzleDefinition = {
+  id: "magnet-pull",
+  title: "Magnet Pull",
+  description:
+    "Magnets yank the orb off course when you pass nearby. Every run is new.",
+  procedural: true,
+};
+
 export const PUZZLE_CATALOG: PuzzleDefinition[] = [
   firstSteps,
   cornerRoute,
   portalHop,
   iceSlide,
+  spinCycle,
+  blastZone,
+  lockAndKey,
+  gustAlley,
+  magnetPull,
 ];
 
 export const RANDOM_PUZZLE_ID = "random";
@@ -76,16 +121,16 @@ export const PUZZLE_MODE_OPTIONS = [
   })),
 ];
 
+import { PROCEDURAL_MECHANIC_PUZZLE_IDS } from "@/engine/mechanic-puzzle-generator";
+
 /**
  * Maps a runtime puzzle id to its catalog entry id.
  */
 export function resolveCatalogPuzzleId(puzzleId: string): string {
-  if (puzzleId === "portal-hop" || puzzleId.startsWith("portal-hop-")) {
-    return "portal-hop";
-  }
-
-  if (puzzleId === "ice-slide" || puzzleId.startsWith("ice-slide-")) {
-    return "ice-slide";
+  for (const baseId of PROCEDURAL_MECHANIC_PUZZLE_IDS) {
+    if (puzzleId === baseId || puzzleId.startsWith(`${baseId}-`)) {
+      return baseId;
+    }
   }
 
   return puzzleId;

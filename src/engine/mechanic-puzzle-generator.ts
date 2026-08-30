@@ -6,15 +6,40 @@ import {
   getTile,
   setTile,
 } from "@/engine/board";
-import { rotateDirectionClockwise } from "@/engine/direction";
 import { createGameState } from "@/engine/game-state";
 import type { GameState } from "@/engine/game-state";
 import { simulateOrbMovement } from "@/engine/orb-movement";
+import { rotateDirectionClockwise, getDirectionDelta } from "@/engine/direction";
+import { positionsEqual, translatePosition } from "@/engine/position";
 import { createRandomSeed, SeededRandom } from "@/engine/random";
 import type { Board, Direction, Position, Tile } from "@/types/game";
 
 export const PORTAL_HOP_PUZZLE_ID = "portal-hop";
 export const ICE_SLIDE_PUZZLE_ID = "ice-slide";
+export const SPIN_CYCLE_PUZZLE_ID = "spin-cycle";
+export const BLAST_ZONE_PUZZLE_ID = "blast-zone";
+export const LOCK_AND_KEY_PUZZLE_ID = "lock-and-key";
+export const GUST_ALLEY_PUZZLE_ID = "gust-alley";
+export const MAGNET_PULL_PUZZLE_ID = "magnet-pull";
+
+export const PROCEDURAL_MECHANIC_PUZZLE_IDS = [
+  PORTAL_HOP_PUZZLE_ID,
+  ICE_SLIDE_PUZZLE_ID,
+  SPIN_CYCLE_PUZZLE_ID,
+  BLAST_ZONE_PUZZLE_ID,
+  LOCK_AND_KEY_PUZZLE_ID,
+  GUST_ALLEY_PUZZLE_ID,
+  MAGNET_PULL_PUZZLE_ID,
+] as const;
+
+type MechanicKind =
+  | "portal"
+  | "ice"
+  | "rotating"
+  | "bomb"
+  | "lock-key"
+  | "wind"
+  | "magnet";
 
 const MIN_SPAWN_GOAL_DISTANCE = 4;
 const MAX_GENERATION_ATTEMPTS = 80;
@@ -328,11 +353,286 @@ function generateIceSlideBoard(
   return { board, criticalPosition };
 }
 
+function findStraightSegmentPlacement(
+  path: Position[],
+): { segmentIndex: number; criticalIndex: number } | null {
+  for (let index = 2; index < path.length - 2; index += 1) {
+    const incoming = getStepDirection(path[index - 1], path[index]);
+    const outgoing = getStepDirection(path[index], path[index + 1]);
+    const pushed = translatePosition(path[index], getDirectionDelta(incoming));
+
+    if (incoming === outgoing && positionsEqual(pushed, path[index + 1])) {
+      return { segmentIndex: index, criticalIndex: index - 1 };
+    }
+  }
+
+  return null;
+}
+
+function generateSpinCycleBoard(
+  rng: SeededRandom,
+  size: number,
+  goal: Position,
+  path: Position[],
+): { board: Board; criticalPosition: Position } | null {
+  if (path.length < 7) {
+    return null;
+  }
+
+  const rotateIndex = rng.nextInt(3, Math.min(4, path.length - 3));
+  const criticalPosition = path[rotateIndex - 1];
+  const from = path[rotateIndex];
+  const to = path[rotateIndex + 1] ?? goal;
+
+  const overrides = new Map<string, Tile>([
+    [
+      positionKey(from),
+      {
+        kind: "rotating-arrow",
+        direction: getStepDirection(from, to),
+      },
+    ],
+  ]);
+
+  let board = buildSolvedPathBoard(size, path, goal, overrides);
+  const reserved = new Set(
+    [...path, goal].map((position) => positionKey(position)),
+  );
+  board = fillNoiseTiles(rng, board, reserved);
+
+  const correctDirection = getStepDirection(criticalPosition, from);
+  board = setTile(board, criticalPosition, {
+    kind: "arrow",
+    direction: createPreCorrectDirection(correctDirection),
+  });
+
+  return { board, criticalPosition };
+}
+
+function generateBlastZoneBoard(
+  rng: SeededRandom,
+  size: number,
+  goal: Position,
+  path: Position[],
+): { board: Board; criticalPosition: Position } | null {
+  if (path.length < 6) {
+    return null;
+  }
+
+  const criticalIndex = rng.nextInt(2, Math.min(3, path.length - 4));
+  const criticalPosition = path[criticalIndex];
+  const correctNext = path[criticalIndex + 1];
+  const correctDirection = getStepDirection(criticalPosition, correctNext);
+  const wrongDirections = ALL_DIRECTIONS.filter(
+    (direction) => direction !== correctDirection,
+  );
+  const wrongDirection = rng.pick(wrongDirections);
+  const bombPosition = translatePosition(
+    criticalPosition,
+    getDirectionDelta(wrongDirection),
+  );
+
+  if (
+    !bombPosition ||
+    bombPosition.row < 0 ||
+    bombPosition.col < 0 ||
+    bombPosition.row >= size ||
+    bombPosition.col >= size
+  ) {
+    return null;
+  }
+
+  const pathKeys = new Set(path.map((position) => positionKey(position)));
+
+  if (pathKeys.has(positionKey(bombPosition))) {
+    return null;
+  }
+
+  let board = buildSolvedPathBoard(size, path, goal, new Map());
+  board = setTile(board, bombPosition, { kind: "bomb" });
+  const reserved = new Set(
+    [...path, goal, bombPosition].map((position) => positionKey(position)),
+  );
+  board = fillNoiseTiles(rng, board, reserved);
+
+  board = setTile(board, criticalPosition, {
+    kind: "arrow",
+    direction: createPreCorrectDirection(correctDirection),
+  });
+
+  return { board, criticalPosition };
+}
+
+function generateLockAndKeyBoard(
+  rng: SeededRandom,
+  size: number,
+  goal: Position,
+  path: Position[],
+): { board: Board; criticalPosition: Position } | null {
+  if (path.length < 8) {
+    return null;
+  }
+
+  const keyIndex = rng.nextInt(3, Math.min(4, path.length - 4));
+  const lockCount = rng.nextInt(1, 2);
+  const criticalIndex = keyIndex - 1;
+  const criticalPosition = path[criticalIndex];
+  const overrides = new Map<string, Tile>([
+    [positionKey(path[keyIndex]), { kind: "key" }],
+  ]);
+
+  for (let offset = 0; offset < lockCount; offset += 1) {
+    const lockIndex = keyIndex + 1 + offset;
+    const from = path[lockIndex];
+    const to = path[lockIndex + 1] ?? goal;
+
+    overrides.set(positionKey(from), {
+      kind: "locked-arrow",
+      direction: getStepDirection(from, to),
+    });
+  }
+
+  let board = buildSolvedPathBoard(size, path, goal, overrides);
+  const reserved = new Set(
+    [...path, goal].map((position) => positionKey(position)),
+  );
+  board = fillNoiseTiles(rng, board, reserved);
+
+  const correctDirection = getStepDirection(
+    criticalPosition,
+    path[criticalIndex + 1],
+  );
+  board = setTile(board, criticalPosition, {
+    kind: "arrow",
+    direction: createPreCorrectDirection(correctDirection),
+  });
+
+  return { board, criticalPosition };
+}
+
+function generateGustAlleyBoard(
+  rng: SeededRandom,
+  size: number,
+  goal: Position,
+  path: Position[],
+): { board: Board; criticalPosition: Position } | null {
+  const placement = findStraightSegmentPlacement(path);
+
+  if (!placement) {
+    return null;
+  }
+
+  const { segmentIndex, criticalIndex } = placement;
+  const criticalPosition = path[criticalIndex];
+  const overrides = new Map<string, Tile>([
+    [positionKey(path[segmentIndex]), { kind: "wind" }],
+  ]);
+
+  let board = buildSolvedPathBoard(size, path, goal, overrides);
+  const reserved = new Set(
+    [...path, goal].map((position) => positionKey(position)),
+  );
+  board = fillNoiseTiles(rng, board, reserved);
+
+  const correctDirection = getStepDirection(
+    criticalPosition,
+    path[criticalIndex + 1],
+  );
+  board = setTile(board, criticalPosition, {
+    kind: "arrow",
+    direction: createPreCorrectDirection(correctDirection),
+  });
+
+  return { board, criticalPosition };
+}
+
+function generateMagnetPullBoard(
+  rng: SeededRandom,
+  size: number,
+  goal: Position,
+  path: Position[],
+): { board: Board; criticalPosition: Position } | null {
+  const placement = findStraightSegmentPlacement(path);
+
+  if (!placement) {
+    return null;
+  }
+
+  const { segmentIndex, criticalIndex } = placement;
+  const criticalPosition = path[criticalIndex];
+  const overrides = new Map<string, Tile>([
+    [positionKey(path[segmentIndex]), { kind: "magnet" }],
+  ]);
+
+  let board = buildSolvedPathBoard(size, path, goal, overrides);
+  const reserved = new Set(
+    [...path, goal].map((position) => positionKey(position)),
+  );
+  board = fillNoiseTiles(rng, board, reserved);
+
+  const correctDirection = getStepDirection(
+    criticalPosition,
+    path[criticalIndex + 1],
+  );
+  board = setTile(board, criticalPosition, {
+    kind: "arrow",
+    direction: createPreCorrectDirection(correctDirection),
+  });
+
+  return { board, criticalPosition };
+}
+
+function generateMechanicLayout(
+  mechanic: MechanicKind,
+  rng: SeededRandom,
+  size: number,
+  goal: Position,
+  path: Position[],
+): { board: Board; criticalPosition: Position } | null {
+  switch (mechanic) {
+    case "portal":
+      return generatePortalHopBoard(rng, size, goal, path);
+    case "ice":
+      return generateIceSlideBoard(rng, size, goal, path);
+    case "rotating":
+      return generateSpinCycleBoard(rng, size, goal, path);
+    case "bomb":
+      return generateBlastZoneBoard(rng, size, goal, path);
+    case "lock-key":
+      return generateLockAndKeyBoard(rng, size, goal, path);
+    case "wind":
+      return generateGustAlleyBoard(rng, size, goal, path);
+    case "magnet":
+      return generateMagnetPullBoard(rng, size, goal, path);
+  }
+}
+
+function getMechanicKindForPuzzleId(basePuzzleId: string): MechanicKind {
+  switch (basePuzzleId) {
+    case PORTAL_HOP_PUZZLE_ID:
+      return "portal";
+    case ICE_SLIDE_PUZZLE_ID:
+      return "ice";
+    case SPIN_CYCLE_PUZZLE_ID:
+      return "rotating";
+    case BLAST_ZONE_PUZZLE_ID:
+      return "bomb";
+    case LOCK_AND_KEY_PUZZLE_ID:
+      return "lock-key";
+    case GUST_ALLEY_PUZZLE_ID:
+      return "wind";
+    case MAGNET_PULL_PUZZLE_ID:
+      return "magnet";
+    default:
+      throw new Error(`Unknown mechanic puzzle id: ${basePuzzleId}`);
+  }
+}
+
 function createMechanicPuzzleGame(
-  basePuzzleId: typeof PORTAL_HOP_PUZZLE_ID | typeof ICE_SLIDE_PUZZLE_ID,
-  mechanic: "portal" | "ice",
+  basePuzzleId: (typeof PROCEDURAL_MECHANIC_PUZZLE_IDS)[number],
   seed = createRandomSeed(),
 ): GameState {
+  const mechanic = getMechanicKindForPuzzleId(basePuzzleId);
   const size = seed % 4 === 0 ? 6 : 5;
 
   for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt += 1) {
@@ -355,10 +655,7 @@ function createMechanicPuzzleGame(
     }
 
     const path = buildPath(spawn, goal);
-    const layout =
-      mechanic === "portal"
-        ? generatePortalHopBoard(rng, size, goal, path)
-        : generateIceSlideBoard(rng, size, goal, path);
+    const layout = generateMechanicLayout(mechanic, rng, size, goal, path);
 
     if (!layout) {
       continue;
@@ -383,21 +680,46 @@ function createMechanicPuzzleGame(
 }
 
 export function isPortalHopPuzzleId(puzzleId: string | undefined): boolean {
-  return (
-    puzzleId === PORTAL_HOP_PUZZLE_ID ||
-    puzzleId?.startsWith(`${PORTAL_HOP_PUZZLE_ID}-`) === true
-  );
+  return matchesMechanicPuzzleId(puzzleId, PORTAL_HOP_PUZZLE_ID);
 }
 
 export function isIceSlidePuzzleId(puzzleId: string | undefined): boolean {
+  return matchesMechanicPuzzleId(puzzleId, ICE_SLIDE_PUZZLE_ID);
+}
+
+export function isSpinCyclePuzzleId(puzzleId: string | undefined): boolean {
+  return matchesMechanicPuzzleId(puzzleId, SPIN_CYCLE_PUZZLE_ID);
+}
+
+export function isBlastZonePuzzleId(puzzleId: string | undefined): boolean {
+  return matchesMechanicPuzzleId(puzzleId, BLAST_ZONE_PUZZLE_ID);
+}
+
+export function isLockAndKeyPuzzleId(puzzleId: string | undefined): boolean {
+  return matchesMechanicPuzzleId(puzzleId, LOCK_AND_KEY_PUZZLE_ID);
+}
+
+export function isGustAlleyPuzzleId(puzzleId: string | undefined): boolean {
+  return matchesMechanicPuzzleId(puzzleId, GUST_ALLEY_PUZZLE_ID);
+}
+
+export function isMagnetPullPuzzleId(puzzleId: string | undefined): boolean {
+  return matchesMechanicPuzzleId(puzzleId, MAGNET_PULL_PUZZLE_ID);
+}
+
+function matchesMechanicPuzzleId(
+  puzzleId: string | undefined,
+  baseId: string,
+): boolean {
   return (
-    puzzleId === ICE_SLIDE_PUZZLE_ID ||
-    puzzleId?.startsWith(`${ICE_SLIDE_PUZZLE_ID}-`) === true
+    puzzleId === baseId || puzzleId?.startsWith(`${baseId}-`) === true
   );
 }
 
 export function isProceduralMechanicPuzzleId(puzzleId: string | undefined): boolean {
-  return isPortalHopPuzzleId(puzzleId) || isIceSlidePuzzleId(puzzleId);
+  return PROCEDURAL_MECHANIC_PUZZLE_IDS.some((baseId) =>
+    matchesMechanicPuzzleId(puzzleId, baseId),
+  );
 }
 
 export function getMechanicPuzzleSeed(puzzleId: string | undefined): number | null {
@@ -405,7 +727,7 @@ export function getMechanicPuzzleSeed(puzzleId: string | undefined): number | nu
     return null;
   }
 
-  for (const prefix of [PORTAL_HOP_PUZZLE_ID, ICE_SLIDE_PUZZLE_ID]) {
+  for (const prefix of PROCEDURAL_MECHANIC_PUZZLE_IDS) {
     if (!puzzleId.startsWith(`${prefix}-`)) {
       continue;
     }
@@ -418,21 +740,39 @@ export function getMechanicPuzzleSeed(puzzleId: string | undefined): number | nu
 }
 
 export function getMechanicPuzzleBaseId(puzzleId: string): string {
-  if (isPortalHopPuzzleId(puzzleId)) {
-    return PORTAL_HOP_PUZZLE_ID;
-  }
-
-  if (isIceSlidePuzzleId(puzzleId)) {
-    return ICE_SLIDE_PUZZLE_ID;
+  for (const baseId of PROCEDURAL_MECHANIC_PUZZLE_IDS) {
+    if (matchesMechanicPuzzleId(puzzleId, baseId)) {
+      return baseId;
+    }
   }
 
   return puzzleId;
 }
 
 export function createPortalHopPuzzleGame(seed = createRandomSeed()): GameState {
-  return createMechanicPuzzleGame(PORTAL_HOP_PUZZLE_ID, "portal", seed);
+  return createMechanicPuzzleGame(PORTAL_HOP_PUZZLE_ID, seed);
 }
 
 export function createIceSlidePuzzleGame(seed = createRandomSeed()): GameState {
-  return createMechanicPuzzleGame(ICE_SLIDE_PUZZLE_ID, "ice", seed);
+  return createMechanicPuzzleGame(ICE_SLIDE_PUZZLE_ID, seed);
+}
+
+export function createSpinCyclePuzzleGame(seed = createRandomSeed()): GameState {
+  return createMechanicPuzzleGame(SPIN_CYCLE_PUZZLE_ID, seed);
+}
+
+export function createBlastZonePuzzleGame(seed = createRandomSeed()): GameState {
+  return createMechanicPuzzleGame(BLAST_ZONE_PUZZLE_ID, seed);
+}
+
+export function createLockAndKeyPuzzleGame(seed = createRandomSeed()): GameState {
+  return createMechanicPuzzleGame(LOCK_AND_KEY_PUZZLE_ID, seed);
+}
+
+export function createGustAlleyPuzzleGame(seed = createRandomSeed()): GameState {
+  return createMechanicPuzzleGame(GUST_ALLEY_PUZZLE_ID, seed);
+}
+
+export function createMagnetPullPuzzleGame(seed = createRandomSeed()): GameState {
+  return createMechanicPuzzleGame(MAGNET_PULL_PUZZLE_ID, seed);
 }

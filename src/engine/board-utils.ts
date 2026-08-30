@@ -27,6 +27,18 @@ export function cloneBoard(board: Board): Board {
           return tile.direction
             ? { kind: "ice", direction: tile.direction }
             : { kind: "ice" };
+        case "rotating-arrow":
+          return { kind: "rotating-arrow", direction: tile.direction };
+        case "bomb":
+          return { kind: "bomb" };
+        case "locked-arrow":
+          return { kind: "locked-arrow", direction: tile.direction };
+        case "key":
+          return { kind: "key" };
+        case "wind":
+          return { kind: "wind" };
+        case "magnet":
+          return { kind: "magnet" };
       }
     }),
   );

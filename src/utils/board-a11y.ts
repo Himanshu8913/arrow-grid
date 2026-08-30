@@ -57,6 +57,28 @@ export function getTileAriaLabel(
           : "Ice tile",
       );
       break;
+    case "rotating-arrow":
+      details.push(
+        `Rotating arrow pointing ${DIRECTION_LABELS[tile.direction]}`,
+      );
+      break;
+    case "locked-arrow":
+      details.push(
+        `Locked arrow pointing ${DIRECTION_LABELS[tile.direction]}`,
+      );
+      break;
+    case "bomb":
+      details.push("Bomb tile");
+      break;
+    case "key":
+      details.push("Key tile");
+      break;
+    case "wind":
+      details.push("Wind tile");
+      break;
+    case "magnet":
+      details.push("Magnet tile");
+      break;
   }
 
   if (state.isSpawn) {
@@ -81,6 +103,8 @@ export function getTileAriaLabel(
 
   const description = details.join(", ");
   const rotateHint =
-    tile.kind === "arrow" ? " Press Enter or Space to rotate." : "";
+    tile.kind === "arrow" || tile.kind === "rotating-arrow"
+      ? " Press Enter or Space to rotate."
+      : "";
   return `${description}. ${location}.${rotateHint}`;
 }

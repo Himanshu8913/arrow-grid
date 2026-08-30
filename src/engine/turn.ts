@@ -41,7 +41,7 @@ export function executePlayerTurn(
   const orbPosition = movement.path[movement.path.length - 1] ?? spawn;
 
   return {
-    board: rotationResult.board,
+    board: movement.board,
     orbPath: movement.path,
     orbPosition,
     movement,

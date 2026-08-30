@@ -33,7 +33,10 @@ export function validateRotateMove(
 
   switch (tile.kind) {
     case "arrow":
+    case "rotating-arrow":
       return { valid: true };
+    case "locked-arrow":
+      return { valid: false, reason: "not-arrow" };
     case "wall":
       return { valid: false, reason: "wall" };
     case "goal":
@@ -45,6 +48,10 @@ export function validateRotateMove(
     case "teleporter":
       return { valid: false, reason: "not-arrow" };
     case "ice":
+    case "bomb":
+    case "key":
+    case "wind":
+    case "magnet":
       return { valid: false, reason: "not-arrow" };
     default:
       return { valid: false, reason: "not-arrow" };
@@ -81,12 +88,12 @@ export function getLegalRotatePositions(
 export function rotateArrowAt(board: Board, position: Position): Board {
   const tile = getTile(board, position);
 
-  if (!tile || tile.kind !== "arrow") {
+  if (!tile || (tile.kind !== "arrow" && tile.kind !== "rotating-arrow")) {
     throw new Error("Cannot rotate a non-arrow tile.");
   }
 
   return setTile(board, position, {
-    kind: "arrow",
+    kind: tile.kind,
     direction: rotateDirectionClockwise(tile.direction),
   });
 }

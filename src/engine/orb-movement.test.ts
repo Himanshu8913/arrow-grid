@@ -130,3 +130,101 @@ describe("ice tiles", () => {
     ]);
   });
 });
+
+describe("rotating arrow tiles", () => {
+  it("rotates after the orb passes over it", () => {
+    let board = createEmptyBoard(5, { kind: "wall" });
+    board = setTile(board, { row: 0, col: 0 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 0, col: 1 }, {
+      kind: "rotating-arrow",
+      direction: "right",
+    });
+    board = setTile(board, { row: 0, col: 2 }, { kind: "arrow", direction: "down" });
+    board = setTile(board, { row: 1, col: 2 }, { kind: "arrow", direction: "down" });
+    board = setTile(board, { row: 2, col: 2 }, { kind: "goal", owner: "player1" });
+
+    const result = simulateOrbMovement(board, { row: 0, col: 0 });
+
+    expect(result.stoppedReason).toBe("goal");
+    expect(result.board[0][1]).toEqual({
+      kind: "rotating-arrow",
+      direction: "down",
+    });
+  });
+});
+
+describe("bomb tiles", () => {
+  it("stops movement and clears the bomb cell", () => {
+    let board = createEmptyBoard(5, { kind: "wall" });
+    board = setTile(board, { row: 0, col: 0 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 0, col: 1 }, { kind: "bomb" });
+
+    const result = simulateOrbMovement(board, { row: 0, col: 0 });
+
+    expect(result.stoppedReason).toBe("no-direction");
+    expect(result.board[0][1]).toEqual({ kind: "empty" });
+  });
+});
+
+describe("locked arrows and keys", () => {
+  it("unlocks locked arrows after collecting a key", () => {
+    let board = createEmptyBoard(5, { kind: "wall" });
+    board = setTile(board, { row: 0, col: 0 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 0, col: 1 }, { kind: "key" });
+    board = setTile(board, { row: 0, col: 2 }, {
+      kind: "locked-arrow",
+      direction: "right",
+    });
+    board = setTile(board, { row: 0, col: 3 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 0, col: 4 }, { kind: "goal", owner: "player1" });
+
+    const result = simulateOrbMovement(board, { row: 0, col: 0 });
+
+    expect(result.stoppedReason).toBe("goal");
+    expect(result.board[0][2]).toEqual({ kind: "arrow", direction: "right" });
+  });
+});
+
+describe("wind tiles", () => {
+  it("pushes the orb one extra step in the travel direction", () => {
+    let board = createEmptyBoard(5, { kind: "wall" });
+    board = setTile(board, { row: 0, col: 0 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 0, col: 1 }, { kind: "wind" });
+    board = setTile(board, { row: 0, col: 2 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 0, col: 3 }, { kind: "arrow", direction: "down" });
+    board = setTile(board, { row: 1, col: 3 }, { kind: "goal", owner: "player1" });
+
+    const result = simulateOrbMovement(board, { row: 0, col: 0 });
+
+    expect(result.stoppedReason).toBe("goal");
+    expect(result.path).toEqual([
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+      { row: 0, col: 2 },
+      { row: 0, col: 3 },
+      { row: 1, col: 3 },
+    ]);
+  });
+});
+
+describe("magnet tiles", () => {
+  it("pulls the orb onto the magnet and continues in the travel direction", () => {
+    let board = createEmptyBoard(5, { kind: "wall" });
+    board = setTile(board, { row: 0, col: 0 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 0, col: 1 }, { kind: "magnet" });
+    board = setTile(board, { row: 0, col: 2 }, { kind: "arrow", direction: "right" });
+    board = setTile(board, { row: 0, col: 3 }, { kind: "arrow", direction: "down" });
+    board = setTile(board, { row: 1, col: 3 }, { kind: "goal", owner: "player1" });
+
+    const result = simulateOrbMovement(board, { row: 0, col: 0 });
+
+    expect(result.stoppedReason).toBe("goal");
+    expect(result.path).toEqual([
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+      { row: 0, col: 2 },
+      { row: 0, col: 3 },
+      { row: 1, col: 3 },
+    ]);
+  });
+});

@@ -11,7 +11,13 @@ export type TileKind =
   | "goal"
   | "spawn"
   | "teleporter"
-  | "ice";
+  | "ice"
+  | "rotating-arrow"
+  | "bomb"
+  | "locked-arrow"
+  | "key"
+  | "wind"
+  | "magnet";
 
 export interface Position {
   row: number;
@@ -54,6 +60,32 @@ export interface IceTile {
   direction?: Direction;
 }
 
+export interface RotatingArrowTile {
+  kind: "rotating-arrow";
+  direction: Direction;
+}
+
+export interface BombTile {
+  kind: "bomb";
+}
+
+export interface LockedArrowTile {
+  kind: "locked-arrow";
+  direction: Direction;
+}
+
+export interface KeyTile {
+  kind: "key";
+}
+
+export interface WindTile {
+  kind: "wind";
+}
+
+export interface MagnetTile {
+  kind: "magnet";
+}
+
 export type Tile =
   | ArrowTile
   | WallTile
@@ -61,7 +93,13 @@ export type Tile =
   | SpawnTile
   | GoalTile
   | TeleporterTile
-  | IceTile;
+  | IceTile
+  | RotatingArrowTile
+  | BombTile
+  | LockedArrowTile
+  | KeyTile
+  | WindTile
+  | MagnetTile;
 
 /** Row-major 2D board. Each cell holds exactly one tile object. */
 export type Board = Tile[][];

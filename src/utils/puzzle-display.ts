@@ -1,8 +1,7 @@
 import type { GameState } from "@/engine/game-state";
 import {
   getMechanicPuzzleSeed,
-  isIceSlidePuzzleId,
-  isPortalHopPuzzleId,
+  isProceduralMechanicPuzzleId,
 } from "@/engine/mechanic-puzzle-generator";
 import {
   getRandomPuzzleSeed,
@@ -39,19 +38,7 @@ export function getPuzzleDisplayInfo(game: GameState): PuzzleDisplayInfo {
     };
   }
 
-  if (game.puzzleId && isPortalHopPuzzleId(game.puzzleId)) {
-    const puzzle = getPuzzleById(game.puzzleId);
-
-    return {
-      title: puzzle.title,
-      description: formatSeedDescription(
-        puzzle.description,
-        getMechanicPuzzleSeed(game.puzzleId),
-      ),
-    };
-  }
-
-  if (game.puzzleId && isIceSlidePuzzleId(game.puzzleId)) {
+  if (game.puzzleId && isProceduralMechanicPuzzleId(game.puzzleId)) {
     const puzzle = getPuzzleById(game.puzzleId);
 
     return {

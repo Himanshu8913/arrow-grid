@@ -4,9 +4,17 @@ import { getTile } from "@/engine/board";
 import {
   isPositionInBounds,
   positionKey,
+  positionsEqual,
   translatePosition,
 } from "@/engine/position";
 import { buildTeleporterTargetMap } from "@/engine/teleporter";
+import {
+  cloneBoardForSimulation,
+  detonateBombAt,
+  isDirectionalArrowTile,
+  rotateRotatingArrowAt,
+  unlockAllLockedArrows,
+} from "@/engine/tile-effects";
 import type { Board, Direction, PlayerId, Position } from "@/types/game";
 
 export type MovementStopReason =
@@ -22,18 +30,28 @@ export interface OrbSimulationResult {
   path: Position[];
   stoppedReason: MovementStopReason;
   goalOwner?: PlayerId;
-  /** Tiles that form the detected loop cycle, when `stoppedReason` is `loop`. */
   loopSegment?: Position[];
+  board: Board;
 }
+
+const ADJACENT_DELTAS = [
+  { row: -1, col: 0 },
+  { row: 1, col: 0 },
+  { row: 0, col: -1 },
+  { row: 0, col: 1 },
+] as const;
+
+type LandingResult =
+  | OrbSimulationResult
+  | {
+      status: "continue";
+      board: Board;
+    };
 
 function isIceTileAt(board: Board, position: Position): boolean {
   return getTile(board, position)?.kind === "ice";
 }
 
-/**
- * Resolves the outgoing direction for the tile under the orb.
- * Spawn cells are rendered separately but always contain an arrow underneath.
- */
 function getOutgoingDirection(
   board: Board,
   position: Position,
@@ -45,7 +63,7 @@ function getOutgoingDirection(
     return null;
   }
 
-  if (tile.kind === "arrow") {
+  if (isDirectionalArrowTile(tile)) {
     return tile.direction;
   }
 
@@ -53,20 +71,11 @@ function getOutgoingDirection(
     return null;
   }
 
-  if (
-    tile.kind === "wall" ||
-    tile.kind === "goal" ||
-    tile.kind === "spawn" ||
-    tile.kind === "teleporter" ||
-    tile.kind === "ice"
-  ) {
-    return null;
-  }
-
   return null;
 }
 
 function createLoopResult(
+  board: Board,
   path: Position[],
   nextPosition: Position,
 ): OrbSimulationResult {
@@ -78,7 +87,7 @@ function createLoopResult(
       ? [...path.slice(loopStartIndex), nextPosition]
       : path;
 
-  return { path, stoppedReason: "loop", loopSegment };
+  return { path, stoppedReason: "loop", loopSegment, board };
 }
 
 function applyIceMomentum(
@@ -94,58 +103,89 @@ function applyIceMomentum(
   return momentum ?? travelDirection;
 }
 
-/**
- * Handles goal, wall, empty, and teleporter resolution after the orb lands on a cell.
- */
+function findAdjacentMagnet(
+  board: Board,
+  position: Position,
+  excludePosition: Position | null,
+): Position | null {
+  for (const delta of ADJACENT_DELTAS) {
+    const neighbor = translatePosition(position, delta);
+    const tile = getTile(board, neighbor);
+
+    if (tile?.kind === "magnet") {
+      if (excludePosition && positionsEqual(neighbor, excludePosition)) {
+        continue;
+      }
+
+      return neighbor;
+    }
+  }
+
+  return null;
+}
+
 function resolveLanding(
   board: Board,
   path: Position[],
   visited: Set<string>,
   position: Position,
+  fromPosition: Position | null,
   teleporterTargets: Map<string, Position>,
   emptyTilesEnabled: boolean,
   arrivedViaTeleport: boolean,
   travelDirection: Direction,
-): OrbSimulationResult | "continue" {
-  const landedTile = getTile(board, position);
+): LandingResult {
+  let workingBoard = board;
+  const landedTile = getTile(workingBoard, position);
 
   if (landedTile?.kind === "goal") {
     return {
       path,
       stoppedReason: "goal",
       goalOwner: landedTile.owner,
+      board: workingBoard,
     };
   }
 
   if (landedTile?.kind === "wall") {
-    return { path, stoppedReason: "wall" };
+    return { path, stoppedReason: "wall", board: workingBoard };
   }
 
   if (landedTile?.kind === "empty" && emptyTilesEnabled) {
-    return { path, stoppedReason: "empty" };
+    return { path, stoppedReason: "empty", board: workingBoard };
+  }
+
+  if (landedTile?.kind === "key") {
+    workingBoard = unlockAllLockedArrows(workingBoard);
+  }
+
+  if (landedTile?.kind === "bomb") {
+    workingBoard = detonateBombAt(workingBoard, position);
+    return { path, stoppedReason: "no-direction", board: workingBoard };
   }
 
   if (landedTile?.kind === "teleporter" && !arrivedViaTeleport) {
     const partner = teleporterTargets.get(positionKey(position));
 
     if (!partner) {
-      return { path, stoppedReason: "wall" };
+      return { path, stoppedReason: "wall", board: workingBoard };
     }
 
     const partnerKey = positionKey(partner);
 
     if (visited.has(partnerKey)) {
-      return createLoopResult(path, partner);
+      return createLoopResult(workingBoard, path, partner);
     }
 
     path.push(partner);
     visited.add(partnerKey);
 
     return resolveLanding(
-      board,
+      workingBoard,
       path,
       visited,
       partner,
+      position,
       teleporterTargets,
       emptyTilesEnabled,
       true,
@@ -153,7 +193,69 @@ function resolveLanding(
     );
   }
 
-  return "continue";
+  if (
+    landedTile?.kind === "wind" ||
+    landedTile?.kind === "magnet" ||
+    landedTile?.kind === "key"
+  ) {
+    const pushedPosition = translatePosition(position, getDirectionDelta(travelDirection));
+
+    if (!isPositionInBounds(pushedPosition, workingBoard.length)) {
+      return { path, stoppedReason: "out-of-bounds", board: workingBoard };
+    }
+
+    const pushedKey = positionKey(pushedPosition);
+
+    if (visited.has(pushedKey)) {
+      return createLoopResult(workingBoard, path, pushedPosition);
+    }
+
+    path.push(pushedPosition);
+    visited.add(pushedKey);
+
+    return resolveLanding(
+      workingBoard,
+      path,
+      visited,
+      pushedPosition,
+      position,
+      teleporterTargets,
+      emptyTilesEnabled,
+      false,
+      travelDirection,
+    );
+  }
+
+  const landedTileForMagnet = getTile(workingBoard, position);
+  const magnetPosition =
+    landedTileForMagnet && isDirectionalArrowTile(landedTileForMagnet)
+      ? null
+      : findAdjacentMagnet(workingBoard, position, fromPosition);
+
+  if (magnetPosition) {
+    const magnetKey = positionKey(magnetPosition);
+
+    if (visited.has(magnetKey)) {
+      return createLoopResult(workingBoard, path, magnetPosition);
+    }
+
+    path.push(magnetPosition);
+    visited.add(magnetKey);
+
+    return resolveLanding(
+      workingBoard,
+      path,
+      visited,
+      magnetPosition,
+      position,
+      teleporterTargets,
+      emptyTilesEnabled,
+      false,
+      travelDirection,
+    );
+  }
+
+  return { status: "continue", board: workingBoard };
 }
 
 /**
@@ -165,17 +267,18 @@ export function simulateOrbMovement(
   options: { emptyTilesEnabled?: boolean } = {},
 ): OrbSimulationResult {
   const emptyTilesEnabled = options.emptyTilesEnabled ?? false;
-  const teleporterTargets = buildTeleporterTargetMap(board);
+  let workingBoard = cloneBoardForSimulation(board);
+  const teleporterTargets = buildTeleporterTargetMap(workingBoard);
   const path: Position[] = [start];
   const visited = new Set<string>([positionKey(start)]);
   let position = start;
   let momentum: Direction | null = null;
 
   for (let step = 0; step < MAX_ORB_PATH_STEPS; step += 1) {
-    const currentTile = getTile(board, position);
+    const currentTile = getTile(workingBoard, position);
 
     if (!currentTile) {
-      return { path, stoppedReason: "out-of-bounds" };
+      return { path, stoppedReason: "out-of-bounds", board: workingBoard };
     }
 
     if (currentTile.kind === "goal") {
@@ -183,36 +286,37 @@ export function simulateOrbMovement(
         path,
         stoppedReason: "goal",
         goalOwner: currentTile.owner,
+        board: workingBoard,
       };
     }
 
     if (currentTile.kind === "wall") {
-      return { path, stoppedReason: "wall" };
+      return { path, stoppedReason: "wall", board: workingBoard };
     }
 
     let direction: Direction | null;
 
-    if (momentum !== null && isIceTileAt(board, position)) {
+    if (momentum !== null && isIceTileAt(workingBoard, position)) {
       direction = momentum;
     } else {
       momentum = null;
-      direction = getOutgoingDirection(board, position, emptyTilesEnabled);
+      direction = getOutgoingDirection(workingBoard, position, emptyTilesEnabled);
     }
 
     if (!direction) {
-      return { path, stoppedReason: "no-direction" };
+      return { path, stoppedReason: "no-direction", board: workingBoard };
     }
 
     const nextPosition = translatePosition(position, getDirectionDelta(direction));
 
-    if (!isPositionInBounds(nextPosition, board.length)) {
-      return { path, stoppedReason: "out-of-bounds" };
+    if (!isPositionInBounds(nextPosition, workingBoard.length)) {
+      return { path, stoppedReason: "out-of-bounds", board: workingBoard };
     }
 
     const nextKey = positionKey(nextPosition);
 
     if (visited.has(nextKey)) {
-      return createLoopResult(path, nextPosition);
+      return createLoopResult(workingBoard, path, nextPosition);
     }
 
     path.push(nextPosition);
@@ -220,25 +324,37 @@ export function simulateOrbMovement(
     position = nextPosition;
 
     const landingResult = resolveLanding(
-      board,
+      workingBoard,
       path,
       visited,
       position,
+      path.length >= 2 ? path[path.length - 2] : null,
       teleporterTargets,
       emptyTilesEnabled,
       false,
       direction,
     );
 
-    if (landingResult !== "continue") {
+    if ("status" in landingResult) {
+      workingBoard = landingResult.board;
+    } else {
       return landingResult;
     }
 
+    const previousPosition = path.length >= 2 ? path[path.length - 2] : null;
+
+    if (
+      previousPosition &&
+      getTile(workingBoard, previousPosition)?.kind === "rotating-arrow"
+    ) {
+      workingBoard = rotateRotatingArrowAt(workingBoard, previousPosition);
+    }
+
     position = path[path.length - 1];
-    momentum = applyIceMomentum(board, position, direction, momentum);
+    momentum = applyIceMomentum(workingBoard, position, direction, momentum);
   }
 
-  return { path, stoppedReason: "max-steps" };
+  return { path, stoppedReason: "max-steps", board: workingBoard };
 }
 
 /**
