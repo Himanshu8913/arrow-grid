@@ -1,4 +1,5 @@
 @import "./theme.css";
+@import "./cosmetics.css";
 @import "tailwindcss";
 
 @theme {

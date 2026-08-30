@@ -1,0 +1,87 @@
+/* Board themes */
+
+html[data-cosmetic-board="board-midnight"] .board-tile-button {
+  border-color: rgb(30 58 138 / 0.45);
+  background: linear-gradient(145deg, rgb(15 23 42), rgb(30 41 59));
+}
+
+html[data-cosmetic-board="board-midnight"] .board-tile-button:hover {
+  border-color: rgb(59 130 246 / 0.45);
+}
+
+html[data-cosmetic-board="board-aurora"] .board-tile-button {
+  border-color: rgb(168 85 247 / 0.35);
+  background: linear-gradient(
+    145deg,
+    rgb(30 27 75 / 0.95),
+    rgb(49 46 129 / 0.85)
+  );
+}
+
+html[data-cosmetic-board="board-aurora"] .board-tile-button:hover {
+  border-color: rgb(34 211 238 / 0.45);
+}
+
+/* Arrow styles */
+
+html[data-cosmetic-arrow="arrow-bold"] .board-tile-arrow {
+  font-weight: 900;
+  text-shadow: 0 0 10px rgb(59 130 246 / 0.55);
+}
+
+html[data-cosmetic-arrow="arrow-minimal"] .board-tile-arrow {
+  font-weight: 500;
+  font-size: 1.35rem;
+  opacity: 0.9;
+}
+
+/* Orb skins */
+
+.cosmetic-orb-ember {
+  background-color: rgb(249 115 22) !important;
+  box-shadow: 0 0 18px rgb(249 115 22 / 0.95) !important;
+}
+
+.cosmetic-orb-neon {
+  background-color: rgb(34 211 238) !important;
+  box-shadow: 0 0 18px rgb(34 211 238 / 0.95) !important;
+}
+
+/* Profile frames */
+
+.cosmetic-frame-gold {
+  box-shadow: 0 0 0 3px rgb(251 191 36);
+}
+
+.cosmetic-frame-neon {
+  box-shadow:
+    0 0 0 2px rgb(34 211 238),
+    0 0 14px rgb(34 211 238 / 0.65);
+  animation: cosmetic-frame-neon-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cosmetic-frame-neon-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgb(34 211 238),
+      0 0 10px rgb(34 211 238 / 0.45);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 3px rgb(34 211 238),
+      0 0 18px rgb(34 211 238 / 0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmetic-frame-neon {
+    animation: none !important;
+  }
+}
+
+html.reduce-motion .cosmetic-frame-neon,
+html.animations-disabled .cosmetic-frame-neon {
+  animation: none !important;
+}

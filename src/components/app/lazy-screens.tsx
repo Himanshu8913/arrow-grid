@@ -26,6 +26,12 @@ export const LazyAchievementsDialog = lazy(() =>
   })),
 );
 
+export const LazyCosmeticsDialog = lazy(() =>
+  import("@/components/menu/cosmetics-dialog").then((module) => ({
+    default: module.CosmeticsDialog,
+  })),
+);
+
 export const LazyCreditsDialog = lazy(() =>
   import("@/components/menu/credits-dialog").then((module) => ({
     default: module.CreditsDialog,

@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import {
   LazyAchievementsDialog,
+  LazyCosmeticsDialog,
   LazyCreditsDialog,
   LazyGameScreen,
   LazyMount,
@@ -26,6 +27,7 @@ export function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
+  const [isCosmeticsOpen, setIsCosmeticsOpen] = useState(false);
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [isExitOpen, setIsExitOpen] = useState(false);
 
@@ -88,6 +90,7 @@ export function App() {
             onOpenSettings={() => setIsSettingsOpen(true)}
             onOpenStatistics={() => setIsStatisticsOpen(true)}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenCosmetics={() => setIsCosmeticsOpen(true)}
             onOpenCredits={() => setIsCreditsOpen(true)}
             onExit={() => setIsExitOpen(true)}
           />
@@ -115,6 +118,14 @@ export function App() {
           <LazyAchievementsDialog
             open={isAchievementsOpen}
             onClose={() => setIsAchievementsOpen(false)}
+          />
+        </LazyMount>
+      ) : null}
+      {isCosmeticsOpen ? (
+        <LazyMount label="Loading cosmetics...">
+          <LazyCosmeticsDialog
+            open={isCosmeticsOpen}
+            onClose={() => setIsCosmeticsOpen(false)}
           />
         </LazyMount>
       ) : null}

@@ -10,6 +10,7 @@ export const SAVE_KEYS = {
   profile: "arrow-grid-profile",
   theme: "arrow-grid-theme",
   dailyChallenge: "arrow-grid-daily-challenge",
+  cosmetics: "arrow-grid-cosmetics",
 } as const;
 
 export type SaveKey = (typeof SAVE_KEYS)[keyof typeof SAVE_KEYS];

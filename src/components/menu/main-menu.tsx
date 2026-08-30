@@ -15,6 +15,7 @@ export interface MainMenuProps {
   onOpenSettings: () => void;
   onOpenStatistics: () => void;
   onOpenAchievements: () => void;
+  onOpenCosmetics: () => void;
   onOpenCredits: () => void;
   onExit: () => void;
 }
@@ -29,6 +30,7 @@ export function MainMenu({
   onOpenSettings,
   onOpenStatistics,
   onOpenAchievements,
+  onOpenCosmetics,
   onOpenCredits,
   onExit,
 }: MainMenuProps) {
@@ -100,6 +102,11 @@ export function MainMenu({
               onClick={onOpenAchievements}
             />
           </div>
+          <MenuButton
+            label="Cosmetics"
+            variant="ghost"
+            onClick={onOpenCosmetics}
+          />
           <MenuButton label="Credits" variant="ghost" onClick={onOpenCredits} />
           <MenuButton label="Exit" variant="danger" onClick={onExit} />
         </nav>

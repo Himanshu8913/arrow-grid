@@ -33,6 +33,7 @@ import { useOrbAnimation } from "@/hooks/use-orb-animation";
 import { useToast } from "@/hooks/use-toast";
 import { useGameStore } from "@/state/game-store";
 import { useAchievementStore } from "@/state/achievement-store";
+import { useCosmeticsStore } from "@/state/cosmetics-store";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
 import { usePuzzleSessionStore } from "@/state/puzzle-session-store";
 import { useStatisticsStore } from "@/state/statistics-store";
@@ -415,6 +416,9 @@ export function useGameplay({ onStartingChange }: UseGameplayOptions = {}) {
           nextGame,
           starsForAchievements,
         );
+        if (unlockedAchievements.length > 0) {
+          useCosmeticsStore.getState().syncAchievementUnlocks();
+        }
         const rewards = calculateMatchRewards(nextGame, gameMode);
         useProfileStore.getState().addRewards(rewards.xp, rewards.coins);
         setMatchResultSummary({

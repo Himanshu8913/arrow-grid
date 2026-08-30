@@ -1,10 +1,13 @@
 import { useRef, useState } from "react";
 
+import { CosmeticsPanel } from "@/components/cosmetics/cosmetics-panel";
 import { PlayPanel, type PlayPanelHandle } from "@/components/game";
 import { AchievementsPanel, StatisticsPanel } from "@/components/profile";
 import { useToast } from "@/hooks/use-toast";
 import { useGameStore } from "@/state/game-store";
+import { useCosmeticsStore } from "@/state/cosmetics-store";
 import { useProfileStore } from "@/state/profile-store";
+import { getCosmeticById } from "@/data/cosmetics";
 import { getAppName } from "@/constants/app";
 import { getXpProgressInLevel, getPlayerLevel } from "@/utils/player-level";
 import { Avatar } from "@/ui/avatar";
@@ -21,6 +24,7 @@ import { Input } from "@/ui/input";
 import { ProgressBar } from "@/ui/progress-bar";
 import { Tabs } from "@/ui/tabs";
 import { Tooltip } from "@/ui/tooltip";
+import { getEquippedFrameClassName } from "@/utils/cosmetic-styles";
 
 export interface GameScreenProps {
   onBackToMenu: () => void;
@@ -43,6 +47,14 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
   const totalXp = useProfileStore((state) => state.totalXp);
   const playerLevel = getPlayerLevel(totalXp);
   const xpProgress = getXpProgressInLevel(totalXp);
+  const totalCoins = useProfileStore((state) => state.totalCoins);
+  const equippedTitleId = useCosmeticsStore((state) => state.equipped.title);
+  const equippedFrameId = useCosmeticsStore((state) => state.equipped.frame);
+  const playerTitle =
+    equippedTitleId === "title-default"
+      ? null
+      : (getCosmeticById(equippedTitleId)?.name ?? null);
+  const frameClassName = getEquippedFrameClassName(equippedFrameId);
 
   const trimmedPlayerName = playerName.trim();
   const displayName = trimmedPlayerName || "Guest Player";
@@ -108,13 +120,23 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
                   content: (
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
-                        <Avatar alt={displayName} name={displayName} size="lg" />
+                        <Avatar
+                          alt={displayName}
+                          name={displayName}
+                          size="lg"
+                          className={frameClassName}
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-text-primary">
                             {displayName}
                           </p>
+                          {playerTitle ? (
+                            <p className="text-xs font-medium text-accent-primary">
+                              {playerTitle}
+                            </p>
+                          ) : null}
                           <p className="text-sm text-text-muted">
-                            Level {playerLevel}
+                            Level {playerLevel} · {totalCoins} coins
                           </p>
                         </div>
                       </div>
@@ -135,6 +157,7 @@ export function GameScreen({ onBackToMenu }: GameScreenProps) {
                         size="sm"
                       />
                       <StatisticsPanel />
+                      <CosmeticsPanel embedded />
                       <AchievementsPanel />
                     </div>
                   ),

@@ -9,6 +9,7 @@ import type { GameState } from "@/engine/game-state";
 import { createGameFromPuzzle } from "@/engine/puzzle";
 import { createPuzzleGameForSelection } from "@/engine/random-puzzle";
 import { useDailyChallengeStore } from "@/state/daily-challenge-store";
+import { useCosmeticsStore } from "@/state/cosmetics-store";
 import { useAchievementStore } from "@/state/achievement-store";
 import { useGameStore } from "@/state/game-store";
 import { useProfileStore } from "@/state/profile-store";
@@ -141,6 +142,7 @@ export function resumeSavedMatch(): boolean {
 export function clearGameplayProgress(): void {
   useStatisticsStore.getState().resetStatistics();
   useAchievementStore.getState().resetAchievements();
+  useCosmeticsStore.getState().resetCosmetics();
   useDailyChallengeStore.getState().resetDailyChallenge();
   useProgressStore.getState().resetProgress();
 
@@ -159,6 +161,7 @@ export function clearAllSaves(): void {
   clearGameplayProgress();
   useSettingsStore.getState().resetSettings();
   useProfileStore.getState().resetProfile();
+  useCosmeticsStore.getState().resetCosmetics();
   localStorage.removeItem(SAVE_KEYS.theme);
 }
 

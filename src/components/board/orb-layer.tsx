@@ -6,7 +6,9 @@ import {
   ORB_SPAWN_MS,
   ORB_STEP_MS,
 } from "@/constants/animation";
+import { useCosmeticsStore } from "@/state/cosmetics-store";
 import type { Position } from "@/types/game";
+import { getEquippedOrbClassName } from "@/utils/cosmetic-styles";
 import { cn } from "@/utils/cn";
 
 export interface OrbLayerProps {
@@ -49,6 +51,7 @@ export const OrbLayer = memo(function OrbLayer({
   isFailure = false,
   className,
 }: OrbLayerProps) {
+  const equippedOrbId = useCosmeticsStore((state) => state.equipped.orb);
   const style = useMemo(
     () => ({
       ...getOrbCenterStyle(position.row, position.col, gridSize, gap),
@@ -69,6 +72,7 @@ export const OrbLayer = memo(function OrbLayer({
         isFailure
           ? "bg-danger shadow-[0_0_16px_rgba(239,68,68,0.9)]"
           : "bg-accent-primary shadow-[0_0_16px_rgba(59,130,246,0.9)]",
+        getEquippedOrbClassName(equippedOrbId, isFailure),
         isSpawning && "orb-spawn-enter",
         isFailure && "orb-fade-out",
         !isFailure && isFading && "orb-fade-out",
