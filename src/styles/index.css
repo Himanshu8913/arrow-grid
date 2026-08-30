@@ -771,3 +771,31 @@ html.animations-disabled .menu-bg-grid,
 html.animations-disabled .menu-bg-orb {
   animation: none !important;
 }
+
+.menu-home-panel {
+  box-shadow:
+    var(--shadow-strong),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.menu-home-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(148 163 184 / 0.25),
+    transparent
+  );
+}
+
+.menu-play-cta:focus-visible {
+  outline: 2px solid var(--theme-accent-primary);
+  outline-offset: 2px;
+}
+
+.menu-feature-row:focus-visible,
+.menu-tile:focus-visible,
+.menu-quick-link:focus-visible {
+  outline: 2px solid var(--theme-accent-primary);
+  outline-offset: 2px;
+}

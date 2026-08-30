@@ -5,6 +5,7 @@ import {
   resizeEditorBoard,
 } from "@/components/editor/puzzle-editor-board";
 import { MenuBackground } from "@/components/menu/menu-background";
+import { MenuScreenHeader } from "@/components/menu/menu-screen-header";
 import { DEFAULT_PUZZLE_ID } from "@/data/puzzles";
 import {
   boardToPlacements,
@@ -211,16 +212,10 @@ export function PuzzleEditorScreen({
     <div className="relative min-h-dvh overflow-y-auto p-4 sm:p-6">
       <MenuBackground />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <Button type="button" variant="ghost" onClick={onBack}>
-            ← Back
-          </Button>
-          <h1 className="text-xl font-bold text-text-primary">Puzzle Editor</h1>
-          <div className="w-16" />
-        </div>
+      <div className="relative z-10 mx-auto flex w-full max-w-2xl flex-col gap-4">
+        <MenuScreenHeader title="Puzzle Editor" onBack={onBack} />
 
-        <div className="rounded-3xl border border-bg-card/60 bg-bg-surface/90 p-4 shadow-[var(--shadow-strong)] backdrop-blur-sm sm:p-5">
+        <div className="rounded-[28px] border border-white/10 bg-bg-surface/80 p-4 shadow-[var(--shadow-strong)] backdrop-blur-md sm:p-5">
           <div className="grid gap-3 sm:grid-cols-2">
             <Input
               label="Title"

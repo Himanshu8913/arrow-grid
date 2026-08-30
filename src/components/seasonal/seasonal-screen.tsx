@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { MenuBackground } from "@/components/menu/menu-background";
+import { MenuScreenHeader } from "@/components/menu/menu-screen-header";
 import { getSeasonalPuzzleById } from "@/data/seasonal-puzzles";
 import { createGameFromPuzzle } from "@/engine/puzzle";
 import { resolvePuzzleDefinition } from "@/engine/puzzle-resolver";
@@ -49,10 +50,8 @@ export function SeasonalScreen({ onBack, onPlay }: SeasonalScreenProps) {
       <div className="relative min-h-dvh overflow-y-auto p-4 sm:p-6">
         <MenuBackground />
         <div className="relative z-10 mx-auto flex w-full max-w-md flex-col gap-4">
-          <Button type="button" variant="ghost" className="self-start" onClick={onBack}>
-            ← Back
-          </Button>
-          <div className="rounded-3xl border border-bg-card/60 bg-bg-surface/90 p-6 text-center shadow-[var(--shadow-strong)]">
+          <MenuScreenHeader title="Seasonal Event" onBack={onBack} />
+          <div className="rounded-[28px] border border-white/10 bg-bg-surface/80 p-6 text-center shadow-[var(--shadow-strong)] backdrop-blur-md">
             <p className="text-lg font-semibold text-text-primary">No active event</p>
             <p className="mt-2 text-sm text-text-muted">
               Check back later for Halloween, Winter, Diwali, and anniversary
@@ -100,15 +99,9 @@ export function SeasonalScreen({ onBack, onPlay }: SeasonalScreenProps) {
       <MenuBackground />
 
       <div className="relative z-10 mx-auto flex w-full max-w-2xl flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <Button type="button" variant="ghost" onClick={onBack}>
-            ← Back
-          </Button>
-          <h1 className="text-xl font-bold text-text-primary">Seasonal Event</h1>
-          <div className="w-16" />
-        </div>
+        <MenuScreenHeader title="Seasonal Event" onBack={onBack} />
 
-        <div className="rounded-3xl border border-bg-card/60 bg-bg-surface/90 p-5 shadow-[var(--shadow-strong)] backdrop-blur-sm">
+        <div className="rounded-[28px] border border-white/10 bg-bg-surface/80 p-5 shadow-[var(--shadow-strong)] backdrop-blur-md sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-3xl" aria-hidden="true">
