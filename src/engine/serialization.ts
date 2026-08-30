@@ -55,6 +55,12 @@ function serializeTile(tile: Tile): SerializedTile {
       return { kind: "goal", owner: tile.owner };
     case "spawn":
       return { kind: "spawn" };
+    case "teleporter":
+      return {
+        kind: "teleporter",
+        portalId: tile.portalId,
+        target: serializePosition(tile.target),
+      };
   }
 }
 
@@ -70,6 +76,12 @@ function deserializeTile(tile: SerializedTile): Tile {
       return { kind: "goal", owner: tile.owner ?? "player1" };
     case "spawn":
       return { kind: "spawn" };
+    case "teleporter":
+      return {
+        kind: "teleporter",
+        portalId: tile.portalId ?? "a",
+        target: deserializePosition(tile.target ?? { row: 0, col: 0 }),
+      };
   }
 }
 

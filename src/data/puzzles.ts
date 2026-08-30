@@ -42,7 +42,31 @@ const cornerRoute: PuzzleDefinition = {
   ],
 };
 
-export const PUZZLE_CATALOG: PuzzleDefinition[] = [firstSteps, cornerRoute];
+const portalHop: PuzzleDefinition = {
+  id: "portal-hop",
+  title: "Portal Hop",
+  description: "Use the teleporter to reach the far side of the board.",
+  size: 5,
+  spawn: { row: 0, col: 0 },
+  goal: { row: 4, col: 0 },
+  targetMoves: 1,
+  moveLimit: 6,
+  shortestPathLength: 4,
+  placements: [
+    { row: 0, col: 0, tile: { kind: "arrow", direction: "right" } },
+    { row: 0, col: 1, tile: { kind: "arrow", direction: "up" } },
+    { row: 0, col: 2, tile: { kind: "teleporter", portalId: "alpha", target: { row: 4, col: 2 } } },
+    { row: 4, col: 2, tile: { kind: "arrow", direction: "left" } },
+    { row: 4, col: 1, tile: { kind: "arrow", direction: "left" } },
+    { row: 4, col: 0, tile: { kind: "goal", owner: "player1" } },
+  ],
+};
+
+export const PUZZLE_CATALOG: PuzzleDefinition[] = [
+  firstSteps,
+  cornerRoute,
+  portalHop,
+];
 
 export const RANDOM_PUZZLE_ID = "random";
 

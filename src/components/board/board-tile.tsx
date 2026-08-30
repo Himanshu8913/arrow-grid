@@ -34,6 +34,19 @@ const goalStyles: Record<PlayerId, string> = {
     "goal-tile-player2 border-accent-secondary/60 bg-accent-secondary/20 text-accent-secondary",
 };
 
+const teleporterStyles: Record<string, string> = {
+  alpha:
+    "border-violet-400/60 bg-violet-500/15 text-violet-300 shadow-[0_0_12px_rgba(139,92,246,0.45)]",
+  beta: "border-cyan-400/60 bg-cyan-500/15 text-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.45)]",
+};
+
+function getTeleporterStyle(portalId: string): string {
+  return (
+    teleporterStyles[portalId] ??
+    "border-accent-secondary/60 bg-accent-secondary/15 text-accent-secondary"
+  );
+}
+
 const directionMarkers: Record<string, string> = {
   up: "N",
   right: "E",
@@ -138,6 +151,7 @@ export const BoardTile = memo(function BoardTile({
         tile.kind === "wall" && "bg-bg-primary text-text-muted",
         tile.kind === "empty" && "bg-bg-surface/60",
         tile.kind === "goal" && goalStyles[tile.owner],
+        tile.kind === "teleporter" && getTeleporterStyle(tile.portalId),
         isGoalCelebrating && "goal-tile-celebrate z-10",
         isLoopTile && "loop-tile-highlight",
         isLoopPulsing && "loop-tile-pulse z-10",
@@ -172,6 +186,11 @@ export const BoardTile = memo(function BoardTile({
       ) : null}
       {tile.kind === "empty" ? (
         <span className="size-2 rounded-full bg-bg-card" aria-hidden="true" />
+      ) : null}
+      {tile.kind === "teleporter" ? (
+        <span className="text-lg font-bold" aria-hidden="true">
+          ⟡
+        </span>
       ) : null}
 
       {isSpawn ? (

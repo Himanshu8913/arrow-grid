@@ -47,6 +47,9 @@ export function getTileAriaLabel(
     case "spawn":
       details.push("Spawn tile");
       break;
+    case "teleporter":
+      details.push(`Teleporter ${tile.portalId.toUpperCase()}`);
+      break;
   }
 
   if (state.isSpawn) {
@@ -70,5 +73,7 @@ export function getTileAriaLabel(
   }
 
   const description = details.join(", ");
-  return `${description}. ${location}. Press Enter or Space to rotate.`;
+  const rotateHint =
+    tile.kind === "arrow" ? " Press Enter or Space to rotate." : "";
+  return `${description}. ${location}.${rotateHint}`;
 }

@@ -6,6 +6,7 @@ import {
   positionKey,
   translatePosition,
 } from "@/engine/position";
+import { buildTeleporterTargetMap } from "@/engine/teleporter";
 import type { Board, Direction, PlayerId, Position } from "@/types/game";
 
 export type MovementStopReason =
@@ -48,11 +49,91 @@ function getOutgoingDirection(
     return null;
   }
 
-  if (tile.kind === "wall" || tile.kind === "goal" || tile.kind === "spawn") {
+  if (
+    tile.kind === "wall" ||
+    tile.kind === "goal" ||
+    tile.kind === "spawn" ||
+    tile.kind === "teleporter"
+  ) {
     return null;
   }
 
   return null;
+}
+
+function createLoopResult(
+  path: Position[],
+  nextPosition: Position,
+): OrbSimulationResult {
+  const loopStartIndex = path.findIndex(
+    (visitedPosition) => positionKey(visitedPosition) === positionKey(nextPosition),
+  );
+  const loopSegment =
+    loopStartIndex >= 0
+      ? [...path.slice(loopStartIndex), nextPosition]
+      : path;
+
+  return { path, stoppedReason: "loop", loopSegment };
+}
+
+/**
+ * Handles goal, wall, empty, and teleporter resolution after the orb lands on a cell.
+ */
+function resolveLanding(
+  board: Board,
+  path: Position[],
+  visited: Set<string>,
+  position: Position,
+  teleporterTargets: Map<string, Position>,
+  emptyTilesEnabled: boolean,
+  arrivedViaTeleport: boolean,
+): OrbSimulationResult | "continue" {
+  const landedTile = getTile(board, position);
+
+  if (landedTile?.kind === "goal") {
+    return {
+      path,
+      stoppedReason: "goal",
+      goalOwner: landedTile.owner,
+    };
+  }
+
+  if (landedTile?.kind === "wall") {
+    return { path, stoppedReason: "wall" };
+  }
+
+  if (landedTile?.kind === "empty" && emptyTilesEnabled) {
+    return { path, stoppedReason: "empty" };
+  }
+
+  if (landedTile?.kind === "teleporter" && !arrivedViaTeleport) {
+    const partner = teleporterTargets.get(positionKey(position));
+
+    if (!partner) {
+      return { path, stoppedReason: "wall" };
+    }
+
+    const partnerKey = positionKey(partner);
+
+    if (visited.has(partnerKey)) {
+      return createLoopResult(path, partner);
+    }
+
+    path.push(partner);
+    visited.add(partnerKey);
+
+    return resolveLanding(
+      board,
+      path,
+      visited,
+      partner,
+      teleporterTargets,
+      emptyTilesEnabled,
+      true,
+    );
+  }
+
+  return "continue";
 }
 
 /**
@@ -64,6 +145,7 @@ export function simulateOrbMovement(
   options: { emptyTilesEnabled?: boolean } = {},
 ): OrbSimulationResult {
   const emptyTilesEnabled = options.emptyTilesEnabled ?? false;
+  const teleporterTargets = buildTeleporterTargetMap(board);
   const path: Position[] = [start];
   const visited = new Set<string>([positionKey(start)]);
   let position = start;
@@ -106,38 +188,28 @@ export function simulateOrbMovement(
     const nextKey = positionKey(nextPosition);
 
     if (visited.has(nextKey)) {
-      const loopStartIndex = path.findIndex(
-        (visitedPosition) => positionKey(visitedPosition) === nextKey,
-      );
-      const loopSegment =
-        loopStartIndex >= 0
-          ? [...path.slice(loopStartIndex), nextPosition]
-          : path;
-
-      return { path, stoppedReason: "loop", loopSegment };
+      return createLoopResult(path, nextPosition);
     }
 
     path.push(nextPosition);
     visited.add(nextKey);
     position = nextPosition;
 
-    const landedTile = getTile(board, position);
+    const landingResult = resolveLanding(
+      board,
+      path,
+      visited,
+      position,
+      teleporterTargets,
+      emptyTilesEnabled,
+      false,
+    );
 
-    if (landedTile?.kind === "goal") {
-      return {
-        path,
-        stoppedReason: "goal",
-        goalOwner: landedTile.owner,
-      };
+    if (landingResult !== "continue") {
+      return landingResult;
     }
 
-    if (landedTile?.kind === "wall") {
-      return { path, stoppedReason: "wall" };
-    }
-
-    if (landedTile?.kind === "empty" && emptyTilesEnabled) {
-      return { path, stoppedReason: "empty" };
-    }
+    position = path[path.length - 1];
   }
 
   return { path, stoppedReason: "max-steps" };

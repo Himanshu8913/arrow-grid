@@ -4,7 +4,13 @@ export type Direction = (typeof DIRECTION_ROTATION_ORDER)[number];
 
 export type PlayerId = "player1" | "player2";
 
-export type TileKind = "empty" | "arrow" | "wall" | "goal" | "spawn";
+export type TileKind =
+  | "empty"
+  | "arrow"
+  | "wall"
+  | "goal"
+  | "spawn"
+  | "teleporter";
 
 export interface Position {
   row: number;
@@ -33,12 +39,21 @@ export interface GoalTile {
   owner: PlayerId;
 }
 
+export interface TeleporterTile {
+  kind: "teleporter";
+  /** Visual grouping for paired portal styling. */
+  portalId: string;
+  /** Position the orb jumps to when entering this portal. */
+  target: Position;
+}
+
 export type Tile =
   | ArrowTile
   | WallTile
   | EmptyTile
   | SpawnTile
-  | GoalTile;
+  | GoalTile
+  | TeleporterTile;
 
 /** Row-major 2D board. Each cell holds exactly one tile object. */
 export type Board = Tile[][];

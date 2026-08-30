@@ -22,7 +22,7 @@ describe("getTileAriaLabel", () => {
         { isHinted: true, isSpawn: true },
       ),
     ).toBe(
-      "Player 2 goal, orb spawn point, hinted. Row 5, column 2. Press Enter or Space to rotate.",
+      "Player 2 goal, orb spawn point, hinted. Row 5, column 2.",
     );
   });
 });

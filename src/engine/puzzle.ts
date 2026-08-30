@@ -1,6 +1,7 @@
 import { createEmptyBoard } from "@/engine/board";
 import { cloneBoard } from "@/engine/board-utils";
 import { createGameState } from "@/engine/game-state";
+import { validateTeleporterTargets } from "@/engine/teleporter";
 import type { GameState } from "@/engine/game-state";
 import type { GeneratedBoard } from "@/types/game";
 import type { PuzzleDefinition, PuzzleStarRating } from "@/types/puzzle";
@@ -14,6 +15,8 @@ export function buildPuzzleBoard(puzzle: PuzzleDefinition) {
   for (const placement of puzzle.placements) {
     board[placement.row][placement.col] = placement.tile;
   }
+
+  validateTeleporterTargets(board);
 
   return board;
 }

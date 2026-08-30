@@ -17,6 +17,12 @@ export function cloneBoard(board: Board): Board {
           return { kind: "empty" };
         case "spawn":
           return { kind: "spawn" };
+        case "teleporter":
+          return {
+            kind: "teleporter",
+            portalId: tile.portalId,
+            target: { ...tile.target },
+          };
       }
     }),
   );

@@ -42,6 +42,8 @@ export function validateRotateMove(
       return { valid: false, reason: "spawn" };
     case "empty":
       return { valid: false, reason: "empty" };
+    case "teleporter":
+      return { valid: false, reason: "not-arrow" };
     default:
       return { valid: false, reason: "not-arrow" };
   }
